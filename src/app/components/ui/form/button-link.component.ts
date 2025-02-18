@@ -4,31 +4,31 @@ import {IconProp} from "@fortawesome/fontawesome-svg-core";
 import { NgClass } from "@angular/common";
 
 @Component({
-  selector: 'app-button',
+  selector: 'app-button-link',
   standalone: true,
   imports: [
     FaIconComponent,
     NgClass
 ],
   template: `
-    <button class="rounded px-4 py-1.5 hover:brightness-110 active:brightness-95 transition-[filter] disabled:grayscale" 
-      [ngClass]="color" [type]=type [disabled]="!enabled">
+    <a [href]="routerLink" 
+      class="rounded px-4 py-2 hover:brightness-110 active:brightness-95 transition-[filter]" 
+      [ngClass]="color">
 
       @if (icon) {
         <fa-icon [icon]="icon" class="mr-1"></fa-icon>
       }
-      
+
       {{ text }}
-    </button>
+    </a>
     `
 })
-export class ButtonComponent {
+export class ButtonLinkComponent {
   // metadata
   @Input({required: true}) text: string = "Button";
   @Input() icon: IconProp | undefined;
   @Input() color: string = "bg-secondary";
 
-  @Input() type: "submit" | "reset" | "button" = "button";
-
-  @Input() enabled: boolean = true;
+  // actions
+  @Input() routerLink: string | null | undefined
 }

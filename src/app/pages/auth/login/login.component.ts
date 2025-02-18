@@ -7,9 +7,9 @@ import {TextboxComponent} from "../../../components/ui/form/textbox.component";
 import {ButtonSubmitFormComponent} from "../../../components/ui/form/button-submit-form.component";
 import {AuthenticationService} from "../../../api/authentication.service";
 import {sha512Async} from "../../../helpers/crypto";
-import { ButtonComponent } from "../../../components/ui/form/button.component";
 import { Router } from "@angular/router";
 import { ContainerComponent } from "../../../components/ui/container.component";
+import { ButtonLinkComponent } from "../../../components/ui/form/button-link.component";
 
 @Component({
   selector: 'app-login',
@@ -19,8 +19,8 @@ import { ContainerComponent } from "../../../components/ui/container.component";
     FormComponent,
     TextboxComponent,
     ButtonSubmitFormComponent,
-    ButtonComponent,
-    ContainerComponent
+    ContainerComponent,
+    ButtonLinkComponent
 ],
   templateUrl: './login.component.html'
 })

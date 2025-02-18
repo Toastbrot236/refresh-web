@@ -9,9 +9,9 @@ import { ButtonSubmitFormComponent } from "../../../components/ui/form/button-su
 import { faEnvelope, faKey, faSignIn, faSignInAlt, faTriangleExclamation, faUser } from "@fortawesome/free-solid-svg-icons";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { TextboxComponent } from "../../../components/ui/form/textbox.component";
-import { ButtonComponent } from "../../../components/ui/form/button.component";
 import { Router } from "@angular/router";
 import { ContainerComponent } from "../../../components/ui/container.component";
+import { ButtonLinkComponent } from "../../../components/ui/form/button-link.component";
 
 @Component({
     selector: 'app-register',
@@ -22,8 +22,8 @@ import { ContainerComponent } from "../../../components/ui/container.component";
     ButtonSubmitFormComponent,
     FaIconComponent,
     TextboxComponent,
-    ButtonComponent,
-    ContainerComponent
+    ContainerComponent,
+    ButtonLinkComponent,
 ],
     templateUrl: './register.component.html'
 })

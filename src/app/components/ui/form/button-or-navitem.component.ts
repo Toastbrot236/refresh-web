@@ -4,6 +4,7 @@ import { NavbarItemComponent } from "../header/navbar-item.component";
 import { NavbarItemTwoStateComponent } from "../header/navbar-item-two-state.component";
 import { ButtonComponent } from "./button.component";
 import { ButtonTwoStateComponent } from "./button-two-state.component";
+import { ButtonLinkComponent } from "./button-link.component";
 
 @Component({
     selector: 'app-button-or-navitem',
@@ -12,7 +13,8 @@ import { ButtonTwoStateComponent } from "./button-two-state.component";
         NavbarItemComponent,
         NavbarItemTwoStateComponent,
         ButtonComponent,
-        ButtonTwoStateComponent
+        ButtonTwoStateComponent,
+        ButtonLinkComponent
     ],
     template: `
     <!--          NavItem          -->
@@ -46,6 +48,8 @@ import { ButtonTwoStateComponent } from "./button-two-state.component";
             @if (state != undefined) {
                 <app-button-two-state
                     [state]="state"
+                    [enabled]="enabled"
+                    
                     [text]="finalText"
                     [icon]="icon"
                     [color]="color"
@@ -56,12 +60,22 @@ import { ButtonTwoStateComponent } from "./button-two-state.component";
                 </app-button-two-state>
             }
             @else {
-                <app-button
-                    [text]="finalText"
-                    [icon]="icon"
-                    [color]="color"
-                    [routerLink]="route">
-                </app-button>
+                @if (route) {
+                    <app-button-link
+                        [text]="finalText"
+                        [icon]="icon"
+                        [color]="color"
+                        [routerLink]="route">
+                    </app-button-link>
+                }
+                @else {
+                    <app-button
+                        [text]="finalText"
+                        [icon]="icon"
+                        [color]="color"
+                        [enabled]="enabled">
+                    </app-button>
+                }
             }    
         }
     `,
@@ -80,6 +94,8 @@ export class ButtonOrNavItemComponent {
 
     @Input() state: boolean | undefined;
     @Input() route: string | undefined;
+    @Input() enabled: boolean = true;
+
     @Input() hasText: boolean = true;
     @Input() isNavItem: boolean = false;
 
