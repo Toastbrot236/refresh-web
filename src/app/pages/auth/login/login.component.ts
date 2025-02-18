@@ -21,7 +21,7 @@ import { ButtonLinkComponent } from "../../../components/ui/form/button-link.com
     ButtonSubmitFormComponent,
     ContainerComponent,
     ButtonLinkComponent
-],
+  ],
   templateUrl: './login.component.html'
 })
 export class LoginComponent {

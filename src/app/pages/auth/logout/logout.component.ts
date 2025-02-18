@@ -9,12 +9,12 @@ import { DividerComponent } from "../../../components/ui/divider.component";
     selector: 'app-logout',
     standalone: true,
     imports: [
-    PageTitleComponent,
-    ButtonComponent,
-    DividerComponent,
-    ButtonGroupComponent,
-    DividerComponent
-],
+        PageTitleComponent,
+        ButtonComponent,
+        DividerComponent,
+        ButtonGroupComponent,
+        DividerComponent
+    ],
     templateUrl: './logout.component.html'
 })
 

@@ -17,14 +17,14 @@ import { ButtonLinkComponent } from "../../../components/ui/form/button-link.com
     selector: 'app-register',
     standalone: true,
     imports: [
-    PageTitleComponent,
-    FormComponent,
-    ButtonSubmitFormComponent,
-    FaIconComponent,
-    TextboxComponent,
-    ContainerComponent,
-    ButtonLinkComponent,
-],
+        PageTitleComponent,
+        FormComponent,
+        ButtonSubmitFormComponent,
+        FaIconComponent,
+        TextboxComponent,
+        ContainerComponent,
+        ButtonLinkComponent,
+    ],
     templateUrl: './register.component.html'
 })
 
