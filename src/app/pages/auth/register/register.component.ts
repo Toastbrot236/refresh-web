@@ -6,21 +6,25 @@ import { FormComponent } from "../../../components/ui/form/form.component";
 import { sha512Async } from "../../../helpers/crypto";
 import { CredentialVerificationService } from "../../../services/credential-verification.service";
 import { ButtonSubmitFormComponent } from "../../../components/ui/form/button-submit-form.component";
-import { faEnvelope, faKey, faSignIn, faTriangleExclamation, faUser, faUserPlus } from "@fortawesome/free-solid-svg-icons";
+import { faEnvelope, faKey, faSignIn, faSignInAlt, faTriangleExclamation, faUser } from "@fortawesome/free-solid-svg-icons";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { TextboxComponent } from "../../../components/ui/form/textbox.component";
+import { ButtonComponent } from "../../../components/ui/form/button.component";
+import { Router } from "@angular/router";
 import { ContainerComponent } from "../../../components/ui/container.component";
 
 @Component({
     selector: 'app-register',
     standalone: true,
     imports: [
-        PageTitleComponent,
-        FormComponent,
-        ButtonSubmitFormComponent,
-        FaIconComponent,
-        TextboxComponent
-    ],
+    PageTitleComponent,
+    FormComponent,
+    ButtonSubmitFormComponent,
+    FaIconComponent,
+    TextboxComponent,
+    ButtonComponent,
+    ContainerComponent
+],
     templateUrl: './register.component.html'
 })
 
@@ -32,7 +36,7 @@ export class RegisterComponent {
         passwordConfirmation: new FormControl()
     })
 
-    constructor(protected auth: AuthenticationService, private credentialVerificationService: CredentialVerificationService) {}
+    constructor(protected auth: AuthenticationService, private credentialVerificationService: CredentialVerificationService, protected router: Router) {}
 
     submit() {
         const username: string = this.form.controls.username.getRawValue();
@@ -45,7 +49,7 @@ export class RegisterComponent {
         }
 
         sha512Async(password).then((passwordSha512 => {
-            this.auth.Register(username, emailAddress, passwordSha512);
+            this.auth.Register(username, emailAddress, passwordSha512, true);
         }))
     }
 
@@ -54,5 +58,5 @@ export class RegisterComponent {
     protected readonly faSignIn = faSignIn;
     protected readonly faUser = faUser;
     protected readonly faKey = faKey;
-    protected readonly faUserPlus = faUserPlus;
+    protected readonly faSignInAlt = faSignInAlt;
 }

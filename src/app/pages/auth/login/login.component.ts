@@ -1,12 +1,15 @@
 import { Component } from '@angular/core';
 import {FormControl, FormGroup} from "@angular/forms";
-import {faEnvelope, faKey} from '@fortawesome/free-solid-svg-icons';
+import {faEnvelope, faKey, faUserPlus} from '@fortawesome/free-solid-svg-icons';
 import {PageTitleComponent} from "../../../components/ui/text/page-title.component";
 import {FormComponent} from "../../../components/ui/form/form.component";
 import {TextboxComponent} from "../../../components/ui/form/textbox.component";
 import {ButtonSubmitFormComponent} from "../../../components/ui/form/button-submit-form.component";
 import {AuthenticationService} from "../../../api/authentication.service";
 import {sha512Async} from "../../../helpers/crypto";
+import { ButtonComponent } from "../../../components/ui/form/button.component";
+import { Router } from "@angular/router";
+import { ContainerComponent } from "../../../components/ui/container.component";
 
 @Component({
   selector: 'app-login',
@@ -15,8 +18,10 @@ import {sha512Async} from "../../../helpers/crypto";
     PageTitleComponent,
     FormComponent,
     TextboxComponent,
-    ButtonSubmitFormComponent
-  ],
+    ButtonSubmitFormComponent,
+    ButtonComponent,
+    ContainerComponent
+],
   templateUrl: './login.component.html'
 })
 export class LoginComponent {
@@ -25,7 +30,7 @@ export class LoginComponent {
     password: new FormControl()
   });
   
-  constructor(private auth: AuthenticationService) {}
+  constructor(private auth: AuthenticationService, protected router: Router) {}
 
   submit() {
     const emailAddress: string = this.form.controls.emailAddress.getRawValue();
@@ -38,4 +43,5 @@ export class LoginComponent {
 
   protected readonly faEnvelope = faEnvelope;
   protected readonly faKey = faKey;
+  protected readonly faUserPlus = faUserPlus;
 }

@@ -1,21 +1,28 @@
-<app-page-title></app-page-title>
+<app-container>
+    <app-page-title></app-page-title>
 
-<div>
+    <div class="">
+        <app-form [form]="form" (submitEvent)="submit()">
+            <p class="text-yellow p-4">
+                <fa-icon [icon]="faTriangleExclamation" class="mr-1"></fa-icon>
+                Don't forget: The username you enter must exactly match your PSN and/or RPCN username (referred to as PSN or RPCN ID)
+            </p>
     
+            <app-textbox [icon]="faUser" [form]="form" placeholder="Username_123" ctrlName="username" label="Username" type="username"></app-textbox>
+            <app-textbox [icon]="faEnvelope" [form]="form" placeholder="sackboy@lbp.me" ctrlName="emailAddress" label="Email Address" type="email"></app-textbox>
+            <app-textbox [icon]="faKey" [form]="form" placeholder="•••••••••" ctrlName="password" label="Password" type="password"></app-textbox>
+            <app-textbox [icon]="faKey" [form]="form" placeholder="•••••••••" ctrlName="passwordConfirmation" label="Confirm Password" type="password"></app-textbox>
+    
+            <ng-container buttons>
+                <app-button-submit-form [form]="form" action="Register"></app-button-submit-form>
+            </ng-container>
+        </app-form>
+    </div>
+</app-container>
 
-    <app-form [form]="form" (submitEvent)="submit()">
-        <p class="text-yellow p-4">
-            <fa-icon [icon]="faTriangleExclamation" class="mr-1"></fa-icon>
-            Don't forget: The username you enter must match your PSN and/or RPCN username (referred to as PSN or RPCN ID) !
-        </p>
-
-        <app-textbox [icon]="faUser" [form]="form" placeholder="Username_123" ctrlName="username" label="Username" type="username"></app-textbox>
-        <app-textbox [icon]="faEnvelope" [form]="form" placeholder="sackboy@lbp.me" ctrlName="emailAddress" label="Email Address" type="email"></app-textbox>
-        <app-textbox [icon]="faKey" [form]="form" placeholder="•••••••••" ctrlName="password" label="Password" type="password"></app-textbox>
-        <app-textbox [icon]="faKey" [form]="form" placeholder="•••••••••" ctrlName="passwordConfirmation" label="Confirm Password" type="password"></app-textbox>
-
-        <ng-container buttons>
-            <app-button-submit-form [form]="form" action="Register"></app-button-submit-form>
-        </ng-container>
-    </app-form>
+<div class="pt-8">
+    <p class="pb-2">
+        Already have an account?
+    </p>
+    <app-button [icon]="faSignInAlt" text="Log In" color="bg-secondary" (click)="this.router.navigate(['/login'])"></app-button>
 </div>

@@ -1,10 +1,21 @@
-<app-page-title></app-page-title>
+<app-container>
+    <app-page-title></app-page-title>
+    
+    <div class="py-3">
+        <app-form [form]="form" (submitEvent)="submit()">
+            <app-textbox [icon]="faEnvelope" [form]="form" placeholder="sackboy@lbp.me" ctrlName="emailAddress" label="Email Address" type="email"></app-textbox>
+            <app-textbox [icon]="faKey" [form]="form" placeholder="•••••••••" ctrlName="password" label="Password" type="password"></app-textbox>
+        
+            <ng-container buttons>
+                <app-button-submit-form [form]="form" action="Log In"></app-button-submit-form>
+            </ng-container>
+        </app-form>
+    </div>
+</app-container>
 
-<app-form [form]="form" (submitEvent)="submit()">
-    <app-textbox [icon]="faEnvelope" [form]="form" placeholder="sackboy@lbp.me" ctrlName="emailAddress" label="Email Address" type="email"></app-textbox>
-    <app-textbox [icon]="faKey" [form]="form" placeholder="•••••••••" ctrlName="password" label="Password" type="password"></app-textbox>
-
-    <ng-container buttons>
-        <app-button-submit-form [form]="form" action="Log In"></app-button-submit-form>
-    </ng-container>
-</app-form>
+<div class="pt-8">
+    <p class="pb-2">
+        Don't have an account yet?
+    </p>
+    <app-button [icon]="faUserPlus" text="Create an account" color="bg-secondary" (click)="this.router.navigate(['/register'])"></app-button>
+</div>
