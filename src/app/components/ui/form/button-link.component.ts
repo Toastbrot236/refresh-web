@@ -9,10 +9,10 @@ import { NgClass } from "@angular/common";
   imports: [
     FaIconComponent,
     NgClass
-],
+  ],
   template: `
     <a [href]="routerLink" 
-      class="rounded px-4 py-2 hover:brightness-110 active:brightness-95 transition-[filter]" 
+      class="flex flex-row justify-center rounded px-4 py-1.5 hover:brightness-110 active:brightness-95 transition-[filter]" 
       [ngClass]="color">
 
       @if (icon) {
@@ -21,7 +21,7 @@ import { NgClass } from "@angular/common";
 
       {{ text }}
     </a>
-    `
+  `
 })
 export class ButtonLinkComponent {
   // metadata

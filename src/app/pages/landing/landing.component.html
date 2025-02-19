@@ -13,11 +13,12 @@
   <p>{{this.instance?.instanceDescription ?? 'Loading...'}}</p>
 </div>
 
-
-<div class="py-2 flex flex-row justify-evenly gap-x-1 max-sm:flex-col">
-  <app-button-link [icon]="faUserPlus" text="Create an account" color="bg-primary" routerLink="/register"></app-button-link>
-  <app-button-link [icon]="faSignInAlt" text="Log In" color="bg-secondary" routerLink="/login"></app-button-link>
-</div>
+@if(!this.ownUser) {
+  <div class="flex flex-row justify-stretch py-2 gap-x-2 max-sm:flex-col">
+    <app-button-link [icon]="faUserPlus" text="Create an account" color="bg-primary" routerLink="/register"></app-button-link>
+    <app-button-link [icon]="faSignInAlt" text="Log In" color="bg-secondary" routerLink="/login"></app-button-link>
+  </div>
+}
 
 @if (instance && instance.announcements.length > 0) {
   <div class="my-5 flex flex-col gap-y-2.5">

@@ -30,6 +30,8 @@ import { EventPageComponent } from "../../components/items/event-page.component"
 import { repeat, Subscription } from "rxjs";
 import { ContestBannerComponent } from "../../components/items/contest-banner.component";
 import { ButtonLinkComponent } from "../../components/ui/form/button-link.component";
+import { AuthenticationService } from '../../api/authentication.service';
+import { ExtendedUser } from '../../api/types/users/extended-user';
 
 @Component({
     selector: 'app-landing',
@@ -56,11 +58,14 @@ export class LandingComponent implements OnDestroy {
     protected instance: Instance | undefined;
     protected rooms: Room[] | undefined;
     protected activity: ActivityPage | undefined;
+    protected ownUser: ExtendedUser | undefined;
 
     private activitySubscription: Subscription | undefined;
     private roomsSubscription: Subscription | undefined;
 
-    constructor(private client: ClientService, @Inject(PLATFORM_ID) platformId: Object, changeDetector: ChangeDetectorRef) {
+    constructor(private client: ClientService, @Inject(PLATFORM_ID) platformId: Object, changeDetector: ChangeDetectorRef, 
+                private auth: AuthenticationService) 
+    {
         client.getInstance().subscribe(data => this.instance = data);
 
         if (isPlatformBrowser(platformId)) {
@@ -83,6 +88,12 @@ export class LandingComponent implements OnDestroy {
 
         this.fetchActivity().subscribe(data => this.activity = data);
         this.fetchRooms().subscribe(data => this.rooms = data.data);
+
+        this.auth.user.subscribe(user => {
+            if(user) {
+                this.ownUser = user;
+            }
+        });
     }
 
     ngOnDestroy(): void {

@@ -9,9 +9,9 @@ import { NgClass } from "@angular/common";
   imports: [
     FaIconComponent,
     NgClass
-],
+  ],
   template: `
-    <button class="rounded px-4 py-1.5 hover:brightness-110 active:brightness-95 transition-[filter] disabled:grayscale" 
+    <button class="flex flex-row justify-center rounded px-4 py-1.5 hover:brightness-110 active:brightness-95 transition-[filter] disabled:grayscale" 
       [ngClass]="color" [type]=type [disabled]="!enabled">
 
       @if (icon) {
@@ -20,7 +20,7 @@ import { NgClass } from "@angular/common";
       
       {{ text }}
     </button>
-    `
+  `
 })
 export class ButtonComponent {
   // metadata
