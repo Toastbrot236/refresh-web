@@ -11,6 +11,7 @@ import { RefreshApiError } from "./refresh-api-error";
 import { AuthRefreshRequest } from "./types/auth/auth-refresh-request";
 import { RefreshApiResponse } from "./refresh-api-response";
 import { Router } from "@angular/router";
+import { RegisterRequest } from "./types/auth/register-request";
 
 @Injectable({
     providedIn: 'root'
@@ -84,8 +85,56 @@ export class AuthenticationService extends ApiImplementation {
             },
         });
     }
+
+    public Register(username: string, emailAddress: string, passwordSha512: string, redirectAfterSuccess: boolean = false): boolean {
+        if (this.user.value != undefined) {
+            this.bannerService.error("Registration failed", "Cannot register while already logged in as someone.");
+            return false;
+        }
+
+        const body: RegisterRequest = {
+            username: username,
+            emailAddress: emailAddress,
+            passwordSha512: passwordSha512,
+        }
+
+        this.http.post<AuthResponse>("/register", body).subscribe({
+            error: error => {
+                const apiError: RefreshApiError | undefined = error.error?.error;
+                this.bannerService.error("Registration failed", apiError == null ? error.message : apiError.message);
+                return false;
+            },
+            next: response => {
+                if (response === undefined) {
+                    console.warn("response was null?", response)
+                    return false;
+                }
+
+                // At this point the server has successfully created an account and it doesn't require activation by authenticating in-game
+                this.HandleAuthResponse(response);
+                this.bannerService.success("Registration successful", "Your new account has been successfully created!");
+
+                if (redirectAfterSuccess) {
+                    this.user.subscribe((user) => {
+                        if (user) {
+                            this.router.navigate(['/user/', user.username]);
+                        }
+                    });
+                }
+
+                return true;
+            }
+        })
+
+        return false;
+    }
     
-    public LogIn(emailAddress: string, password: string, redirectAfterSuccess: boolean = false) {
+    public LogIn(emailAddress: string, password: string, redirectAfterSuccess: boolean = false): boolean {
+        if (this.user.value != undefined) {
+            this.bannerService.error("Login failed", "Cannot log in while already logged in as someone.");
+            return false;
+        }
+
         const body: AuthRequest = {
             emailAddress,
             passwordSha512: password,
@@ -95,22 +144,26 @@ export class AuthenticationService extends ApiImplementation {
             error: error => {
                 const apiError: RefreshApiError | undefined = error.error?.error;
                 this.bannerService.error("Login failed", apiError == null ? error.message : apiError.message);
-                return;
+                return false;
             },
             next: response => {
                 if (response === undefined) {
                     console.warn("response was null?", response)
-                    return;
+                    return false;
                 }
                     
                 this.HandleAuthResponse(response);
                 this.bannerService.success("Login successful", "Successfully logged in, have fun!");
 
-                if (redirectAfterSuccess)
+                if (redirectAfterSuccess) {
                     this.user.subscribe((user) => {
-                        if (user) 
+                        if (user) {
                             this.router.navigate(['/user/', user.username]);
+                        }
                     });
+                }
+
+                return true;
             },
         });
 

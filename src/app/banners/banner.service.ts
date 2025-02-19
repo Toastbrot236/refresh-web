@@ -33,7 +33,7 @@ export class BannerService {
 
     error(title: string, text: string) {
         this.add({
-            color: 'dangerous',
+            color: 'bg-red',
             icon: 'exclamation-circle',
             text: text,
             title: title,

@@ -65,14 +65,19 @@ export const routes: Routes = [
         data: {title: "User Page"},
     },
     {
+        path: 'register',
+        loadComponent: () => import('./pages/auth/register/register.component').then(x => x.RegisterComponent),
+        data: {title: "Register"},
+    },
+    {
         path: 'login',
         loadComponent: () => import('./pages/auth/login/login.component').then(x => x.LoginComponent),
-        data: {title: "Sign in"},
+        data: {title: "Log In"},
     },
     {
         path: 'logout',
         loadComponent: () => import('./pages/auth/logout/logout.component').then(x => x.LogoutComponent),
-        data: {title: "Sign Out"},
+        data: {title: "Log Out"},
     },
     {
         path: 'contests',
