@@ -9,7 +9,7 @@ export const routes: Routes = [
     },
     {
         path: 'levels',
-        loadComponent: () => import('./pages/categories/categories.component').then(x => x.CategoriesComponent),
+        loadComponent: () => import('./pages/level/level-categories/categories.component').then(x => x.CategoriesComponent),
         data: {title: "Level Categories"}
     },
     {
@@ -19,12 +19,12 @@ export const routes: Routes = [
     },
     {
         path: 'level/:id/:slug',
-        loadComponent: () => import('./pages/level/level.component').then(x => x.LevelComponent),
+        loadComponent: () => import('./pages/level/level-details/level.component').then(x => x.LevelComponent),
         data: {title: "Unnamed Level"},
     },
     {
         path: 'level/:id',
-        loadComponent: () => import('./pages/level/level.component').then(x => x.LevelComponent),
+        loadComponent: () => import('./pages/level/level-details/level.component').then(x => x.LevelComponent),
         data: {title: "Unnamed Level"},
     },
     ...alias("level/:id/:slug", "slot/:id/:slug"),
@@ -41,7 +41,7 @@ export const routes: Routes = [
     },
     {
         path: 'photo/:id',
-        loadComponent: () => import('./pages/photo/photo-page.component').then(x => x.PhotoPageComponent),
+        loadComponent: () => import('./pages/photo/photo-details/photo-page.component').then(x => x.PhotoPageComponent),
         data: {title: "Photo"},
     },
     {
@@ -56,12 +56,12 @@ export const routes: Routes = [
     },
     {
         path: 'user/:username',
-        loadComponent: () => import('./pages/user/user.component').then(x => x.UserComponent),
+        loadComponent: () => import('./pages/user/user-details/user.component').then(x => x.UserComponent),
         data: {title: "User Page"},
     },
     {
         path: 'u/:uuid',
-        loadComponent: () => import('./pages/user/user.component').then(x => x.UserComponent),
+        loadComponent: () => import('./pages/user/user-details/user.component').then(x => x.UserComponent),
         data: {title: "User Page"},
     },
     {

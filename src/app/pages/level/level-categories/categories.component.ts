@@ -1,11 +1,11 @@
 import { Component } from '@angular/core';
-import {PageTitleComponent} from "../../components/ui/text/page-title.component";
-import {ResponsiveGridComponent} from "../../components/ui/responsive-grid.component";
-import {LevelCategory} from "../../api/types/levels/level-category";
-import {ClientService} from "../../api/client.service";
-import {ContainerComponent} from "../../components/ui/container.component";
+import {PageTitleComponent} from "../../../components/ui/text/page-title.component";
+import {ResponsiveGridComponent} from "../../../components/ui/responsive-grid.component";
+import {LevelCategory} from "../../../api/types/levels/level-category";
+import {ClientService} from "../../../api/client.service";
+import {ContainerComponent} from "../../../components/ui/container.component";
 
-import {LevelCategoryComponent} from "../../components/items/level-category.component";
+import {LevelCategoryComponent} from "../../../components/items/level-category.component";
 
 @Component({
   selector: 'app-categories',

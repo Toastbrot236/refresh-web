@@ -1,16 +1,16 @@
 import { Component } from '@angular/core';
-import {User} from "../../api/types/users/user";
-import {TitleService} from "../../services/title.service";
-import {ClientService} from "../../api/client.service";
+import {User} from "../../../api/types/users/user";
+import {TitleService} from "../../../services/title.service";
+import {ClientService} from "../../../api/client.service";
 import {ActivatedRoute} from "@angular/router";
-import {DefaultPipe} from "../../pipes/default.pipe";
+import {DefaultPipe} from "../../../pipes/default.pipe";
 import { AsyncPipe } from "@angular/common";
-import {UserAvatarComponent} from "../../components/ui/photos/user-avatar.component";
-import {DateComponent} from "../../components/ui/info/date.component";
-import {FancyHeaderComponent} from "../../components/ui/layouts/fancy-header.component";
-import {LayoutService} from "../../services/layout.service";
-import {UserStatusComponent} from "../../components/ui/info/user-status.component";
-import {UserStatisticsComponent} from "../../components/items/user-statistics.component";
+import {UserAvatarComponent} from "../../../components/ui/photos/user-avatar.component";
+import {DateComponent} from "../../../components/ui/info/date.component";
+import {FancyHeaderComponent} from "../../../components/ui/layouts/fancy-header.component";
+import {LayoutService} from "../../../services/layout.service";
+import {UserStatusComponent} from "../../../components/ui/info/user-status.component";
+import {UserStatisticsComponent} from "../../../components/items/user-statistics.component";
 
 @Component({
   selector: 'app-user',

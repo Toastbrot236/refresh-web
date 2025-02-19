@@ -1,10 +1,10 @@
 import { Component } from '@angular/core';
-import {Photo} from "../../api/types/photos/photo";
-import {PhotoComponent} from "../../components/items/photo.component";
+import {Photo} from "../../../api/types/photos/photo";
+import {PhotoComponent} from "../../../components/items/photo.component";
 
-import {ClientService} from "../../api/client.service";
+import {ClientService} from "../../../api/client.service";
 import {ActivatedRoute} from "@angular/router";
-import {EmbedService} from "../../services/embed.service";
+import {EmbedService} from "../../../services/embed.service";
 
 @Component({
   selector: 'app-photo-page',
