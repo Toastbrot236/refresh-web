@@ -1,0 +1,66 @@
+<app-page-title></app-page-title>
+
+@if (user) {
+    <app-two-pane-layout>
+        <app-container class="w-full">
+            <app-pane-title>
+                <a [routerLink]="'/user/settings/profile'">
+                    Public Profile Info
+                </a>
+            </app-pane-title>
+
+            <app-divider></app-divider>
+
+            <p>
+                insert settings and buttons here
+            </p>
+        </app-container>
+
+        <app-container class="w-full">
+            <app-pane-title>
+                <a [routerLink]="'/user/settings/misc'">
+                    Random Settings
+                </a>
+            </app-pane-title>
+
+            <app-divider></app-divider>
+
+            <p>
+                insert settings and buttons here
+            </p>
+        </app-container>
+
+        <app-container class="w-full">
+            <app-pane-title>
+                <a [routerLink]="'/user/settings/auth'">
+                    Game Authentication
+                </a>
+            </app-pane-title>
+
+            <app-divider></app-divider>
+
+            <p>
+                insert settings and buttons here
+            </p>
+        </app-container>
+
+        <app-container class="w-full">
+            <app-pane-title>
+                <a [routerLink]="'/user/settings/account'">
+                    Account Management
+                </a>
+            </app-pane-title>
+
+            <app-divider></app-divider>
+            
+            <p>
+                insert settings and buttons here
+            </p>
+        </app-container>
+    </app-two-pane-layout>
+}
+@else {
+    <p>
+        No user. too bad.
+    </p>
+}

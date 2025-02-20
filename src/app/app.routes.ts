@@ -14,7 +14,7 @@ export const routes: Routes = [
     },
     {
         path: 'levels/:category',
-        loadComponent: () => import('./pages/level-listing/level-listing.component').then(x => x.LevelListingComponent),
+        loadComponent: () => import('./pages/level/listing/level-listing.component').then(x => x.LevelListingComponent),
         data: {title: "Category"}
     },
     {
@@ -31,17 +31,17 @@ export const routes: Routes = [
     ...alias("level/:id", "slot/:id",),
     {
         path: 'photos',
-        loadComponent: () => import('./pages/photo-listing/photo-listing.component').then(x => x.PhotoListingComponent),
+        loadComponent: () => import('./pages/photo/listing/photo-listing.component').then(x => x.PhotoListingComponent),
         data: {title: "Photos"},
     },
     {
         path: 'photos',
-        loadComponent: () => import('./pages/photo-listing/photo-listing.component').then(x => x.PhotoListingComponent),
+        loadComponent: () => import('./pages/photo/listing/photo-listing.component').then(x => x.PhotoListingComponent),
         data: {title: "Photos"},
     },
     {
         path: 'photo/:id',
-        loadComponent: () => import('./pages/photo/photo-details/photo-page.component').then(x => x.PhotoPageComponent),
+        loadComponent: () => import('./pages/photo/details/photo-page.component').then(x => x.PhotoPageComponent),
         data: {title: "Photo"},
     },
     {
@@ -56,12 +56,37 @@ export const routes: Routes = [
     },
     {
         path: 'user/:username',
-        loadComponent: () => import('./pages/user/user-details/user.component').then(x => x.UserComponent),
+        loadComponent: () => import('./pages/user/details/user.component').then(x => x.UserComponent),
         data: {title: "User Page"},
     },
     {
+        path: 'user/settings',
+        loadComponent: () => import('./pages/user/settings/user-settings.component').then(x => x.UserSettingsComponent),
+        data: {title: "User Settings Overview"},
+    },
+    {
+        path: 'user/settings/account',
+        loadComponent: () => import('./pages/user/settings/account/user-account-settings.component').then(x => x.UserAccountSettingsComponent),
+        data: {title: "User Account Settings"},
+    },
+    {
+        path: 'user/settings/auth',
+        loadComponent: () => import('./pages/user/settings/auth/user-auth-settings.component').then(x => x.UserAuthSettingsComponent),
+        data: {title: "User Game Authentication"},
+    },
+    {
+        path: 'user/settings/misc',
+        loadComponent: () => import('./pages/user/settings/misc/user-misc-settings.component').then(x => x.UserMiscSettingsComponent),
+        data: {title: "Other User Settings"},
+    },
+    {
+        path: 'user/settings/profile',
+        loadComponent: () => import('./pages/user/settings/profile/user-profile-settings.component').then(x => x.UserProfileSettingsComponent),
+        data: {title: "User Profile Settings"},
+    },
+    {
         path: 'u/:uuid',
-        loadComponent: () => import('./pages/user/user-details/user.component').then(x => x.UserComponent),
+        loadComponent: () => import('./pages/user/details/user.component').then(x => x.UserComponent),
         data: {title: "User Page"},
     },
     {

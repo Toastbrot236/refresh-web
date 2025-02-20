@@ -1,18 +1,18 @@
 import {Component, OnInit} from '@angular/core';
-import {LevelCategory} from "../../api/types/levels/level-category";
-import {ClientService, defaultPageSize} from "../../api/client.service";
+import {LevelCategory} from "../../../api/types/levels/level-category";
+import {ClientService, defaultPageSize} from "../../../api/client.service";
 import {ActivatedRoute, Params} from "@angular/router";
-import {PageTitleComponent} from "../../components/ui/text/page-title.component";
+import {PageTitleComponent} from "../../../components/ui/text/page-title.component";
 
-import {CategoriesComponent} from "../categories/categories.component";
-import {ResponsiveGridComponent} from "../../components/ui/responsive-grid.component";
-import {Level} from "../../api/types/levels/level";
-import {LevelPreviewComponent} from "../../components/items/level-preview.component";
-import {ContainerComponent} from "../../components/ui/container.component";
-import {Scrollable} from "../../helpers/scrollable";
-import {defaultListInfo, RefreshApiListInfo} from "../../api/refresh-api-list-info";
-import {InfiniteScrollerComponent} from "../../components/ui/infinite-scroller.component";
-import {EmbedService} from "../../services/embed.service";
+import {CategoriesComponent} from "../level-categories/categories.component";
+import {ResponsiveGridComponent} from "../../../components/ui/responsive-grid.component";
+import {Level} from "../../../api/types/levels/level";
+import {LevelPreviewComponent} from "../../../components/items/level-preview.component";
+import {ContainerComponent} from "../../../components/ui/container.component";
+import {Scrollable} from "../../../helpers/scrollable";
+import {defaultListInfo, RefreshApiListInfo} from "../../../api/refresh-api-list-info";
+import {InfiniteScrollerComponent} from "../../../components/ui/infinite-scroller.component";
+import {EmbedService} from "../../../services/embed.service";
 
 @Component({
   selector: 'app-level-listing',

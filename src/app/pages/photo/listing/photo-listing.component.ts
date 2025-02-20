@@ -1,15 +1,15 @@
 import { Component } from '@angular/core';
-import {PageTitleComponent} from "../../components/ui/text/page-title.component";
-import {ClientService} from "../../api/client.service";
-import {Photo} from "../../api/types/photos/photo";
-import {Scrollable} from "../../helpers/scrollable";
-import {defaultListInfo, RefreshApiListInfo} from "../../api/refresh-api-list-info";
-import {ContainerComponent} from "../../components/ui/container.component";
-import {InfiniteScrollerComponent} from "../../components/ui/infinite-scroller.component";
-import {LevelPreviewComponent} from "../../components/items/level-preview.component";
+import {PageTitleComponent} from "../../../components/ui/text/page-title.component";
+import {ClientService} from "../../../api/client.service";
+import {Photo} from "../../../api/types/photos/photo";
+import {Scrollable} from "../../../helpers/scrollable";
+import {defaultListInfo, RefreshApiListInfo} from "../../../api/refresh-api-list-info";
+import {ContainerComponent} from "../../../components/ui/container.component";
+import {InfiniteScrollerComponent} from "../../../components/ui/infinite-scroller.component";
+import {LevelPreviewComponent} from "../../../components/items/level-preview.component";
 
-import {ResponsiveGridComponent} from "../../components/ui/responsive-grid.component";
-import {PhotoComponent} from "../../components/items/photo.component";
+import {ResponsiveGridComponent} from "../../../components/ui/responsive-grid.component";
+import {PhotoComponent} from "../../../components/items/photo.component";
 
 @Component({
   selector: 'app-photo-listing',
