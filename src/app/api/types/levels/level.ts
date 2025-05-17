@@ -1,4 +1,5 @@
 import {User} from "../users/user";
+import { LevelRelations } from "./level-relations";
 
 export interface Level {
     levelId: number;
@@ -17,4 +18,5 @@ export interface Level {
     gameVersion: number;
     score: number;
     slotType: number;
+    ownRelations: LevelRelations | undefined;
 }

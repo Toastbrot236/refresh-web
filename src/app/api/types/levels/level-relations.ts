@@ -1,5 +1,6 @@
 export interface LevelRelations {
     isHearted: boolean;
     isQueued: boolean;
-    myPlaysCount: number;
+    totalPlays: number;
+    photosTaken: number;
 }
