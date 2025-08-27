@@ -12,4 +12,48 @@
         </ng-container>
         <app-user-statistics [stats]="user.statistics" statistics></app-user-statistics>
     </app-fancy-header>
+    
+    <app-two-pane-layout>
+        <app-container class="w-full">
+            <app-pane-title>
+                <a routerLink="/levels/byUser" [queryParams]="{u: user.username}">
+                    Published Levels
+                </a>
+            </app-pane-title>
+            <app-divider></app-divider>
+            @if (publishedLevels) {
+                <div class="flex flex-col gap-y-1">
+                @for (level of this.publishedLevels; track level.levelId) {
+                    <app-dark-container class="block mt-1.5">
+                        <app-level-preview [level]="level"></app-level-preview>
+                    </app-dark-container>
+                }
+                </div>
+            }
+            @else {
+                <p class="italic">{{this.publishedLevelsPlaceholderText}}</p>
+            }
+        </app-container>
+
+        <app-container class="w-full">
+            <app-pane-title>
+                <a routerLink="/levels/hearted" [queryParams]="{u: user.username}">
+                    Hearted Levels
+                </a>
+            </app-pane-title>
+            <app-divider></app-divider>
+            @if (heartedLevels) {
+                <div class="flex flex-col gap-y-1">
+                @for (level of this.heartedLevels; track level.levelId) {
+                    <app-dark-container class="block mt-1.5">
+                        <app-level-preview [level]="level"></app-level-preview>
+                    </app-dark-container>
+                }
+                </div>
+            }
+            @else {
+                <p class="italic">{{this.heartedLevelsPlaceholderText}}</p>
+            }
+        </app-container>
+    </app-two-pane-layout>
 }
