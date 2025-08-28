@@ -25,6 +25,7 @@ import { areGameVersionsCompatible } from "../../../helpers/game-versioning";
     template: `
         <ng-template #playNowButtonTemplate let-templateHasText="hasText" let-templateIsNavItem="isNavItem">
             <app-button-or-navitem
+                class="cursor-pointer"
                 text="Play Now!"
                 [icon]="faPlay"
                 color="bg-primary"
@@ -37,6 +38,7 @@ import { areGameVersionsCompatible } from "../../../helpers/game-versioning";
 
         <ng-template #queueButtonTemplate let-templateHasText="hasText" let-templateIsNavItem="isNavItem">
             <app-button-or-navitem
+                class="cursor-pointer"
                 text="Queue"
                 [icon]="faBell"
                 color="bg-yellow"
@@ -53,8 +55,9 @@ import { areGameVersionsCompatible } from "../../../helpers/game-versioning";
             </app-button-or-navitem>
         </ng-template>
 
-        <ng-template #heartButtonTemplate let-templateHasText="hasText" let-templateIsNavItem="isNavItem">
+        <ng-template #heartButtonTemplate let-templateHasText="hasText" let-templateIsNavItem="isNavItem" class="cursor-pointer">
             <app-button-or-navitem
+                class="cursor-pointer"
                 text="Heart"
                 [icon]="faHeart"
                 color="bg-pink"

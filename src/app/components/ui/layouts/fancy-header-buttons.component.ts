@@ -1,14 +1,14 @@
 import { Component, Input, TemplateRef, ViewChild, ViewContainerRef } from "@angular/core";
 import { ButtonComponent } from "../form/button.component";
-import { NgClass } from "@angular/common";
 import {faEllipsisV} from "@fortawesome/free-solid-svg-icons";
+import { DropdownMenuComponent } from "../dropdown-menu.component";
 
 @Component({
     selector: 'app-fancy-header-buttons',
     imports: [
-        ButtonComponent,
-        NgClass
-    ],
+    ButtonComponent,
+    DropdownMenuComponent
+],
     template: `
         <ng-template #moreButtonTemplate>
             <app-button
@@ -19,14 +19,12 @@ import {faEllipsisV} from "@fortawesome/free-solid-svg-icons";
             </app-button>
         </ng-template>
         
-        <div class="flex flex-row justify-end content-center space-x-1 min-w-56 group relative">
+        <div class="flex flex-row justify-end content-center space-x-1 min-w-56 relative">
             <div #firstButtonContainer></div>
             <div #secondButtonContainer></div>
-            <div class="absolute z-1 flex flex-col gap-y-1.5 w-48 px-5 py-2.5 rounded bg-header-background
-                border-4 border-backdrop border-solid top-10 cursor-pointer"
-                [ngClass]="showMenu ? '' : 'hidden'">
-                <div #navItemsContainer>
-            </div>
+            <app-dropdown-menu [showMenu]="showMenu">
+                <div #navItemsContainer></div>
+            </app-dropdown-menu>
         </div>
     `,
     styles: ``
