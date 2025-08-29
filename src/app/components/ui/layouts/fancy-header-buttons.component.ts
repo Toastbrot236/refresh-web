@@ -22,9 +22,12 @@ import { DropdownMenuComponent } from "../dropdown-menu.component";
         <div class="flex flex-row justify-end content-center space-x-1 min-w-56 relative">
             <div #firstButtonContainer></div>
             <div #secondButtonContainer></div>
-            <app-dropdown-menu [showMenu]="showMenu">
-                <div #navItemsContainer></div>
-            </app-dropdown-menu>
+            <div class="absolute z-1 top-10">
+                <app-dropdown-menu [showMenu]="showMenu">
+                    <div #navItemsContainer></div>
+                </app-dropdown-menu>
+            </div>
+            
         </div>
     `,
     styles: ``

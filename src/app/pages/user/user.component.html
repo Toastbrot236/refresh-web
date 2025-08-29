@@ -13,47 +13,122 @@
         <app-user-statistics [stats]="user.statistics" statistics></app-user-statistics>
     </app-fancy-header>
     
+    
     <app-two-pane-layout>
         <app-container class="w-full">
-            <app-pane-title>
-                <a routerLink="/levels/byUser" [queryParams]="{u: user.username}">
-                    Published Levels
-                </a>
-            </app-pane-title>
-            <app-divider></app-divider>
-            @if (publishedLevels) {
-                <div class="flex flex-col gap-y-1">
-                @for (level of this.publishedLevels; track level.levelId) {
-                    <app-dark-container class="block mt-1.5">
-                        <app-level-preview [level]="level"></app-level-preview>
-                    </app-dark-container>
-                }
+            <div class="flex flex-row justify-between gap-x-4 relative">
+                <app-pane-title>
+                    <a class="text-3xl" routerLink="/levels/byUser" [queryParams]="{u: user.username}">
+                        Levels
+                    </a>
+                </app-pane-title>
+                <div>
+                    <app-button [text]="userLevelOptions.at(this.optionsForm.controls.levelOption.getRawValue() ?? 0)!.name" [icon]="this.faChevronDown" (click)="showLevelOptions()"></app-button>
+                    <div>
+                        <app-dropdown-menu #levelOptionsMenu class="absolute z-1 right-0 top-10" [showMenu]="this.showLevelOptionsMenu" (focusout)="hideLevelOptions()">
+                        @for (option of this.userLevelOptions; track option; let i = $index) {
+                            <app-radio-button [label]="option.name" [form]="optionsForm" ctrlName="levelOption" [id]="'l' + i" [value]='i' (click)="setLevelsToShow(i)"></app-radio-button>
+                        }
+                        </app-dropdown-menu>
+                    </div>
+                    
                 </div>
+            </div>
+            <app-divider></app-divider>
+            @switch (this.optionsForm.controls.levelOption.getRawValue() ?? 0) {
+                @case (0) {
+                    @if (publishedLevels) {
+                        <div class="flex flex-col gap-y-1">
+                        @for (level of this.publishedLevels; track level.levelId) {
+                            <app-dark-container class="block mt-1.5">
+                                <app-level-preview [level]="level"></app-level-preview>
+                            </app-dark-container>
+                        }
+                        </div>
+                    }
+                    @else {
+                        <p class="italic">{{this.publishedLevelsPlaceholderText}}</p>
+                    }
+                }
+                @case (1) {
+                    @if (heartedLevels) {
+                        <div class="flex flex-col gap-y-1">
+                        @for (level of this.heartedLevels; track level.levelId) {
+                            <app-dark-container class="block mt-1.5">
+                                <app-level-preview [level]="level"></app-level-preview>
+                            </app-dark-container>
+                        }
+                        </div>
+                    }
+                    @else {
+                        <p class="italic">{{this.heartedLevelsPlaceholderText}}</p>
+                    }
+                }
+                @default {
+                    <p>
+                        Unknown level option, how did we get here?
+                    </p>
+                }
             }
-            @else {
-                <p class="italic">{{this.publishedLevelsPlaceholderText}}</p>
-            }
+            
         </app-container>
 
         <app-container class="w-full">
-            <app-pane-title>
-                <a routerLink="/levels/hearted" [queryParams]="{u: user.username}">
-                    Hearted Levels
-                </a>
-            </app-pane-title>
-            <app-divider></app-divider>
-            @if (heartedLevels) {
-                <div class="flex flex-col gap-y-1">
-                @for (level of this.heartedLevels; track level.levelId) {
-                    <app-dark-container class="block mt-1.5">
-                        <app-level-preview [level]="level"></app-level-preview>
-                    </app-dark-container>
-                }
+            <div class="flex flex-row gap-x-4">
+                <app-pane-title>
+                    <a routerLink="/photos/by">
+                        Photos
+                    </a>
+                </app-pane-title>
+                <div>
+                    <app-button [text]="userPhotoOptions.at(this.optionsForm.controls.photoOption.getRawValue() ?? 0)!.name" [icon]="this.faChevronDown"></app-button>
+                    <app-dropdown-menu [showMenu]="this.showPhotoOptionsMenu">
+                        @for (option of this.userPhotoOptions; track option; let i = $index) {
+                            <app-radio-button [label]="option.name" [form]="optionsForm" ctrlName="photoOption" [id]="'p' + i" [value]='i' (click)="setPhotosToShow(i)"></app-radio-button>
+                        }
+                    </app-dropdown-menu>
                 </div>
-            }
-            @else {
-                <p class="italic">{{this.heartedLevelsPlaceholderText}}</p>
-            }
+            </div>
+            <app-divider></app-divider>
+            
         </app-container>
     </app-two-pane-layout>
+
+    <ng-template #publishedLevelsTemplate>
+        @if (publishedLevels) {
+            <div class="flex flex-col gap-y-1">
+            @for (level of this.publishedLevels; track level.levelId) {
+                <app-dark-container class="block mt-1.5">
+                    <app-level-preview [level]="level"></app-level-preview>
+                </app-dark-container>
+            }
+            </div>
+        }
+        @else {
+            <p class="italic">{{this.publishedLevelsPlaceholderText}}</p>
+        }
+    </ng-template>
+
+    <ng-template #heartedLevelsTemplate>
+        @if (heartedLevels) {
+            <div class="flex flex-col gap-y-1">
+            @for (level of this.heartedLevels; track level.levelId) {
+                <app-dark-container class="block mt-1.5">
+                    <app-level-preview [level]="level"></app-level-preview>
+                </app-dark-container>
+            }
+            </div>
+        }
+        @else {
+            <p class="italic">{{this.heartedLevelsPlaceholderText}}</p>
+        }
+    </ng-template>
+
+    <ng-template #photosByTemplate>
+
+    </ng-template>
+
+    <ng-template #photosWithTemplate>
+
+    </ng-template>
 }
