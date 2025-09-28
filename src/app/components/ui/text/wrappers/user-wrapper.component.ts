@@ -1,8 +1,7 @@
 import {Component, Input} from '@angular/core';
-
 import {UserAvatarComponent} from "../../photos/user-avatar.component";
 import {UserRouterLinkComponent} from "../links/user-router-link.component";
-import {User} from "../../../../api/types/users/user";
+import { MinimalUser } from '../../../../api/types/users/minimal-user';
 
 @Component({
     selector: 'app-user-wrapper',
@@ -17,12 +16,19 @@ import {User} from "../../../../api/types/users/user";
       </app-user-router-link>
       
       <div class="flex flex-col">
-        <app-user-router-link [user]="user" class="font-bold">{{user.username}}</app-user-router-link>
+        <div class="flex flex-row">
+          <app-user-router-link [user]="user" class="font-bold">
+            <div class="flex flex-row">
+              {{user.username}}
+            </div>
+          </app-user-router-link>
+          <ng-content select="[next]"></ng-content>
+        </div>
         <ng-content></ng-content>
       </div>
     </div>
   `
 })
 export class UserWrapperComponent {
-  @Input({required: true}) public user: User = null!;
+  @Input({required: true}) public user: MinimalUser = null!;
 }

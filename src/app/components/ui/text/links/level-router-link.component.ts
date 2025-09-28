@@ -1,7 +1,7 @@
 import {Component, Input} from '@angular/core';
 import {RouterLink} from "@angular/router";
-import {Level} from "../../../../api/types/levels/level";
 import {SlugPipe} from "../../../../pipes/slug.pipe";
+import { MinimalLevel } from '../../../../api/types/levels/minimal-level';
 
 // A simple link to a level.
 @Component({
@@ -17,5 +17,5 @@ import {SlugPipe} from "../../../../pipes/slug.pipe";
   `
 })
 export class LevelRouterLinkComponent {
-  @Input({required: true}) public level: Level = undefined!;
+  @Input({required: true}) public level: MinimalLevel = undefined!;
 }

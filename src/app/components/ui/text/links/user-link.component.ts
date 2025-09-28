@@ -1,8 +1,8 @@
 import {Component, Input, OnInit} from '@angular/core';
-import {User} from "../../../../api/types/users/user";
 import {UserAvatarComponent} from "../../photos/user-avatar.component";
 import {UserRouterLinkComponent} from "./user-router-link.component";
 import {ClientService} from "../../../../api/client.service";
+import { MinimalUser } from '../../../../api/types/users/minimal-user';
 
 @Component({
     selector: 'app-user-link',
@@ -22,7 +22,7 @@ import {ClientService} from "../../../../api/client.service";
     `
 })
 export class UserLinkComponent implements OnInit {
-    @Input({required: true}) public user: User | undefined | null;
+    @Input({required: true}) public user: MinimalUser | undefined | null;
     @Input() public userId: string | undefined;
     @Input() public username: string = "Deleted User";
 

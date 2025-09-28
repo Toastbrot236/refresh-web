@@ -1,10 +1,8 @@
 import {User} from "../users/user";
+import { MinimalLevel } from "./minimal-level";
 
-export interface Level {
-    levelId: number;
-    title: string;
+export interface Level extends MinimalLevel {
     description: string;
-    iconHash: string;
     publishDate: Date;
     updateDate: Date;
     booRatings: number;

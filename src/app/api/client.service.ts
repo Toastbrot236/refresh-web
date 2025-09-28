@@ -16,6 +16,9 @@ import {Contest} from "./types/contests/contest";
 import {Score} from "./types/levels/score";
 import { LevelRelations } from './types/levels/level-relations';
 import { Asset } from './types/asset';
+import { ProfileComment } from './types/comments/profile-comment';
+import { LevelComment } from './types/comments/level-comment';
+import { CommentPostRequest } from './types/comments/comment-post-request';
 
 export const defaultPageSize: number = 40;
 
@@ -137,5 +140,45 @@ export class ClientService extends ApiImplementation {
 
   uploadAsset(hash: string, data: ArrayBuffer) {
     return this.http.post<Asset>(`/assets/${hash}`, data);
+  }
+
+  getProfileComments(uuid: string) {
+    return this.http.get<ListWithData<ProfileComment>>(`/users/uuid/${uuid}/comments`);
+  }
+
+  getLevelComments(id: number) {
+    return this.http.get<ListWithData<LevelComment>>(`/levels/id/${id}/comments`);
+  }
+
+  postProfileComment(uuid: string, comment: CommentPostRequest) {
+    return this.http.post<ProfileComment>(`/users/uuid/${uuid}/comments`, comment);
+  }
+
+  postLevelComment(id: number, comment: CommentPostRequest) {
+    return this.http.post<LevelComment>(`/levels/id/${id}/comments`, comment);
+  }
+
+  getProfileComment(id: number) {
+    return this.http.get<ProfileComment>(`/profileComments/id/${id}`);
+  }
+
+  getLevelComment(id: number) {
+    return this.http.get<LevelComment>(`/levelComments/id/${id}`);
+  }
+
+  deleteProfileComment(id: number) {
+    return this.http.delete<Response>(`/profileComments/id/${id}`);
+  }
+
+  deleteLevelComment(id: number) {
+    return this.http.delete<Response>(`/levelComments/id/${id}`);
+  }
+
+  rateProfileComment(id: number, rating: number) {
+    return this.http.post<Response>(`/profileComments/id/${id}/rate/${rating}`, null);
+  }
+
+  rateLevelComment(id: number, rating: number) {
+    return this.http.post<Response>(`/levelComments/id/${id}/rate/${rating}`, null);
   }
 }

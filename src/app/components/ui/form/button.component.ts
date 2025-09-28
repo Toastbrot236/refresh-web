@@ -10,8 +10,8 @@ import { NgClass } from "@angular/common";
         NgClass
     ],
     template: `
-    <button class="rounded px-4 py-1.5 hover:brightness-110 active:brightness-95 transition-[filter] disabled:grayscale" 
-      [ngClass]="color" [type]=type [disabled]="!enabled">
+    <button class="rounded hover:brightness-110 active:brightness-95 transition-[filter] disabled:grayscale" 
+      [ngClass]="color + ' px-' + xPadding + ' py-' + yPadding" [type]=type [disabled]="!enabled">
       @if (icon) {
         <fa-icon [icon]="icon" [ngClass]="text && text.length > 0 ? 'mr-1' : ''"></fa-icon>
       }
@@ -28,6 +28,9 @@ export class ButtonComponent {
   @Input() type: "submit" | "reset" | "button" = "button";
 
   @Input() enabled: boolean = true;
+
+  @Input() xPadding: number = 4;
+  @Input() yPadding: number = 1.5;
 
   // actions
   @Input() routerLink: any[] | string | null | undefined

@@ -1,6 +1,6 @@
 import {Component, Input} from '@angular/core';
 import { NgOptimizedImage } from "@angular/common";
-import {Level} from "../../../api/types/levels/level";
+import { MinimalLevel } from '../../../api/types/levels/minimal-level';
 
 @Component({
     selector: 'app-level-avatar',
@@ -15,7 +15,7 @@ import {Level} from "../../../api/types/levels/level";
     `
 })
 export class LevelAvatarComponent {
-  @Input({required: true}) level: Level = undefined!;
+  @Input({required: true}) level: MinimalLevel = undefined!;
   error: boolean = false;
 
   @Input() size: number = 19;

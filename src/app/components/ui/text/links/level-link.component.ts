@@ -1,8 +1,8 @@
 import {Component, Input, OnInit} from '@angular/core';
 import {ClientService} from "../../../../api/client.service";
-import {Level} from "../../../../api/types/levels/level";
 import {LevelAvatarComponent} from "../../photos/level-avatar.component";
 import {LevelRouterLinkComponent} from "./level-router-link.component";
+import { MinimalLevel } from '../../../../api/types/levels/minimal-level';
 
 @Component({
     selector: 'app-level-link',
@@ -23,7 +23,7 @@ import {LevelRouterLinkComponent} from "./level-router-link.component";
     styles: ``
 })
 export class LevelLinkComponent implements OnInit {
-  @Input({required: true}) public level: Level | null = null;
+  @Input({required: true}) public level: MinimalLevel | null = null;
   @Input() public levelId: number | undefined;
 
   constructor(private client: ClientService) {

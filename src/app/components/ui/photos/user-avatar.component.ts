@@ -1,6 +1,6 @@
 import {Component, Input} from '@angular/core';
-import {User} from "../../../api/types/users/user";
 import { NgClass, NgOptimizedImage, NgStyle } from "@angular/common";
+import { MinimalUser } from '../../../api/types/users/minimal-user';
 
 @Component({
     selector: 'app-user-avatar',
@@ -19,7 +19,7 @@ import { NgClass, NgOptimizedImage, NgStyle } from "@angular/common";
     `
 })
 export class UserAvatarComponent {
-  @Input({required: true}) user: User = undefined!;
+  @Input({required: true}) user: MinimalUser = undefined!;
   error: boolean = false;
 
   @Input() size: number = 19;
