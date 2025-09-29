@@ -1,33 +1,26 @@
 import {Component, Input, Output, EventEmitter} from '@angular/core';
-import { NgClass, NgOptimizedImage } from "@angular/common";
-import {UserLinkComponent} from "../ui/text/links/user-link.component";
 import {DateComponent} from "../ui/info/date.component";
 import {UserWrapperComponent} from "../ui/text/wrappers/user-wrapper.component";
-import {LevelLinkComponent} from "../ui/text/links/level-link.component";
 import {faThumbsDown, faThumbsUp, faTrash} from "@fortawesome/free-solid-svg-icons";
-import {StatisticComponent} from "../ui/info/statistic.component";
 import {ButtonComponent} from "../ui/form/button.component";
-import {ButtonGroupComponent} from "../ui/form/button-group.component";
-import {RouterLink} from "@angular/router";
 import { DarkContainerComponent } from "../ui/dark-container.component";
 import { Comment } from '../../api/types/comments/comment';
-import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import { ButtonWithStatComponent } from "../ui/form/button-with-stat.component";
+import { FormControl, FormGroup } from '@angular/forms';
+import { ClientService } from '../../api/client.service';
+import { BannerService } from '../../banners/banner.service';
+import { Observable } from 'rxjs';
+import { RefreshApiError } from '../../api/refresh-api-error';
+import { AuthenticationService } from '../../api/authentication.service';
 
 @Component({
     selector: 'app-comment',
     imports: [
-    NgOptimizedImage,
-    UserLinkComponent,
     DateComponent,
     UserWrapperComponent,
-    LevelLinkComponent,
-    StatisticComponent,
     ButtonComponent,
-    ButtonGroupComponent,
-    RouterLink,
-    NgClass,
     DarkContainerComponent,
-    FaIconComponent,
+    ButtonWithStatComponent
 ],
     template: `
       <app-dark-container>
@@ -35,7 +28,7 @@ import { FaIconComponent } from '@fortawesome/angular-fontawesome';
           <app-user-wrapper [user]="comment.publisher" class="grow">
             <ng-container next>
               <div class="flex flex-row grow justify-end">
-                <app-button text="" [icon]="this.faTrash" color="bg-red text-[12px]"></app-button>
+                <app-button text="" [icon]="this.faTrash" color="bg-red text-[14px]"></app-button>
               </div>
             </ng-container>
 
@@ -46,7 +39,100 @@ import { FaIconComponent } from '@fortawesome/angular-fontawesome';
                 <app-date class="italic text-gentle text-sm" [date]="comment.timestamp"></app-date>
 
                 <div class="flex flex-row grow justify-end gap-x-2 flex-wrap">
-                  <div [class]="'flex flex-row gap-x-1 hover:outline rounded-md cursor-pointer px-1' + (comment.rating.ownRating > 0 ? ' text-yellow' : '')"
+                  <app-button-with-stat class="text-[14px]" [text]="comment.rating.yayRatings.toString()" [icon]="faThumbsUp" [form]="form" ctrlName="like" 
+                    [enabled]="likeEnabled" [emphasize]="comment.rating.ownRating > 0"></app-button-with-stat>
+
+                  <app-button-with-stat class="text-[14px]" [text]="comment.rating.yayRatings.toString()" [icon]="faThumbsDown" [form]="form" ctrlName="dislike" 
+                    [enabled]="dislikeEnabled" [emphasize]="comment.rating.ownRating < 0"></app-button-with-stat>
+                </div>
+              </div>
+            </div>
+          </app-user-wrapper>
+        </div>
+      </app-dark-container>
+    `
+})
+export class CommentComponent {
+  @Input({required: true}) comment: Comment = null!;
+
+  likeEnabled: boolean = false;
+  dislikeEnabled: boolean = false;
+  showDelete: boolean = false;
+
+  form = new FormGroup({
+    like: new FormControl(),
+    dislike: new FormControl()
+  });
+
+  constructor(private client: ClientService, private banner: BannerService, private auth: AuthenticationService) {
+    
+  }
+
+  ngOnInit() {
+    this.auth.user.subscribe(user => {
+      if (user) {
+        // Show like and dislike buttons if the user is signed in
+        this.likeEnabled = true;
+        this.dislikeEnabled = true;
+
+        // Also show delete button if the user is either:
+        // - the comment publisher
+        // - the profile owner
+        // - the level publisher (TODO once MinimalLevel includes the level's publisher)
+        // - an admin (TODO: or mod)
+        if (user.userId == this.comment.publisher.userId || user.role > 120
+          || (this.comment.profile && user.userId == this.comment.profile?.userId)
+        ) {
+          this.showDelete = true;
+        }
+      }
+    });
+  }
+
+  rate(rating: number): void {
+    // Disable until we receive a response
+    this.likeEnabled = false;
+    this.dislikeEnabled = false;
+
+    if (this.comment.level) {
+      this.submitRating(this.client.rateLevelComment(this.comment.commentId, rating), rating);
+    }
+    else if (this.comment.profile) {
+      this.submitRating(this.client.rateProfileComment(this.comment.commentId, rating), rating);
+    }
+    else {
+      this.banner.warn("Can't rate " + this.comment.publisher.username + "'s comment", "The comment's type is unknown.");
+    }
+  }
+
+  submitRating(method: Observable<Response>, rating: number) {
+    this.likeEnabled = true;
+    this.dislikeEnabled = true;
+
+    method.subscribe({
+      error: error => {
+        this.likeEnabled = true;
+        this.dislikeEnabled = true;
+
+        const apiError: RefreshApiError | undefined = error.error?.error;
+        this.banner.warn("Rating " + this.comment.publisher.username + "'s comment failed", apiError == null ? error.message : apiError.message);
+      },
+      next: response => {
+        this.likeEnabled = true;
+        this.dislikeEnabled = true;
+        this.comment.rating.ownRating = rating;
+      }
+    });
+  }
+
+  //const emailAddress: string = this.form.controls.emailAddress.getRawValue();
+
+  protected readonly faThumbsUp = faThumbsUp;
+  protected readonly faThumbsDown = faThumbsDown;
+  protected readonly faTrash = faTrash;
+
+  /*
+  <div [class]="'flex flex-row gap-x-1 hover:outline rounded-md cursor-pointer px-1' + (comment.rating.ownRating > 0 ? ' text-yellow' : '')"
                     (click)="this.like.emit()">
                     <fa-icon class="" [icon]="this.faThumbsUp"></fa-icon>
                     <div>
@@ -60,26 +146,5 @@ import { FaIconComponent } from '@fortawesome/angular-fontawesome';
                       {{comment.rating.booRatings}}
                     </div>
                   </div>
-                </div>
-              </div>
-            </div>
-          </app-user-wrapper>
-        </div>
-      </app-dark-container>
-    `
-})
-export class CommentComponent {
-  @Input({required:true}) comment: Comment = null!;
-
-  @Output() like = new EventEmitter;
-  likeEnabled: boolean = true;
-
-  @Output() dislike = new EventEmitter;
-  dislikeEnabled: boolean = true;
-
-  @Output() delete = new EventEmitter;
-
-  protected readonly faThumbsUp = faThumbsUp;
-  protected readonly faThumbsDown = faThumbsDown;
-  protected readonly faTrash = faTrash;
+  */
 }

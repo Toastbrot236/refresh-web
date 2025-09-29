@@ -10,7 +10,7 @@ import { NgClass } from "@angular/common";
         NgClass
     ],
     template: `
-    <button class="rounded hover:brightness-110 active:brightness-95 transition-[filter] disabled:grayscale" 
+    <button class="rounded cursor-pointer hover:brightness-110 active:brightness-95 transition-[filter] disabled:grayscale" 
       [ngClass]="color + ' px-' + xPadding + ' py-' + yPadding" [type]=type [disabled]="!enabled">
       @if (icon) {
         <fa-icon [icon]="icon" [ngClass]="text && text.length > 0 ? 'mr-1' : ''"></fa-icon>

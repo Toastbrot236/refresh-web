@@ -16,9 +16,8 @@ import {Contest} from "./types/contests/contest";
 import {Score} from "./types/levels/score";
 import { LevelRelations } from './types/levels/level-relations';
 import { Asset } from './types/asset';
-import { ProfileComment } from './types/comments/profile-comment';
-import { LevelComment } from './types/comments/level-comment';
 import { CommentPostRequest } from './types/comments/comment-post-request';
+import { Comment } from './types/comments/comment';
 
 export const defaultPageSize: number = 40;
 
@@ -143,27 +142,27 @@ export class ClientService extends ApiImplementation {
   }
 
   getProfileComments(uuid: string) {
-    return this.http.get<ListWithData<ProfileComment>>(`/users/uuid/${uuid}/comments`);
+    return this.http.get<ListWithData<Comment>>(`/users/uuid/${uuid}/comments`);
   }
 
   getLevelComments(id: number) {
-    return this.http.get<ListWithData<LevelComment>>(`/levels/id/${id}/comments`);
+    return this.http.get<ListWithData<Comment>>(`/levels/id/${id}/comments`);
   }
 
   postProfileComment(uuid: string, comment: CommentPostRequest) {
-    return this.http.post<ProfileComment>(`/users/uuid/${uuid}/comments`, comment);
+    return this.http.post<Comment>(`/users/uuid/${uuid}/comments`, comment);
   }
 
   postLevelComment(id: number, comment: CommentPostRequest) {
-    return this.http.post<LevelComment>(`/levels/id/${id}/comments`, comment);
+    return this.http.post<Comment>(`/levels/id/${id}/comments`, comment);
   }
 
   getProfileComment(id: number) {
-    return this.http.get<ProfileComment>(`/profileComments/id/${id}`);
+    return this.http.get<Comment>(`/profileComments/id/${id}`);
   }
 
   getLevelComment(id: number) {
-    return this.http.get<LevelComment>(`/levelComments/id/${id}`);
+    return this.http.get<Comment>(`/levelComments/id/${id}`);
   }
 
   deleteProfileComment(id: number) {
