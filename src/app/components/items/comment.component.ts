@@ -1,18 +1,18 @@
-import {Component, Input, Output, EventEmitter} from '@angular/core';
+import {Component, Input} from '@angular/core';
 import {DateComponent} from "../ui/info/date.component";
 import {UserWrapperComponent} from "../ui/text/wrappers/user-wrapper.component";
 import {faThumbsDown, faThumbsUp, faTrash} from "@fortawesome/free-solid-svg-icons";
 import {ButtonComponent} from "../ui/form/button.component";
 import { DarkContainerComponent } from "../ui/dark-container.component";
 import { Comment } from '../../api/types/comments/comment';
-import { ButtonWithStatComponent } from "../ui/form/button-with-stat.component";
-import { FormControl, FormGroup } from '@angular/forms';
+import { OutlinedButtonComponent } from "../ui/form/outlined-button.component";
 import { ClientService } from '../../api/client.service';
 import { BannerService } from '../../banners/banner.service';
 import { Observable } from 'rxjs';
 import { RefreshApiError } from '../../api/refresh-api-error';
 import { AuthenticationService } from '../../api/authentication.service';
 import { RatingType } from '../../api/types/comments/rating-type';
+import { ExtendedUser } from '../../api/types/users/extended-user';
 
 @Component({
     selector: 'app-comment',
@@ -21,7 +21,7 @@ import { RatingType } from '../../api/types/comments/rating-type';
     UserWrapperComponent,
     ButtonComponent,
     DarkContainerComponent,
-    ButtonWithStatComponent
+    OutlinedButtonComponent
 ],
     template: `
       <app-dark-container>
@@ -42,11 +42,11 @@ import { RatingType } from '../../api/types/comments/rating-type';
                 <app-date class="italic text-gentle text-sm" [date]="comment.timestamp"></app-date>
 
                 <div class="flex flex-row grow justify-end gap-x-2 flex-wrap">
-                  <app-button-with-stat class="text-[14px]" [text]="comment.rating.yayRatings.toString()" [icon]="faThumbsUp" [form]="form" ctrlName="like" 
-                    [enabled]="likeEnabled" [emphasize]="comment.rating.ownRating > 0" (click)="like()"></app-button-with-stat>
+                  <app-outlined-button class="text-[14px]" [text]="comment.rating.yayRatings.toString()" [icon]="faThumbsUp"
+                    [enabled]="likeEnabled" [emphasize]="comment.rating.ownRating > 0" (click)="like()"></app-outlined-button>
 
-                  <app-button-with-stat class="text-[14px]" [text]="comment.rating.booRatings.toString()" [icon]="faThumbsDown" [form]="form" ctrlName="dislike" 
-                    [enabled]="dislikeEnabled" [emphasize]="comment.rating.ownRating < 0" (click)="dislike()"></app-button-with-stat>
+                  <app-outlined-button class="text-[14px]" [text]="comment.rating.booRatings.toString()" [icon]="faThumbsDown"
+                    [enabled]="dislikeEnabled" [emphasize]="comment.rating.ownRating < 0" (click)="dislike()"></app-outlined-button>
                 </div>
               </div>
             </div>
@@ -57,15 +57,11 @@ import { RatingType } from '../../api/types/comments/rating-type';
 })
 export class CommentComponent {
   @Input({required: true}) comment: Comment = null!;
+  ownUser: ExtendedUser | undefined | null;
 
   likeEnabled: boolean = false;
   dislikeEnabled: boolean = false;
   showDelete: boolean = false;
-
-  form = new FormGroup({
-    like: new FormControl(),
-    dislike: new FormControl()
-  });
 
   constructor(private client: ClientService, private banner: BannerService, private auth: AuthenticationService) {
     
@@ -74,6 +70,8 @@ export class CommentComponent {
   ngOnInit() {
     this.auth.user.subscribe(user => {
       if (user) {
+        this.ownUser = user;
+
         // Show like and dislike buttons if the user is signed in
         this.likeEnabled = true;
         this.dislikeEnabled = true;

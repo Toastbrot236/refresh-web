@@ -1,28 +1,28 @@
 import {Component, Input} from '@angular/core';
 import {IconProp} from "@fortawesome/fontawesome-svg-core";
-import { FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { ReactiveFormsModule } from '@angular/forms';
 import { ButtonComponent } from "./button.component";
 
 @Component({
-    selector: 'app-button-with-stat',
+    selector: 'app-outlined-button',
     imports: [
     ReactiveFormsModule,
     ButtonComponent
 ],
     template: `
         @if (icon) {
-            <app-button [text]="text" [icon]="icon" [color]="'outline' + (emphasize ? ' text-yellow' : '')" [enabled]="enabled" [xPadding]="2"></app-button>
+            <app-button [color]="'outline' + (emphasize 
+                ? ' text-yellow focus-visible:bg-yellow/20 active:bg-yellow/20 hover:bg-yellow/10' 
+                : ' focus-visible:bg-foreground/20 active:bg-foreground/20 hover:bg-foreground/10')"
+                [text]="text" [icon]="icon" [enabled]="enabled" xPadding="2"></app-button>
         }
     `,
     styles: ``
 })
 
-export class ButtonWithStatComponent {
+export class OutlinedButtonComponent {
     @Input({required: true}) text: string = "idk";
     @Input({required: true}) icon: IconProp = null!;
     @Input() emphasize: boolean = false;
     @Input() enabled: boolean = true;
-
-    @Input({required: true}) form: FormGroup = null!;
-    @Input({required: true}) ctrlName: string = "";
 }
