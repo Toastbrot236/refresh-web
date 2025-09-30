@@ -12,6 +12,7 @@ import { BannerService } from '../../banners/banner.service';
 import { Observable } from 'rxjs';
 import { RefreshApiError } from '../../api/refresh-api-error';
 import { AuthenticationService } from '../../api/authentication.service';
+import { RatingType } from '../../api/types/comments/rating-type';
 
 @Component({
     selector: 'app-comment',
@@ -26,11 +27,13 @@ import { AuthenticationService } from '../../api/authentication.service';
       <app-dark-container>
         <div class="flex flex-row gap-x-2">
           <app-user-wrapper [user]="comment.publisher" class="grow">
-            <ng-container next>
-              <div class="flex flex-row grow justify-end">
-                <app-button text="" [icon]="this.faTrash" color="bg-red text-[14px]"></app-button>
-              </div>
-            </ng-container>
+            @if (showDelete) {
+              <ng-container next>
+                <div class="flex flex-row grow justify-end">
+                  <app-button text="" [icon]="this.faTrash" color="bg-red text-[15px]" yPadding=""></app-button>
+                </div>
+              </ng-container>
+            }
 
             <div class="gap-y-2 flex flex-col">
               {{comment.content}}
@@ -40,10 +43,10 @@ import { AuthenticationService } from '../../api/authentication.service';
 
                 <div class="flex flex-row grow justify-end gap-x-2 flex-wrap">
                   <app-button-with-stat class="text-[14px]" [text]="comment.rating.yayRatings.toString()" [icon]="faThumbsUp" [form]="form" ctrlName="like" 
-                    [enabled]="likeEnabled" [emphasize]="comment.rating.ownRating > 0"></app-button-with-stat>
+                    [enabled]="likeEnabled" [emphasize]="comment.rating.ownRating > 0" (click)="like()"></app-button-with-stat>
 
-                  <app-button-with-stat class="text-[14px]" [text]="comment.rating.yayRatings.toString()" [icon]="faThumbsDown" [form]="form" ctrlName="dislike" 
-                    [enabled]="dislikeEnabled" [emphasize]="comment.rating.ownRating < 0"></app-button-with-stat>
+                  <app-button-with-stat class="text-[14px]" [text]="comment.rating.booRatings.toString()" [icon]="faThumbsDown" [form]="form" ctrlName="dislike" 
+                    [enabled]="dislikeEnabled" [emphasize]="comment.rating.ownRating < 0" (click)="dislike()"></app-button-with-stat>
                 </div>
               </div>
             </div>
@@ -89,7 +92,29 @@ export class CommentComponent {
     });
   }
 
-  rate(rating: number): void {
+  delete(): void {
+
+  }
+
+  like(): void {
+    if (this.comment.rating.ownRating > 0) {
+      this.rate(RatingType.Neutral);
+    }
+    else {
+      this.rate(RatingType.Like);
+    }
+  }
+
+  dislike(): void {
+    if (this.comment.rating.ownRating < 0) {
+      this.rate(RatingType.Neutral);
+    }
+    else {
+      this.rate(RatingType.Dislike);
+    }
+  }
+
+  rate(rating: RatingType): void {
     // Disable until we receive a response
     this.likeEnabled = false;
     this.dislikeEnabled = false;
@@ -105,7 +130,7 @@ export class CommentComponent {
     }
   }
 
-  submitRating(method: Observable<Response>, rating: number) {
+  submitRating(method: Observable<Response>, rating: RatingType) {
     this.likeEnabled = true;
     this.dislikeEnabled = true;
 
@@ -118,9 +143,27 @@ export class CommentComponent {
         this.banner.warn("Rating " + this.comment.publisher.username + "'s comment failed", apiError == null ? error.message : apiError.message);
       },
       next: response => {
+        switch(rating) {
+          case RatingType.Like:
+            this.comment.rating.yayRatings++;
+            break;
+          case RatingType.Dislike:
+            this.comment.rating.booRatings++;
+            break;
+        }
+
+        switch(this.comment.rating.ownRating) {
+          case RatingType.Like:
+            this.comment.rating.yayRatings--;
+            break;
+          case RatingType.Dislike:
+            this.comment.rating.booRatings--;
+            break;
+        }
+
+        this.comment.rating.ownRating = rating;
         this.likeEnabled = true;
         this.dislikeEnabled = true;
-        this.comment.rating.ownRating = rating;
       }
     });
   }

@@ -18,6 +18,7 @@ import { LevelRelations } from './types/levels/level-relations';
 import { Asset } from './types/asset';
 import { CommentPostRequest } from './types/comments/comment-post-request';
 import { Comment } from './types/comments/comment';
+import { RatingType } from './types/comments/rating-type';
 
 export const defaultPageSize: number = 40;
 
@@ -173,11 +174,11 @@ export class ClientService extends ApiImplementation {
     return this.http.delete<Response>(`/levelComments/id/${id}`);
   }
 
-  rateProfileComment(id: number, rating: number) {
+  rateProfileComment(id: number, rating: RatingType) {
     return this.http.post<Response>(`/profileComments/id/${id}/rate/${rating}`, null);
   }
 
-  rateLevelComment(id: number, rating: number) {
+  rateLevelComment(id: number, rating: RatingType) {
     return this.http.post<Response>(`/levelComments/id/${id}/rate/${rating}`, null);
   }
 }

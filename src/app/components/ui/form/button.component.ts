@@ -29,8 +29,8 @@ export class ButtonComponent {
 
   @Input() enabled: boolean = true;
 
-  @Input() xPadding: number = 4;
-  @Input() yPadding: number = 1.5;
+  @Input() xPadding: string = "4";
+  @Input() yPadding: string = "1.5";
 
   // actions
   @Input() routerLink: any[] | string | null | undefined
