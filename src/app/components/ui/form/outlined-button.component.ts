@@ -15,8 +15,8 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
         @if (icon) {
             <button class="rounded active:brightness-95 transition-[filter] px-2 py-1.5" 
                 [ngClass]="(enabled ? 'outline cursor-pointer' : '') 
-                + (enabled && emphasize ? ' text-emphasized focus-visible:bg-emphasized/20 active:bg-emphasized/20 hover:bg-emphasized/10' : '')
-                + (enabled && !emphasize ? ' focus-visible:bg-foreground/20 active:bg-foreground/20 hover:bg-foreground/10' : '')" 
+                + (enabled && emphasize ? 'text-emphasized focus-visible:bg-emphasized/20 active:bg-emphasized/20 hover:bg-emphasized/10' : '')
+                + (enabled && !emphasize ? 'focus-visible:bg-foreground/20 active:bg-foreground/20 hover:bg-foreground/10' : '')" 
                 [type]=type [disabled]="!enabled">
                 @if (icon) {
                     <fa-icon [icon]="icon" [ngClass]="text && text.length > 0 ? 'mr-1' : ''"></fa-icon>

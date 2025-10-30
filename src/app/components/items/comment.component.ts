@@ -72,7 +72,7 @@ export class CommentComponent {
       if (user) {
         this.ownUser = user;
 
-        // Show like and dislike buttons if the user is signed in
+        // Enable like and dislike buttons if the user is signed in
         this.likeEnabled = true;
         this.dislikeEnabled = true;
 
@@ -91,10 +91,12 @@ export class CommentComponent {
   }
 
   delete(): void {
-
+    if (!this.ownUser) return;
   }
 
   like(): void {
+    if (!this.ownUser) return;
+
     if (this.comment.rating.ownRating > 0) {
       this.rate(RatingType.Neutral);
     }
@@ -104,6 +106,8 @@ export class CommentComponent {
   }
 
   dislike(): void {
+    if (!this.ownUser) return;
+
     if (this.comment.rating.ownRating < 0) {
       this.rate(RatingType.Neutral);
     }
@@ -113,10 +117,6 @@ export class CommentComponent {
   }
 
   rate(rating: RatingType): void {
-    // Disable until we receive a response
-    this.likeEnabled = false;
-    this.dislikeEnabled = false;
-
     if (this.comment.level) {
       this.submitRating(this.client.rateLevelComment(this.comment.commentId, rating), rating);
     }
@@ -129,9 +129,6 @@ export class CommentComponent {
   }
 
   submitRating(method: Observable<Response>, rating: RatingType) {
-    this.likeEnabled = true;
-    this.dislikeEnabled = true;
-
     method.subscribe({
       error: error => {
         this.likeEnabled = true;
@@ -160,8 +157,6 @@ export class CommentComponent {
         }
 
         this.comment.rating.ownRating = rating;
-        this.likeEnabled = true;
-        this.dislikeEnabled = true;
       }
     });
   }
