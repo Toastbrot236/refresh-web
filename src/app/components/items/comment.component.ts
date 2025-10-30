@@ -62,6 +62,7 @@ export class CommentComponent {
   likeEnabled: boolean = false;
   dislikeEnabled: boolean = false;
   showDelete: boolean = false;
+  waitingForResponse: boolean = false; // So users couldn't spam requests by spam-clicking the same button
 
   constructor(private client: ClientService, private banner: BannerService, private auth: AuthenticationService) {
     
@@ -129,15 +130,19 @@ export class CommentComponent {
   }
 
   submitRating(method: Observable<Response>, rating: RatingType) {
+    if (this.waitingForResponse) return;
+    this.waitingForResponse = true;
+    
     method.subscribe({
       error: error => {
-        this.likeEnabled = true;
-        this.dislikeEnabled = true;
+        this.waitingForResponse = false;
 
         const apiError: RefreshApiError | undefined = error.error?.error;
         this.banner.warn("Rating " + this.comment.publisher.username + "'s comment failed", apiError == null ? error.message : apiError.message);
       },
       next: response => {
+        this.waitingForResponse = false;
+
         switch(rating) {
           case RatingType.Like:
             this.comment.rating.yayRatings++;
