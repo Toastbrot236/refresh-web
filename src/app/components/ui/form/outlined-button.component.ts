@@ -1,20 +1,28 @@
 import {Component, Input} from '@angular/core';
 import {IconProp} from "@fortawesome/fontawesome-svg-core";
 import { ReactiveFormsModule } from '@angular/forms';
-import { ButtonComponent } from "./button.component";
+import { NgClass } from "@angular/common";
+import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 
 @Component({
     selector: 'app-outlined-button',
     imports: [
     ReactiveFormsModule,
-    ButtonComponent
+    NgClass,
+    FaIconComponent
 ],
     template: `
         @if (icon) {
-            <app-button [color]="'outline' + (emphasize 
-                ? ' text-yellow focus-visible:bg-yellow/20 active:bg-yellow/20 hover:bg-yellow/10' 
-                : ' focus-visible:bg-foreground/20 active:bg-foreground/20 hover:bg-foreground/10')"
-                [text]="text" [icon]="icon" [enabled]="enabled" xPadding="2"></app-button>
+            <button class="rounded active:brightness-95 transition-[filter] px-2 py-1.5" 
+                [ngClass]="(enabled ? 'outline cursor-pointer' : '') 
+                + (enabled && emphasize ? ' text-emphasized focus-visible:bg-emphasized/20 active:bg-emphasized/20 hover:bg-emphasized/10' : '')
+                + (enabled && !emphasize ? ' focus-visible:bg-foreground/20 active:bg-foreground/20 hover:bg-foreground/10' : '')" 
+                [type]=type [disabled]="!enabled">
+                @if (icon) {
+                    <fa-icon [icon]="icon" [ngClass]="text && text.length > 0 ? 'mr-1' : ''"></fa-icon>
+                }
+                {{ text }}
+            </button>
         }
     `,
     styles: ``
@@ -25,4 +33,10 @@ export class OutlinedButtonComponent {
     @Input({required: true}) icon: IconProp = null!;
     @Input() emphasize: boolean = false;
     @Input() enabled: boolean = true;
+
+    @Input() type: "submit" | "reset" | "button" = "button";
+
+    // actions
+    @Input() routerLink: any[] | string | null | undefined
+
 }
