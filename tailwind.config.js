@@ -17,7 +17,7 @@ const defaultColors = {
   "secondary": "#87748A",
   "teritary": "#100915",
 
-  "emphazised": "#F2AA00",
+  "emphasized": "#F2AA00",
 
   "secondary-bright": "#E2CFE5",
 
