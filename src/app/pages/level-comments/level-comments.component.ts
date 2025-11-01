@@ -35,6 +35,7 @@ import { InfiniteScrollerComponent } from "../../components/ui/infinite-scroller
 import { defaultListInfo, RefreshApiListInfo } from '../../api/refresh-api-list-info';
 import { RefreshApiError } from '../../api/refresh-api-error';
 import { LevelLinkComponent } from "../../components/ui/text/links/level-link.component";
+import { CommentPostRequest } from '../../api/types/comments/comment-post-request';
 
 @Component({
     selector: 'app-level-comments',
@@ -61,7 +62,7 @@ export class LevelCommentsComponent {
     comment: new FormControl(),
   });
 
-  isCommentFormFilled: boolean = false;
+  enableCommentSubmitButton: boolean = false;
   initialized: boolean = false;
 
   comments: Comment[] = [];
@@ -113,7 +114,7 @@ export class LevelCommentsComponent {
     this.client.getLevelComments(this.level.levelId).subscribe({
       error: error => {
         const apiError: RefreshApiError | undefined = error.error?.error;
-        this.banner.error("Failed to load comments", apiError == null ? error.message : apiError.message)
+        this.banner.error("Failed to load comments", apiError == null ? error.message : apiError.message);
       },
 
       next: response => {
@@ -125,14 +126,44 @@ export class LevelCommentsComponent {
     });
   }
 
-  checkCommentForm() {
-    this.isCommentFormFilled = this.form.controls.comment.getRawValue() != "";
+  reset(): void {
+    this.comments = [];
+    this.isLoading = false;
+    this.listInfo = defaultListInfo;
   }
 
-
+  checkCommentForm() {
+    this.enableCommentSubmitButton = this.form.controls.comment.getRawValue() != "";
+  }
 
   postComment() {
+    if (!this.enableCommentSubmitButton || !this.level) return;
 
+    // Don't allow users to spam their comment while waiting for response
+    this.enableCommentSubmitButton = false;
+
+    let request: CommentPostRequest = {
+      content: this.form.controls.comment.getRawValue(),
+    };
+
+    this.client.postLevelComment(this.level.levelId, request).subscribe({
+      error: error => {
+        const apiError: RefreshApiError | undefined = error.error?.error;
+        this.banner.error("Failed to post comment", apiError == null ? error.message : apiError.message);
+        this.enableCommentSubmitButton = true;
+      },
+
+      next: response => {
+        // Could prepend the response comment here, but it's better to just reload the comment list 
+        // like the game does, to also catch new comments by others
+        this.reset();
+        this.loadData();
+
+        // Reset form
+        this.form.controls.comment.setValue("");
+        this.enableCommentSubmitButton = false;
+      }
+    });
   }
 
   protected readonly faPencil = faPencil;

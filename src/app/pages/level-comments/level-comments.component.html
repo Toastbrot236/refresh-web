@@ -9,7 +9,7 @@
       <div class="flex flex-col gap-y-2">
         <app-textarea [icon]="faPencil" [form]="form" placeholder="Write a comment..." ctrlName="comment" (change)="checkCommentForm()"></app-textarea>
         <div class="flex flex-row justify-end">
-          <app-button [icon]="faPaperPlane" text="Send" color="bg-primary" [enabled]="isCommentFormFilled"></app-button>
+          <app-button [icon]="faPaperPlane" text="Send" color="bg-primary" [enabled]="enableCommentSubmitButton" (click)="postComment()"></app-button>
         </div>
       </div>
 
