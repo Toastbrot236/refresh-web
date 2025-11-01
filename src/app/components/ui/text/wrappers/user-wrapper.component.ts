@@ -10,7 +10,7 @@ import { MinimalUser } from '../../../../api/types/users/minimal-user';
         UserRouterLinkComponent
     ],
     template: `
-    <div class="flex gap-x-1.5">
+    <div class="flex gap-x-2.5">
       <app-user-router-link [user]=user>
         <app-user-avatar class="ml-1" [user]=user [size]=48></app-user-avatar>
       </app-user-router-link>

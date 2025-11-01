@@ -1,4 +1,4 @@
-import {Component, Input} from '@angular/core';
+import {Component, Input, Output, EventEmitter} from '@angular/core';
 import {DateComponent} from "../ui/info/date.component";
 import {UserWrapperComponent} from "../ui/text/wrappers/user-wrapper.component";
 import {faThumbsDown, faThumbsUp, faTrash} from "@fortawesome/free-solid-svg-icons";
@@ -24,7 +24,6 @@ import { ExtendedUser } from '../../api/types/users/extended-user';
     OutlinedButtonComponent
 ],
     template: `
-      <app-dark-container>
         <div class="flex flex-row gap-x-2">
           <app-user-wrapper [user]="comment.publisher" class="grow">
             @if (showDelete) {
@@ -38,8 +37,8 @@ import { ExtendedUser } from '../../api/types/users/extended-user';
             <div class="gap-y-2 flex flex-col">
               {{comment.content}}
 
-              <div class="flex flex-row gap-x-2">
-                <app-date class="italic text-gentle text-sm" [date]="comment.timestamp"></app-date>
+              <div class="flex flex-row align-center gap-x-4">
+                <app-date class="italic text-gentle text-sm content-center" [date]="comment.timestamp"></app-date>
 
                 <div class="flex flex-row grow justify-end gap-x-2 flex-wrap">
                   <app-outlined-button class="text-[14px]" [text]="comment.rating.yayRatings.toString()" [icon]="faThumbsUp"
@@ -52,7 +51,6 @@ import { ExtendedUser } from '../../api/types/users/extended-user';
             </div>
           </app-user-wrapper>
         </div>
-      </app-dark-container>
     `
 })
 export class CommentComponent {
@@ -64,6 +62,8 @@ export class CommentComponent {
   showDelete: boolean = false;
   waitingForResponse: boolean = false; // So users couldn't spam requests by spam-clicking the same button
 
+  @Output() onDelete = new EventEmitter; 
+
   constructor(private client: ClientService, private banner: BannerService, private auth: AuthenticationService) {
     
   }
@@ -73,9 +73,11 @@ export class CommentComponent {
       if (user) {
         this.ownUser = user;
 
-        // Enable like and dislike buttons if the user is signed in
-        this.likeEnabled = true;
-        this.dislikeEnabled = true;
+        // Enable like and dislike buttons if the user is signed in and this isn't the user's own comment
+        if (user.userId != this.comment.publisher.userId) {
+          this.likeEnabled = true;
+          this.dislikeEnabled = true;
+        }
 
         // Also show delete button if the user is either:
         // - the comment publisher
