@@ -32,7 +32,7 @@ export const routes: Routes = [
     {
         path: 'level/:id/:slug/comments',
         loadComponent: () => import('./pages/level-comments/level-comments.component').then(x => x.LevelCommentsComponent),
-        data: {title: "Comments for level"},
+        data: {title: "Level Comments"},
     },
     ...alias("level/:id/:slug/comments", "slot/:id/:slug/comments"),
     {
@@ -69,6 +69,16 @@ export const routes: Routes = [
         path: 'u/:uuid',
         loadComponent: () => import('./pages/user/user.component').then(x => x.UserComponent),
         data: {title: "User Page"},
+    },
+    {
+        path: 'user/:username/comments',
+        loadComponent: () => import('./pages/user-comments/user-comments.component').then(x => x.UserCommentsComponent),
+        data: {title: "Profile Comments"},
+    },
+    {
+        path: 'u/:uuid/comments',
+        loadComponent: () => import('./pages/user-comments/user-comments.component').then(x => x.UserCommentsComponent),
+        data: {title: "Profile Comments"},
     },
     {
         path: 'settings/profile',

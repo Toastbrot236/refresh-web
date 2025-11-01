@@ -12,4 +12,25 @@
         </ng-container>
         <app-user-statistics [stats]="user.statistics" statistics></app-user-statistics>
     </app-fancy-header>
+
+    <app-two-pane-layout>
+        <app-container class="w-full">
+            <app-pane-title>
+                <a [routerLink]="'/u/' + user.userId + '/comments'">
+                    Comments
+                </a>
+            </app-pane-title>
+            <app-divider></app-divider>
+            
+        </app-container>
+        <app-container class="w-full">
+            <app-pane-title>
+                <a [routerLink]="'/u/' + user.userId +'/photos'">
+                    Photos
+                </a>
+            </app-pane-title>
+            <app-divider></app-divider>
+            <p>Coming soon</p>
+        </app-container>
+    </app-two-pane-layout>
 }

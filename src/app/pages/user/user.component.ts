@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import {User} from "../../api/types/users/user";
 import {TitleService} from "../../services/title.service";
 import {ClientService} from "../../api/client.service";
-import {ActivatedRoute} from "@angular/router";
+import { ActivatedRoute, RouterLink } from "@angular/router";
 import {DefaultPipe} from "../../pipes/default.pipe";
 import { AsyncPipe } from "@angular/common";
 import {UserAvatarComponent} from "../../components/ui/photos/user-avatar.component";
@@ -11,18 +11,27 @@ import {FancyHeaderComponent} from "../../components/ui/layouts/fancy-header.com
 import {LayoutService} from "../../services/layout.service";
 import {UserStatusComponent} from "../../components/ui/info/user-status.component";
 import {UserStatisticsComponent} from "../../components/items/user-statistics.component";
+import { ContainerComponent } from "../../components/ui/container.component";
+import { PaneTitleComponent } from "../../components/ui/text/pane-title.component";
+import { TwoPaneLayoutComponent } from "../../components/ui/layouts/two-pane-layout.component";
+import { DividerComponent } from "../../components/ui/divider.component";
 
 @Component({
     selector: 'app-user',
     imports: [
-        DefaultPipe,
-        UserAvatarComponent,
-        DateComponent,
-        FancyHeaderComponent,
-        AsyncPipe,
-        UserStatusComponent,
-        UserStatisticsComponent
-    ],
+    DefaultPipe,
+    UserAvatarComponent,
+    DateComponent,
+    FancyHeaderComponent,
+    AsyncPipe,
+    UserStatusComponent,
+    UserStatisticsComponent,
+    ContainerComponent,
+    PaneTitleComponent,
+    TwoPaneLayoutComponent,
+    DividerComponent,
+    RouterLink
+],
     templateUrl: './user.component.html',
     styles: ``
 })
