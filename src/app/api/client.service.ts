@@ -142,12 +142,12 @@ export class ClientService extends ApiImplementation {
     return this.http.post<Asset>(`/assets/${hash}`, data);
   }
 
-  getProfileComments(uuid: string) {
-    return this.http.get<ListWithData<Comment>>(`/users/uuid/${uuid}/comments`);
+  getProfileComments(uuid: string, skip: number = 0, count: number = 20, params: Params | null = null) {
+    return this.http.get<ListWithData<Comment>>(`/users/uuid/${uuid}/comments`, {params: this.setPageQuery(params, skip, count)});
   }
 
-  getLevelComments(id: number) {
-    return this.http.get<ListWithData<Comment>>(`/levels/id/${id}/comments`);
+  getLevelComments(id: number, skip: number = 0, count: number = 20, params: Params | null = null) {
+    return this.http.get<ListWithData<Comment>>(`/levels/id/${id}/comments`, {params: this.setPageQuery(params, skip, count)});
   }
 
   postProfileComment(uuid: string, comment: CommentPostRequest) {

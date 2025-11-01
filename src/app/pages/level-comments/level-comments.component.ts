@@ -98,7 +98,7 @@ export class LevelCommentsComponent {
     if (!this.level) return;
 
     this.isLoading = true;
-    this.client.getLevelComments(this.level.levelId).subscribe({
+    this.client.getLevelComments(this.level.levelId, 0, 10).subscribe({
       error: error => {
         this.pageLoadFinished = true;
         const apiError: RefreshApiError | undefined = error.error?.error;
