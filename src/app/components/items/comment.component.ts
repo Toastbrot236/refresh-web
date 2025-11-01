@@ -1,7 +1,7 @@
 import {Component, Input, Output, EventEmitter} from '@angular/core';
 import {DateComponent} from "../ui/info/date.component";
 import {UserWrapperComponent} from "../ui/text/wrappers/user-wrapper.component";
-import {faThumbsDown, faThumbsUp, faTrash} from "@fortawesome/free-solid-svg-icons";
+import {faSignOutAlt, faThumbsDown, faThumbsUp, faTrash} from "@fortawesome/free-solid-svg-icons";
 import {ButtonComponent} from "../ui/form/button.component";
 import { DarkContainerComponent } from "../ui/dark-container.component";
 import { Comment } from '../../api/types/comments/comment';
@@ -13,6 +13,8 @@ import { RefreshApiError } from '../../api/refresh-api-error';
 import { AuthenticationService } from '../../api/authentication.service';
 import { RatingType } from '../../api/types/comments/rating-type';
 import { ExtendedUser } from '../../api/types/users/extended-user';
+import { DialogComponent } from "../ui/dialog.component";
+import { PageTitleComponent } from "../ui/text/page-title.component";
 
 @Component({
     selector: 'app-comment',
@@ -20,21 +22,25 @@ import { ExtendedUser } from '../../api/types/users/extended-user';
     DateComponent,
     UserWrapperComponent,
     ButtonComponent,
+    OutlinedButtonComponent,
     DarkContainerComponent,
-    OutlinedButtonComponent
+    DialogComponent,
+    PageTitleComponent
 ],
     template: `
-        <div class="flex flex-row gap-x-2">
-          <app-user-wrapper [user]="comment.publisher" class="grow">
+    @if (!hide) {
+      <app-dark-container>
+        <div class="flex flex-row flex-grow gap-x-2">
+          <app-user-wrapper [user]="comment.publisher">
             @if (showDelete) {
               <ng-container next>
-                <div class="flex flex-row grow justify-end">
-                  <app-button text="" [icon]="this.faTrash" color="bg-red text-[15px]" yPadding=""></app-button>
+                <div class="flex flex-row grow justify-end ml-4">
+                  <app-button text="" [icon]="this.faTrash" color="bg-red text-[15px]" yPadding="" (click)="deleteButtonClick()"></app-button>
                 </div>
               </ng-container>
             }
 
-            <div class="gap-y-2 flex flex-col">
+            <div class="gap-y-2 flex flex-col flex-grow">
               {{comment.content}}
 
               <div class="flex flex-row align-center gap-x-4">
@@ -51,6 +57,32 @@ import { ExtendedUser } from '../../api/types/users/extended-user';
             </div>
           </app-user-wrapper>
         </div>
+      </app-dark-container>
+      
+      <!-- Deletion prompt overlay -->
+      @defer (when showDeletionPrompt) { @if (showDeletionPrompt) {
+        <app-dialog class="flex flex-row flex-grow" (onDialogClose)="closeDeleteDialog()">
+          <div class="w-full h-full m-5 flex flex-col">
+            <app-page-title title="Are you sure you want to delete this comment? This can not be undone!"></app-page-title>
+            <div class="flex flex-row gap-x-6 justify-between mt-10">
+              <app-button
+                text="Yes, Delete!"
+                [icon]="faTrash"
+                color="bg-red"
+                (click)="confirmDelete()"
+              ></app-button>
+              <app-button
+                text="No, Go back!"
+                [icon]="faSignOutAlt"
+                color="bg-secondary"
+                (click)="closeDeleteDialog()"
+              ></app-button>
+            </div>
+          </div>
+        </app-dialog>
+      }}
+    }
+      
     `
 })
 export class CommentComponent {
@@ -60,7 +92,10 @@ export class CommentComponent {
   likeEnabled: boolean = false;
   dislikeEnabled: boolean = false;
   showDelete: boolean = false;
+  showDeletionPrompt: boolean = false;
   waitingForResponse: boolean = false; // So users couldn't spam requests by spam-clicking the same button
+
+  hide: boolean = false;
 
   @Output() onDelete = new EventEmitter; 
 
@@ -82,9 +117,9 @@ export class CommentComponent {
         // Also show delete button if the user is either:
         // - the comment publisher
         // - the profile owner
-        // - the level publisher (TODO once MinimalLevel includes the level's publisher)
-        // - an admin (TODO: or mod)
-        if (user.userId == this.comment.publisher.userId || user.role > 120
+        // - the level publisher (TODO once MinimalLevel includes the level publisher)
+        // - an admin or mod
+        if (user.userId == this.comment.publisher.userId || user.role >= 96 // TODO: replace with enum value
           || (this.comment.profile && user.userId == this.comment.profile?.userId)
         ) {
           this.showDelete = true;
@@ -93,8 +128,45 @@ export class CommentComponent {
     });
   }
 
-  delete(): void {
-    if (!this.ownUser) return;
+  deleteButtonClick() {
+    this.showDeletionPrompt = !this.showDeletionPrompt;
+  }
+
+  closeDeleteDialog() {
+    this.showDeletionPrompt = false;
+  }
+
+  confirmDelete(): void {
+    if (!this.ownUser || !this.showDelete) return;
+
+    if (this.comment.level) {
+      this.delete(this.client.deleteLevelComment(this.comment.commentId));
+    }
+    else if (this.comment.profile) {
+      this.delete(this.client.deleteProfileComment(this.comment.commentId));
+    }
+    else {
+      this.banner.warn("Can't delete " + this.comment.publisher.username + "'s comment", "The comment's type is unknown.");
+    }
+  }
+
+  private delete(method: Observable<Response>) {
+    if (this.waitingForResponse) return;
+    this.waitingForResponse = true;
+    
+    method.subscribe({
+      error: error => {
+        this.waitingForResponse = false;
+
+        const apiError: RefreshApiError | undefined = error.error?.error;
+        this.banner.warn("Deleting " + this.comment.publisher.username + "'s comment failed", apiError == null ? error.message : apiError.message);
+      },
+      next: response => {
+        this.waitingForResponse = false;
+        //this.onDelete.emit();
+        this.hide = true;
+      }
+    });
   }
 
   like(): void {
@@ -119,7 +191,7 @@ export class CommentComponent {
     }
   }
 
-  rate(rating: RatingType): void {
+  private rate(rating: RatingType): void {
     if (this.comment.level) {
       this.submitRating(this.client.rateLevelComment(this.comment.commentId, rating), rating);
     }
@@ -131,7 +203,7 @@ export class CommentComponent {
     }
   }
 
-  submitRating(method: Observable<Response>, rating: RatingType) {
+  private submitRating(method: Observable<Response>, rating: RatingType) {
     if (this.waitingForResponse) return;
     this.waitingForResponse = true;
     
@@ -168,26 +240,8 @@ export class CommentComponent {
     });
   }
 
-  //const emailAddress: string = this.form.controls.emailAddress.getRawValue();
-
   protected readonly faThumbsUp = faThumbsUp;
   protected readonly faThumbsDown = faThumbsDown;
   protected readonly faTrash = faTrash;
-
-  /*
-  <div [class]="'flex flex-row gap-x-1 hover:outline rounded-md cursor-pointer px-1' + (comment.rating.ownRating > 0 ? ' text-yellow' : '')"
-                    (click)="this.like.emit()">
-                    <fa-icon class="" [icon]="this.faThumbsUp"></fa-icon>
-                    <div>
-                      {{comment.rating.yayRatings}}
-                    </div>
-                  </div>
-                  <div [class]="'flex flex-row gap-x-1 hover:outline rounded-md cursor-pointer px-1' + (comment.rating.ownRating < 0 ? ' text-yellow' : '')"
-                    (click)="this.dislike.emit()">
-                    <fa-icon class="" [icon]="this.faThumbsDown"></fa-icon>
-                    <div>
-                      {{comment.rating.booRatings}}
-                    </div>
-                  </div>
-  */
+  protected readonly faSignOutAlt = faSignOutAlt;
 }

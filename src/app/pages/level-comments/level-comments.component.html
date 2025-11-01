@@ -19,15 +19,18 @@
     @if (comments) {
       @if (comments.length > 0) {
         <div class="flex flex-col gap-y-2">
-          @for (comment of this.comments; track comment.commentId) {
-            <app-comment [comment]="comment"></app-comment>
+          @for (comment of this.comments; track comment.commentId; let i = $index) {
+            <app-comment [comment]="comment" (onDelete)="removeComment(i)" [id]="'c' + i"></app-comment>
           }
         </div>
       }
     }
+    @if (pageLoadFinished && comments.length == 0) {
+      <p>No comments yet... Why not post one?</p>
+    }
     <app-infinite-scroller [isLoading]="this.isLoading" [listInfo]="this.listInfo" (loadData)="loadData()"></app-infinite-scroller>
   </div>
 }
-@else {
+@else if (levelLoadFailMessage != null) {
   <p>{{levelLoadFailMessage}}</p>
 }
