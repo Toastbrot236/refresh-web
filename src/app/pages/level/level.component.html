@@ -44,5 +44,22 @@
               <app-event-page [page]="activityPage" [compact]="true"></app-event-page>
           }
       </app-container>
+      <app-container class="w-full">
+          <app-pane-title>
+              <a [routerLink]="'/level/' + level.levelId + '/' + (level.title | slug) + '/comments'">
+                  Comments
+              </a>
+          </app-pane-title>
+          <app-divider></app-divider>
+      </app-container>
+      <app-container class="w-full">
+          <app-pane-title>
+              <a [routerLink]="'/level/' + level.levelId + '/' + (level.title | slug) + '/photos'">
+                  Photos
+              </a>
+          </app-pane-title>
+          <app-divider></app-divider>
+          <p>Coming soon</p>
+      </app-container>
   </app-two-pane-layout>
 }

@@ -23,7 +23,7 @@ import { MinimalLevel } from '../../../../api/types/levels/minimal-level';
     styles: ``
 })
 export class LevelLinkComponent implements OnInit {
-  @Input({required: true}) public level: MinimalLevel | null = null;
+  @Input({required: true}) public level: MinimalLevel | null | undefined = null;
   @Input() public levelId: number | undefined;
 
   constructor(private client: ClientService) {

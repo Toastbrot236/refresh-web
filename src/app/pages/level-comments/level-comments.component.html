@@ -1,0 +1,33 @@
+<div class="flex flex-row gap-x-4">
+  <app-page-title title="Comments for "></app-page-title>
+  <app-level-link class="content-center" [level]="level"></app-level-link>
+</div>
+
+@if (level && initialized) {
+  <div class="flex flex-col pt-5 gap-y-2">
+    @if (ownUser) {
+      <div class="flex flex-col gap-y-2">
+        <app-textarea [icon]="faPencil" [form]="form" placeholder="Write a comment..." ctrlName="comment" (change)="checkCommentForm()"></app-textarea>
+        <div class="flex flex-row justify-end">
+          <app-button [icon]="faPaperPlane" text="Send" color="bg-primary" [enabled]="isCommentFormFilled"></app-button>
+        </div>
+      </div>
+
+      <app-divider></app-divider>
+    }
+    
+    @if (comments) {
+      @if (comments.length > 0) {
+        <div class="flex flex-col gap-y-2">
+          @for (comment of this.comments; track comment.commentId) {
+            <app-comment [comment]="comment"></app-comment>
+          }
+        </div>
+      }
+    }
+    <app-infinite-scroller [isLoading]="this.isLoading" [listInfo]="this.listInfo" (loadData)="loadData()"></app-infinite-scroller>
+  </div>
+}
+@else {
+  <p>{{levelLoadFailMessage}}</p>
+}

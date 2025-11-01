@@ -30,6 +30,12 @@ export const routes: Routes = [
     ...alias("level/:id/:slug", "slot/:id/:slug"),
     ...alias("level/:id", "slot/:id",),
     {
+        path: 'level/:id/:slug/comments',
+        loadComponent: () => import('./pages/level-comments/level-comments.component').then(x => x.LevelCommentsComponent),
+        data: {title: "Comments for level"},
+    },
+    ...alias("level/:id/:slug/comments", "slot/:id/:slug/comments"),
+    {
         path: 'photos',
         loadComponent: () => import('./pages/photo-listing/photo-listing.component').then(x => x.PhotoListingComponent),
         data: {title: "Photos"},
