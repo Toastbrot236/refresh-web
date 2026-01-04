@@ -5,34 +5,26 @@ import {SlugPipe} from "../../pipes/slug.pipe";
 import { isPlatformBrowser, } from "@angular/common";
 import {EmbedService} from "../../services/embed.service";
 import {LayoutService} from "../../services/layout.service";
-import {DividerComponent} from "../../components/ui/divider.component";
 import {AuthenticationService} from "../../api/authentication.service";
 import { ExtendedUser } from '../../api/types/users/extended-user';
 import { FormControl, FormGroup } from '@angular/forms';
 import { faPaperPlane, faPencil } from '@fortawesome/free-solid-svg-icons';
-import { TextAreaComponent } from "../../components/ui/form/textarea.component";
-import { ButtonComponent } from "../../components/ui/form/button.component";
 import { PageTitleComponent } from "../../components/ui/text/page-title.component";
 import { BannerService } from '../../banners/banner.service';
 import { Comment } from '../../api/types/comments/comment';
-import { CommentComponent } from "../../components/items/comment.component";
-import { InfiniteScrollerComponent } from "../../components/ui/infinite-scroller.component";
 import { defaultListInfo, RefreshApiListInfo } from '../../api/refresh-api-list-info';
 import { RefreshApiError } from '../../api/refresh-api-error';
 import { CommentPostRequest } from '../../api/types/comments/comment-post-request';
 import { User } from '../../api/types/users/user';
 import { UserLinkComponent } from "../../components/ui/text/links/user-link.component";
+import { CommentListComponent } from "../../components/ui/comment-list.component";
 
 @Component({
     selector: 'app-user-comments',
     imports: [
-    DividerComponent,
-    TextAreaComponent,
-    ButtonComponent,
     PageTitleComponent,
-    CommentComponent,
-    InfiniteScrollerComponent,
-    UserLinkComponent
+    UserLinkComponent,
+    CommentListComponent
 ],
     providers: [
         SlugPipe
@@ -77,10 +69,6 @@ export class UserCommentsComponent {
         next: response => {
           if(!this.profile && response) {
             this.profile = response;
-
-            if(this.isBrowser) {
-              window.history.replaceState({}, '', `/user/${response.userId}/comments`);
-            }
 
             this.auth.user.subscribe(user => {
               if(user) {

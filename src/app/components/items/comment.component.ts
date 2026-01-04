@@ -28,7 +28,6 @@ import { PageTitleComponent } from "../ui/text/page-title.component";
     PageTitleComponent
 ],
     template: `
-    @if (!hide) {
       <app-dark-container>
         <div class="flex flex-row flex-grow gap-x-2">
           <app-user-wrapper [user]="comment.publisher">
@@ -62,14 +61,14 @@ import { PageTitleComponent } from "../ui/text/page-title.component";
       <!-- Deletion prompt overlay -->
       @defer (when showDeletionPrompt) { @if (showDeletionPrompt) {
         <app-dialog class="flex flex-row flex-grow" (onDialogClose)="closeDeleteDialog()">
-          <div class="w-full h-full m-5 flex flex-col">
+          <div class="w-full h-full m-5 flex flex-col bg-container-background">
             <app-page-title title="Are you sure you want to delete this comment? This can not be undone!"></app-page-title>
             <div class="flex flex-row gap-x-6 justify-between mt-10">
               <app-button
                 text="Yes, Delete!"
                 [icon]="faTrash"
                 color="bg-red"
-                (click)="confirmDelete()"
+                (click)="delete()"
               ></app-button>
               <app-button
                 text="No, Go back!"
@@ -81,7 +80,6 @@ import { PageTitleComponent } from "../ui/text/page-title.component";
           </div>
         </app-dialog>
       }}
-    }
       
     `
 })
@@ -94,8 +92,6 @@ export class CommentComponent {
   showDelete: boolean = false;
   showDeletionPrompt: boolean = false;
   waitingForResponse: boolean = false; // So users couldn't spam requests by spam-clicking the same button
-
-  hide: boolean = false;
 
   @Output() onDelete = new EventEmitter; 
 
@@ -136,37 +132,10 @@ export class CommentComponent {
     this.showDeletionPrompt = false;
   }
 
-  confirmDelete(): void {
-    if (!this.ownUser || !this.showDelete) return;
-
-    if (this.comment.level) {
-      this.delete(this.client.deleteLevelComment(this.comment.commentId));
-    }
-    else if (this.comment.profile) {
-      this.delete(this.client.deleteProfileComment(this.comment.commentId));
-    }
-    else {
-      this.banner.warn("Can't delete " + this.comment.publisher.username + "'s comment", "The comment's type is unknown.");
-    }
-  }
-
-  private delete(method: Observable<Response>) {
-    if (this.waitingForResponse) return;
-    this.waitingForResponse = true;
-    
-    method.subscribe({
-      error: error => {
-        this.waitingForResponse = false;
-
-        const apiError: RefreshApiError | undefined = error.error?.error;
-        this.banner.warn("Deleting " + this.comment.publisher.username + "'s comment failed", apiError == null ? error.message : apiError.message);
-      },
-      next: response => {
-        this.waitingForResponse = false;
-        //this.onDelete.emit();
-        this.hide = true;
-      }
-    });
+  protected delete() {
+    //if (this.waitingForResponse) return;
+    this.showDeletionPrompt = false;
+    this.onDelete.emit();
   }
 
   like(): void {
