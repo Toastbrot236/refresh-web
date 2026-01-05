@@ -3,34 +3,6 @@
   <app-level-link class="content-center" [level]="level"></app-level-link>
 </div>
 
-@if (level && initialized) {
-  <div class="flex flex-col pt-5 gap-y-2">
-    @if (ownUser) {
-      <div class="flex flex-col gap-y-2">
-        <app-textarea [icon]="faPencil" [form]="form" placeholder="Write a comment..." ctrlName="comment" (change)="checkCommentForm()"></app-textarea>
-        <div class="flex flex-row justify-end">
-          <app-button [icon]="faPaperPlane" text="Send" color="bg-primary" [enabled]="enableCommentSubmitButton" (click)="postComment()"></app-button>
-        </div>
-      </div>
-
-      <app-divider></app-divider>
-    }
-    
-    @if (comments) {
-      @if (comments.length > 0) {
-        <div class="flex flex-col gap-y-2">
-          @for (comment of this.comments; track comment.commentId; let i = $index) {
-            <app-comment [comment]="comment" (onDelete)="removeComment(i)" [id]="'c' + i"></app-comment>
-          }
-        </div>
-      }
-    }
-    @if (pageLoadFinished && comments.length == 0) {
-      <p>No comments yet... Why not post one?</p>
-    }
-    <app-infinite-scroller [isLoading]="this.isLoading" [listInfo]="this.listInfo" (loadData)="loadData()"></app-infinite-scroller>
-  </div>
-}
-@else if (levelLoadFailMessage != null) {
-  <p>{{levelLoadFailMessage}}</p>
+@if (initialized) {
+  <app-comment-list [ownUser]="this.ownUser" [level]="this.level!"></app-comment-list>
 }
