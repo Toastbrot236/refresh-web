@@ -1,8 +1,6 @@
 <div class="flex flex-row gap-x-4">
-  <app-page-title title="Comments for "></app-page-title>
-  @if (initialized) {
-    <app-user-link class="content-center" [user]="profile"></app-user-link>
-  }
+  <app-page-title title="Comments on "></app-page-title>
+  <app-user-link class="content-center text-xl" [user]="profile" [iconSize]="30"></app-user-link>
 </div>
 
 @if (initialized) {

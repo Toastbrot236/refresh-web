@@ -13,7 +13,7 @@ import { MinimalLevel } from '../../../../api/types/levels/minimal-level';
     template: `
     @if(level) {
       <app-level-router-link [level]=level>
-        <app-level-avatar class="ml-1" [level]=level></app-level-avatar>
+        <app-level-avatar class="ml-1" [level]=level [size]="iconSize"></app-level-avatar>
         {{ level.title }}
       </app-level-router-link>
     } @else {
@@ -25,6 +25,7 @@ import { MinimalLevel } from '../../../../api/types/levels/minimal-level';
 export class LevelLinkComponent implements OnInit {
   @Input({required: true}) public level: MinimalLevel | null | undefined = null;
   @Input() public levelId: number | undefined;
+  @Input() iconSize: number = 19;
 
   constructor(private client: ClientService) {
   }
