@@ -3,7 +3,6 @@ import {DateComponent} from "../ui/info/date.component";
 import {UserWrapperComponent} from "../ui/text/wrappers/user-wrapper.component";
 import {faSignOutAlt, faThumbsDown, faThumbsUp, faTrash} from "@fortawesome/free-solid-svg-icons";
 import {ButtonComponent} from "../ui/form/button.component";
-import { DarkContainerComponent } from "../ui/dark-container.component";
 import { Comment } from '../../api/types/comments/comment';
 import { OutlinedButtonComponent } from "../ui/form/outlined-button.component";
 import { ClientService } from '../../api/client.service';
@@ -15,6 +14,7 @@ import { RatingType } from '../../api/types/comments/rating-type';
 import { ExtendedUser } from '../../api/types/users/extended-user';
 import { DialogComponent } from "../ui/dialog.component";
 import { PageTitleComponent } from "../ui/text/page-title.component";
+import { NgClass } from "@angular/common";
 
 @Component({
     selector: 'app-comment',
@@ -23,45 +23,42 @@ import { PageTitleComponent } from "../ui/text/page-title.component";
     UserWrapperComponent,
     ButtonComponent,
     OutlinedButtonComponent,
-    DarkContainerComponent,
     DialogComponent,
-    PageTitleComponent
+    PageTitleComponent,
+    NgClass
 ],
     template: `
-      <app-dark-container>
-        <div class="flex flex-row flex-grow gap-x-2">
-          <app-user-wrapper [user]="comment.publisher">
-            @if (showDelete) {
-              <ng-container next>
-                <div class="flex flex-row grow justify-end ml-4">
-                  <app-button text="" [icon]="this.faTrash" color="bg-red text-[15px]" yPadding="" (click)="deleteButtonClick()"></app-button>
-                </div>
-              </ng-container>
-            }
-
-            <div class="gap-y-2 flex flex-col flex-grow">
-              {{comment.content}}
-
-              <div class="flex flex-row align-center gap-x-4">
-                <app-date class="italic text-gentle text-sm content-center" [date]="comment.timestamp"></app-date>
-
-                <div class="flex flex-row grow justify-end gap-x-2 flex-wrap">
-                  <app-outlined-button class="text-[14px]" [text]="comment.rating.yayRatings.toString()" [icon]="faThumbsUp"
-                    [enabled]="likeEnabled" [emphasize]="comment.rating.ownRating > 0" (click)="like()"></app-outlined-button>
-
-                  <app-outlined-button class="text-[14px]" [text]="comment.rating.booRatings.toString()" [icon]="faThumbsDown"
-                    [enabled]="dislikeEnabled" [emphasize]="comment.rating.ownRating < 0" (click)="dislike()"></app-outlined-button>
-                </div>
-              </div>
+      <app-user-wrapper [user]="comment.publisher">
+        @if (showDelete) {
+          <ng-container next>
+            <div class="flex flex-row grow justify-end ml-4">
+              <app-button text="" [icon]="this.faTrash" color="bg-red text-[15px]" yPadding="" (click)="deleteButtonClick()"></app-button>
             </div>
-          </app-user-wrapper>
+          </ng-container>
+        }
+
+        <div class="gap-y-2 flex flex-col grow">
+          {{comment.content}}
+
+          <div class="flex flex-row align-center gap-x-4">
+            <app-date class="italic text-gentle text-sm content-center" [date]="comment.timestamp"></app-date>
+
+            <div class="flex flex-row grow justify-end flex-wrap"
+              [ngClass]="ratingButtonsEnabled ? 'gap-x-2' : ''">
+              <app-outlined-button class="text-[14px]" [text]="comment.rating.yayRatings.toString()" [icon]="faThumbsUp"
+                [enabled]="ratingButtonsEnabled" [emphasize]="comment.rating.ownRating > 0" (click)="like()"></app-outlined-button>
+
+              <app-outlined-button class="text-[14px]" [text]="comment.rating.booRatings.toString()" [icon]="faThumbsDown"
+                [enabled]="ratingButtonsEnabled" [emphasize]="comment.rating.ownRating < 0" (click)="dislike()"></app-outlined-button>
+            </div>
+          </div>
         </div>
-      </app-dark-container>
+      </app-user-wrapper>
       
       <!-- Deletion prompt overlay -->
       @defer (when showDeletionPrompt) { @if (showDeletionPrompt) {
         <app-dialog class="flex flex-row flex-grow" (onDialogClose)="closeDeleteDialog()">
-          <div class="w-full h-full m-5 flex flex-col bg-container-background">
+          <div class="w-full h-full m-5 flex flex-col">
             <app-page-title title="Are you sure you want to delete this comment? This can not be undone!"></app-page-title>
             <div class="flex flex-row gap-x-6 justify-between mt-10">
               <app-button
@@ -87,8 +84,7 @@ export class CommentComponent {
   @Input({required: true}) comment: Comment = null!;
   ownUser: ExtendedUser | undefined | null;
 
-  likeEnabled: boolean = false;
-  dislikeEnabled: boolean = false;
+  ratingButtonsEnabled: boolean = false;
   showDelete: boolean = false;
   showDeletionPrompt: boolean = false;
   waitingForResponse: boolean = false; // So users couldn't spam requests by spam-clicking the same button
@@ -106,8 +102,7 @@ export class CommentComponent {
 
         // Enable like and dislike buttons if the user is signed in and this isn't the user's own comment
         if (user.userId != this.comment.publisher.userId) {
-          this.likeEnabled = true;
-          this.dislikeEnabled = true;
+          this.ratingButtonsEnabled = true;
         }
 
         // Also show delete button if the user is either:

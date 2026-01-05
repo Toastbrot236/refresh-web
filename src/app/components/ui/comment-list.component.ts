@@ -1,11 +1,9 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { TextAreaComponent } from "./form/textarea.component";
 import { ButtonComponent } from "./form/button.component";
 import { FormControl, FormGroup } from '@angular/forms';
 import { faPaperPlane, faPencil } from '@fortawesome/free-solid-svg-icons';
 import { ExtendedUser } from '../../api/types/users/extended-user';
-import { Observable } from 'rxjs';
-import { ListWithData } from '../../api/list-with-data';
 import { DividerComponent } from "./divider.component";
 import { defaultListInfo, RefreshApiListInfo } from '../../api/refresh-api-list-info';
 import { Comment } from '../../api/types/comments/comment';
@@ -16,6 +14,7 @@ import { Level } from '../../api/types/levels/level';
 import { User } from '../../api/types/users/user';
 import { InfiniteScrollerComponent } from "./infinite-scroller.component";
 import { RefreshApiError } from '../../api/refresh-api-error';
+import { ContainerComponent } from "./container.component";
 
 @Component({
     selector: 'app-comment-list',
@@ -24,7 +23,8 @@ import { RefreshApiError } from '../../api/refresh-api-error';
     ButtonComponent,
     DividerComponent,
     CommentComponent,
-    InfiniteScrollerComponent
+    InfiniteScrollerComponent,
+    ContainerComponent
 ],
     template: `
         @if (initialized === true) {
@@ -43,13 +43,13 @@ import { RefreshApiError } from '../../api/refresh-api-error';
                 @if (comments.length > 0) {
                     <div class="flex flex-col gap-y-2">
                         @for (comment of this.comments; track comment.commentId; let i = $index) {
-                            <app-comment [comment]="comment" (onDelete)="deleteComment(comment, i)" [id]="'c' + i"></app-comment>
+                            <app-container>
+                                <app-comment [comment]="comment" (onDelete)="deleteComment(comment, i)" [id]="'c' + i"></app-comment>
+                            </app-container>
                         }
                     </div>
                     <app-infinite-scroller [isLoading]="this.isLoading" [listInfo]="this.listInfo" (loadData)="loadData()"></app-infinite-scroller>
                 }
-                
-                
             </div>
         }
     `,
@@ -130,6 +130,7 @@ export class CommentListComponent {
 
     postComment() {
         if (!this.enableCommentSubmitButton) return;
+        this.enableCommentSubmitButton = false; // No spamming
         let content: string = this.form.controls.comment.getRawValue();
 
         if (this.level != null) {
@@ -137,6 +138,7 @@ export class CommentListComponent {
                 error: error => {
                     const apiError: RefreshApiError | undefined = error.error?.error;
                     this.banner.error("Comment Fetching Failed", apiError == null ? error.message : apiError.message);
+                    this.enableCommentSubmitButton = true;
                 },
                 next: response => {
                     // instead of inserting the new comment to the beginning, reload the comments entirely to catch
@@ -150,6 +152,7 @@ export class CommentListComponent {
                 error: error => {
                     const apiError: RefreshApiError | undefined = error.error?.error;
                     this.banner.error("Comment Fetching Failed", apiError == null ? error.message : apiError.message);
+                    this.enableCommentSubmitButton = true;
                 },
                 next: response => {
                     this.reload();
@@ -204,6 +207,7 @@ export class CommentListComponent {
     }
 
     reset(): void {
+        this.form.controls.comment.setValue("");
         this.comments = [];
         this.isLoading = false;
         this.listInfo = defaultListInfo;
