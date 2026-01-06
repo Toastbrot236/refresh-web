@@ -1,23 +1,23 @@
 import { Component, Input } from '@angular/core';
-import { TextAreaComponent } from "./form/textarea.component";
+import { TextAreaComponent } from "../ui/form/textarea.component";
 import { FormControl, FormGroup } from '@angular/forms';
 import { faPaperPlane, faPencil } from '@fortawesome/free-solid-svg-icons';
 import { ExtendedUser } from '../../api/types/users/extended-user';
-import { DividerComponent } from "./divider.component";
+import { DividerComponent } from "../ui/divider.component";
 import { defaultListInfo, RefreshApiListInfo } from '../../api/refresh-api-list-info';
 import { Comment } from '../../api/types/comments/comment';
-import { CommentComponent } from "../items/comment.component";
+import { CommentComponent } from "./comment.component";
 import { ClientService, defaultPageSize } from '../../api/client.service';
 import { BannerService } from '../../banners/banner.service';
 import { Level } from '../../api/types/levels/level';
 import { User } from '../../api/types/users/user';
-import { InfiniteScrollerComponent } from "./infinite-scroller.component";
+import { InfiniteScrollerComponent } from "../ui/infinite-scroller.component";
 import { RefreshApiError } from '../../api/refresh-api-error';
-import { ContainerComponent } from "./container.component";
-import { PageTitleComponent } from "./text/page-title.component";
-import { LevelLinkComponent } from "./text/links/level-link.component";
-import { UserLinkComponent } from "./text/links/user-link.component";
-import { ButtonComponent } from "./form/button.component";
+import { ContainerComponent } from "../ui/container.component";
+import { PageTitleComponent } from "../ui/text/page-title.component";
+import { LevelLinkComponent } from "../ui/text/links/level-link.component";
+import { UserLinkComponent } from "../ui/text/links/user-link.component";
+import { ButtonComponent } from "../ui/form/button.component";
 
 @Component({
     selector: 'app-comment-list',

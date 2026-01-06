@@ -17,7 +17,7 @@ import { defaultListInfo, RefreshApiListInfo } from '../../api/refresh-api-list-
 import { RefreshApiError } from '../../api/refresh-api-error';
 import { LevelLinkComponent } from "../../components/ui/text/links/level-link.component";
 import { CommentPostRequest } from '../../api/types/comments/comment-post-request';
-import { CommentListComponent } from "../../components/ui/comment-list.component";
+import { CommentListComponent } from "../../components/items/comment-list.component";
 
 @Component({
     selector: 'app-level-comments',

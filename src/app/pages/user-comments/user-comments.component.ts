@@ -10,7 +10,7 @@ import { faPaperPlane, faPencil } from '@fortawesome/free-solid-svg-icons';
 import { BannerService } from '../../banners/banner.service';
 import { RefreshApiError } from '../../api/refresh-api-error';
 import { User } from '../../api/types/users/user';
-import { CommentListComponent } from "../../components/ui/comment-list.component";
+import { CommentListComponent } from "../../components/items/comment-list.component";
 
 @Component({
     selector: 'app-user-comments',
