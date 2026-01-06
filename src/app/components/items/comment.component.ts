@@ -32,7 +32,7 @@ import { NgClass } from "@angular/common";
         @if (showDelete) {
           <ng-container next>
             <div class="flex flex-row grow justify-end ml-4">
-              <app-button text="" [icon]="this.faTrash" color="bg-red text-[15px]" yPadding="" (click)="deleteButtonClick()"></app-button>
+              <app-button text="" [icon]="this.faTrash" color="bg-red text-[15px]" yPadding="" (click)="deleteButtonClick()" [enabled]="enableDelete"></app-button>
             </div>
           </ng-container>
         }
@@ -66,6 +66,7 @@ import { NgClass } from "@angular/common";
                 [icon]="faTrash"
                 color="bg-red"
                 (click)="delete()"
+                [enabled]="enableDelete"
               ></app-button>
               <app-button
                 text="No, Go back!"
@@ -86,6 +87,7 @@ export class CommentComponent {
 
   ratingButtonsEnabled: boolean = false;
   showDelete: boolean = false;
+  enableDelete: boolean = true;
   showDeletionPrompt: boolean = false;
   waitingForResponse: boolean = false; // So users couldn't spam requests by spam-clicking the same button
 
@@ -128,15 +130,20 @@ export class CommentComponent {
   }
 
   protected delete() {
+    this.enableDelete = false;
+    this.closeDeleteDialog();
+
     if (this.comment.level != null) {
       this.client.deleteLevelComment(this.comment.commentId).subscribe({
         error: error => {
           const apiError: RefreshApiError | undefined = error.error?.error;
           this.banner.error("Comment Deletion Failed", apiError == null ? error.message : apiError.message);
+          this.enableDelete = true;
         },
         next: response => {
           // Now get the owning list to remove this comment
           this.onDelete.emit();
+          this.enableDelete = true;
         }
       });
     }
@@ -145,9 +152,11 @@ export class CommentComponent {
         error: error => {
           const apiError: RefreshApiError | undefined = error.error?.error;
           this.banner.error("Comment Deletion Failed", apiError == null ? error.message : apiError.message);
+          this.enableDelete = true;
         },
         next: response => {
           this.onDelete.emit();
+          this.enableDelete = true;
         }
       });
     }

@@ -189,32 +189,7 @@ export class CommentListComponent {
     }
 
     deleteComment(comment: Comment, index: number) {
-        if (comment.level != null) {
-            this.client.deleteLevelComment(comment.commentId).subscribe({
-                error: error => {
-                    const apiError: RefreshApiError | undefined = error.error?.error;
-                    this.banner.error("Comment Deletion Failed", apiError == null ? error.message : apiError.message);
-                },
-                next: response => {
-                    this.removeComment(comment, index);
-                }
-            });
-        }
-        else if (comment.profile != null) {
-            this.client.deleteProfileComment(comment.commentId).subscribe({
-                error: error => {
-                    const apiError: RefreshApiError | undefined = error.error?.error;
-                    this.banner.error("Comment Deletion Failed", apiError == null ? error.message : apiError.message);
-                },
-                next: response => {
-                    this.removeComment(comment, index);
-                }
-            });
-        }
-        else {
-            this.banner.error("Comment Deletion Failed", "Could not determine comment type.");
-            return;
-        }
+        this.removeComment(comment, index);
     }
 
     private removeComment(comment: Comment, index: number) {
