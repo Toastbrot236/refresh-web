@@ -37,8 +37,8 @@ import { NgClass } from "@angular/common";
           </ng-container>
         }
 
-        <div class="gap-y-2 flex flex-col grow">
-          {{comment.content}}
+        <div class="gap-y-2 flex flex-col grow break-words">
+          <p class=" ">{{comment.content}}</p>
 
           <div class="flex flex-row align-center gap-x-4">
             <app-date class="italic text-gentle text-sm content-center" [date]="comment.timestamp"></app-date>
@@ -108,7 +108,7 @@ export class CommentComponent {
         // Also show delete button if the user is either:
         // - the comment publisher
         // - the profile owner
-        // - the level publisher (TODO once MinimalLevel includes the level publisher)
+        // - the level publisher
         // - an admin or mod
         if (user.userId == this.comment.publisher.userId || user.role >= 96 // TODO: replace with enum value
           || (this.comment.profile && user.userId == this.comment.profile?.userId)
@@ -128,9 +128,33 @@ export class CommentComponent {
   }
 
   protected delete() {
-    //if (this.waitingForResponse) return;
-    this.showDeletionPrompt = false;
-    this.onDelete.emit();
+    if (this.comment.level != null) {
+      this.client.deleteLevelComment(this.comment.commentId).subscribe({
+        error: error => {
+          const apiError: RefreshApiError | undefined = error.error?.error;
+          this.banner.error("Comment Deletion Failed", apiError == null ? error.message : apiError.message);
+        },
+        next: response => {
+          // Now get the owning list to remove this comment
+          this.onDelete.emit();
+        }
+      });
+    }
+    else if (this.comment.profile != null) {
+      this.client.deleteProfileComment(this.comment.commentId).subscribe({
+        error: error => {
+          const apiError: RefreshApiError | undefined = error.error?.error;
+          this.banner.error("Comment Deletion Failed", apiError == null ? error.message : apiError.message);
+        },
+        next: response => {
+          this.onDelete.emit();
+        }
+      });
+    }
+    else {
+      this.banner.error("Comment Deletion Failed", "Could not determine comment type.");
+      return;
+    }
   }
 
   like(): void {

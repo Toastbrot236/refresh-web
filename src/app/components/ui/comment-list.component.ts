@@ -1,6 +1,5 @@
 import { Component, Input } from '@angular/core';
 import { TextAreaComponent } from "./form/textarea.component";
-import { ButtonComponent } from "./form/button.component";
 import { FormControl, FormGroup } from '@angular/forms';
 import { faPaperPlane, faPencil } from '@fortawesome/free-solid-svg-icons';
 import { ExtendedUser } from '../../api/types/users/extended-user';
@@ -15,25 +14,45 @@ import { User } from '../../api/types/users/user';
 import { InfiniteScrollerComponent } from "./infinite-scroller.component";
 import { RefreshApiError } from '../../api/refresh-api-error';
 import { ContainerComponent } from "./container.component";
+import { PageTitleComponent } from "./text/page-title.component";
+import { LevelLinkComponent } from "./text/links/level-link.component";
+import { UserLinkComponent } from "./text/links/user-link.component";
+import { ButtonComponent } from "./form/button.component";
 
 @Component({
     selector: 'app-comment-list',
     imports: [
     TextAreaComponent,
-    ButtonComponent,
     DividerComponent,
     CommentComponent,
     InfiniteScrollerComponent,
-    ContainerComponent
+    ContainerComponent,
+    PageTitleComponent,
+    LevelLinkComponent,
+    UserLinkComponent,
+    ButtonComponent
 ],
     template: `
+        <div class="flex flex-row flex-wrap gap-x-4">
+                <app-page-title title="Comments on "></app-page-title>
+                @if (level != null) {
+                    <app-level-link class="content-center text-xl" [level]="level" [iconSize]="25"></app-level-link>
+                }
+                @else if (profile != null) {
+                    <app-user-link class="content-center text-xl" [user]="profile" [iconSize]="30"></app-user-link>
+                }
+                @else {
+                    <p>Unknown</p>
+                }
+            <span class="text-sm italic text-gentle text-base content-center">({{this.listInfo.totalItems}} in total)</span>
+        </div>
         @if (initialized === true) {
             <div class="flex flex-col pt-5 gap-y-2">
                 @if (ownUser) {
                     <div class="flex flex-col gap-y-2">
                         <app-textarea [icon]="faPencil" [form]="form" placeholder="Write a comment..." ctrlName="comment" (change)="checkCommentForm()"></app-textarea>
                         <div class="flex flex-row justify-end">
-                        <app-button [icon]="faPaperPlane" text="Send" color="bg-primary" [enabled]="enableCommentSubmitButton" (click)="postComment()"></app-button>
+                            <app-button [icon]="faPaperPlane" text="Send" color="bg-primary" [enabled]="enableCommentSubmitButton" (click)="postComment()"></app-button>
                         </div>
                     </div>
 
