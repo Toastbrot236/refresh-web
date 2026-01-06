@@ -19,17 +19,11 @@
                 <a [routerLink]="'/u/' + user.userId + '/comments'">
                     Comments
                 </a>
-                <span class="text-sm italic text-gentle text-base">({{this.commentListInfo.totalItems}} in total)</span>
+                <span class="text-sm italic text-gentle text-base">({{this.totalCommentCount}} in total)</span>
             </app-pane-title>
             <app-divider></app-divider>
-                <div class="flex flex-col gap-y-2">
-                    @for (comment of this.comments; track comment.commentId; let i = $index) {
-                        <app-dark-container>
-                            <app-comment [comment]="comment" (onDelete)="deleteComment(comment, i)" [id]="'c' + i"></app-comment>
-                        </app-dark-container>
-                    }
-                </div>
-            </app-container>
+            <app-comment-preview-list [ownUser]="ownUser" [profile]="user" (totalCount)="setTotalCommentCount($event)"></app-comment-preview-list>
+        </app-container>
         <app-container class="w-full">
             <app-pane-title>
                 <a [routerLink]="'/u/' + user.userId +'/photos'">

@@ -27,11 +27,7 @@ export class UserCommentsComponent {
   protected ownUser: ExtendedUser | undefined;
   protected readonly isBrowser: boolean;
 
-  enableCommentSubmitButton: boolean = false;
   initialized: boolean = false;
-
-  profileLoadFailMessage: string | undefined;
-  pageLoadFinished: boolean = false;
 
   constructor(private client: ClientService, route: ActivatedRoute, protected layout: LayoutService, 
               private auth: AuthenticationService, @Inject(PLATFORM_ID) platformId: Object, 
@@ -46,7 +42,7 @@ export class UserCommentsComponent {
       this.client.getUserByEitherLookup(username, uuid).subscribe({
         error: error => {
           const apiError: RefreshApiError | undefined = error.error?.error;
-          this.profileLoadFailMessage = "Failed to load profile user: " + (apiError == null ? error.message : apiError!.message);
+          banner.error("Failed to load profile", apiError == null ? error.message : apiError.message);
         },
 
         next: response => {

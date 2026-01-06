@@ -63,11 +63,14 @@ import { ButtonComponent } from "../ui/form/button.component";
                     <div class="flex flex-col gap-y-2">
                         @for (comment of this.comments; track comment.commentId; let i = $index) {
                             <app-container>
-                                <app-comment [comment]="comment" (onDelete)="deleteComment(comment, i)" [id]="'c' + i"></app-comment>
+                                <app-comment [comment]="comment" (onDelete)="removeComment(i)"></app-comment>
                             </app-container>
                         }
                     </div>
                     <app-infinite-scroller [isLoading]="this.isLoading" [listInfo]="this.listInfo" (loadData)="loadData()"></app-infinite-scroller>
+                }
+                @else {
+                    <p>No comments yet... Why not post one?</p>
                 }
             </div>
         }
@@ -182,17 +185,12 @@ export class CommentListComponent {
             this.banner.error("Comment Upload Failed", "Could not post comment because the object to comment is unknown.");
             return;
         }
-
-        this.client.postLevelComment
-
-        
     }
 
-    deleteComment(comment: Comment, index: number) {
-        this.removeComment(comment, index);
-    }
+    removeComment(index: number) {
+        this.listInfo.nextPageIndex--;
+        this.listInfo.totalItems--;
 
-    private removeComment(comment: Comment, index: number) {
         let oldList: Comment[] = this.comments;
         this.comments = [];
         for (let i = 0; i < oldList.length; i++) {

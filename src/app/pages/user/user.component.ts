@@ -15,12 +15,10 @@ import { ContainerComponent } from "../../components/ui/container.component";
 import { PaneTitleComponent } from "../../components/ui/text/pane-title.component";
 import { TwoPaneLayoutComponent } from "../../components/ui/layouts/two-pane-layout.component";
 import { DividerComponent } from "../../components/ui/divider.component";
-import { Comment } from '../../api/types/comments/comment';
-import { defaultListInfo, RefreshApiListInfo } from '../../api/refresh-api-list-info';
 import { BannerService } from '../../banners/banner.service';
-import { RefreshApiError } from '../../api/refresh-api-error';
-import { CommentComponent } from "../../components/items/comment.component";
-import { DarkContainerComponent } from "../../components/ui/dark-container.component";
+import { CommentListComponent } from "../../components/items/comment-preview-list.component";
+import { AuthenticationService } from '../../api/authentication.service';
+import { ExtendedUser } from '../../api/types/users/extended-user';
 
 @Component({
     selector: 'app-user',
@@ -37,20 +35,17 @@ import { DarkContainerComponent } from "../../components/ui/dark-container.compo
     TwoPaneLayoutComponent,
     DividerComponent,
     RouterLink,
-    CommentComponent,
-    DarkContainerComponent
+    CommentListComponent
 ],
     templateUrl: './user.component.html',
     styles: ``
 })
 export class UserComponent {
   user: User | undefined | null;
-  comments: Comment[] = [];
-  commentListInfo: RefreshApiListInfo = defaultListInfo;
-  previewCommentCount: number = 4;
+  protected ownUser: ExtendedUser | undefined;
 
   constructor(private title: TitleService, private client: ClientService, route: ActivatedRoute, 
-    protected layout: LayoutService, protected banner: BannerService) {
+    protected layout: LayoutService, private auth: AuthenticationService) {
 
     route.params.subscribe(params => {
       const username: string | undefined = params['username'];
@@ -58,26 +53,19 @@ export class UserComponent {
 
       this.client.getUserByEitherLookup(username, uuid).subscribe(user => {
         this.user = user;
+      });
 
-        this.client.getProfileComments(this.user.userId, 0, this.previewCommentCount).subscribe({
-          error: error => {
-            const apiError: RefreshApiError | undefined = error.error?.error;
-            this.banner.error("Comment Fetching Failed", apiError == null ? error.message : apiError.message);
-          },
-          next: response => {
-            this.comments = response.data.slice(0, this.previewCommentCount);
-            this.commentListInfo = response.listInfo;
-          }
-        });
+      this.auth.user.subscribe(user => {
+        if(user) {
+          this.ownUser = user;
+        }
       });
     });
   }
 
-  protected deleteComment(comment: Comment, index: number) {
-    let oldList: Comment[] = this.comments;
-    this.comments = [];
-    for (let i = 0; i < oldList.length; i++) {
-        if (i != index) this.comments.push(oldList[i]);
-    }
+  totalCommentCount: number = -1;
+
+  setTotalCommentCount(newCount: number) {
+    this.totalCommentCount = newCount;
   }
 }

@@ -15,17 +15,17 @@ import {LayoutService} from "../../services/layout.service";
 import {DateComponent} from "../../components/ui/info/date.component";
 import {TwoPaneLayoutComponent} from "../../components/ui/layouts/two-pane-layout.component";
 import {ContainerComponent} from "../../components/ui/container.component";
-
 import {LevelLeaderboardComponent} from "../../components/items/level-leaderboard.component";
 import {DividerComponent} from "../../components/ui/divider.component";
 import {PaneTitleComponent} from "../../components/ui/text/pane-title.component";
 import {EventPageComponent} from "../../components/items/event-page.component";
 import {ActivityPage} from "../../api/types/activity/activity-page";
-
 import {AuthenticationService} from "../../api/authentication.service";
 import { ExtendedUser } from '../../api/types/users/extended-user';
 import { FancyHeaderLevelButtonsComponent } from '../../components/ui/layouts/fancy-header-level-buttons.component';
 import { LevelRelations } from '../../api/types/levels/level-relations';
+import { BannerService } from '../../banners/banner.service';
+import { CommentListComponent } from "../../components/items/comment-preview-list.component";
 
 
 @Component({
@@ -47,7 +47,8 @@ import { LevelRelations } from '../../api/types/levels/level-relations';
     PaneTitleComponent,
     EventPageComponent,
     RouterLink,
-    SlugPipe
+    SlugPipe,
+    CommentListComponent
 ],
     providers: [
         SlugPipe
@@ -90,5 +91,11 @@ export class LevelComponent {
     }
 
     this.embed.embedLevel(data);
+  }
+
+  totalCommentCount: number = -1;
+
+  setTotalCommentCount(newCount: number) {
+    this.totalCommentCount = newCount;
   }
 }
