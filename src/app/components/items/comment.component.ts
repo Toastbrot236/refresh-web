@@ -38,7 +38,7 @@ import { NgClass } from "@angular/common";
         }
 
         <div class="gap-y-2 flex flex-col grow break-words">
-          <p class=" ">{{comment.content}}</p>
+          <p class="word-wrap-and-break">{{comment.content}}</p>
 
           <div class="flex flex-row align-center gap-x-4">
             <app-date class="italic text-gentle text-sm content-center" [date]="comment.timestamp"></app-date>
