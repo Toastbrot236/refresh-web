@@ -11,6 +11,7 @@ import { User } from '../../api/types/users/user';
 import { RefreshApiError } from '../../api/refresh-api-error';
 import { DarkContainerComponent } from "../ui/dark-container.component";
 import { Observable } from 'rxjs';
+import { ListWithData } from '../../api/list-with-data';
 
 @Component({
     selector: 'app-comment-preview-list',
@@ -51,10 +52,10 @@ export class CommentListComponent {
     ngOnInit() {
         // Initial load
         if (this.level !== undefined) {
-            this.loadLevel();
+            this.handleCommentListResponse(this.client.getLevelComments(this.level.levelId, 0, this.previewCommentCount));
         }
         else if (this.profile !== undefined) {
-            this.loadProfile();
+            this.handleCommentListResponse(this.client.getProfileComments(this.profile.userId, 0, this.previewCommentCount));
         }
 
         // All of this is necessary because if you change the user or level without changing the page, this component
@@ -64,34 +65,20 @@ export class CommentListComponent {
         this.levelChange.pipe().subscribe((newLevel) => {
             if (newLevel && (!this.level || newLevel.levelId !== this.level.levelId)) {
                 this.level = newLevel;
-                this.loadLevel();
+                this.handleCommentListResponse(this.client.getLevelComments(this.level.levelId, 0, this.previewCommentCount));
             }
         });
 
         this.profileChange.pipe().subscribe((newProfile) => {
             if (newProfile && (!this.profile || newProfile.userId !== this.profile.userId)) {
                 this.profile = newProfile;
-                this.loadProfile();
+                this.handleCommentListResponse(this.client.getProfileComments(this.profile.userId, 0, this.previewCommentCount));
             }
         });
     }
 
-    private loadLevel() {
-        this.client.getLevelComments(this.level!.levelId, 0, this.previewCommentCount).subscribe({
-            error: error => {
-                const apiError: RefreshApiError | undefined = error.error?.error;
-                this.banner.error("Comment Fetching Failed", apiError == null ? error.message : apiError.message);
-            },
-            next: response => {
-                this.comments = response.data.slice(0, this.previewCommentCount);
-                this.listInfo = response.listInfo;
-                this.totalCount.emit(response.listInfo.totalItems);
-            }
-        });
-    }
-
-    private loadProfile() {
-        this.client.getProfileComments(this.profile!.userId, 0, this.previewCommentCount).subscribe({
+    private handleCommentListResponse(request: Observable<ListWithData<Comment>>) {
+        request.subscribe({
             error: error => {
                 const apiError: RefreshApiError | undefined = error.error?.error;
                 this.banner.error("Comment Fetching Failed", apiError == null ? error.message : apiError.message);

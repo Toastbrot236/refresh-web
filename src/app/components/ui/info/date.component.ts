@@ -18,7 +18,7 @@ import {isPlatformBrowser} from "@angular/common";
         TooltipComponent
     ],
     template: `
-        <app-tooltip class="" [text]="formattedDate">{{ moment }}</app-tooltip>
+        <app-tooltip [text]="formattedDate">{{ moment }}</app-tooltip>
     `
 })
 export class DateComponent implements OnInit, OnDestroy {

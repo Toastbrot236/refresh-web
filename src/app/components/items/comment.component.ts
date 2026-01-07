@@ -39,15 +39,12 @@ import { NgClass } from "@angular/common";
 
         <div class="gap-y-2 flex flex-col grow break-words">
           <p class="word-wrap-and-break">{{comment.content}}</p>
-
           <div class="flex flex-row align-center gap-x-4">
             <app-date class="italic text-gentle text-sm content-center" [date]="comment.timestamp"></app-date>
-
             <div class="flex flex-row grow justify-end flex-wrap"
               [ngClass]="ratingButtonsEnabled ? 'gap-x-2' : ''">
               <app-outlined-button class="text-[14px]" [text]="comment.rating.yayRatings.toString()" [icon]="faThumbsUp"
                 [enabled]="ratingButtonsEnabled" [emphasize]="comment.rating.ownRating > 0" (click)="like()"></app-outlined-button>
-
               <app-outlined-button class="text-[14px]" [text]="comment.rating.booRatings.toString()" [icon]="faThumbsDown"
                 [enabled]="ratingButtonsEnabled" [emphasize]="comment.rating.ownRating < 0" (click)="dislike()"></app-outlined-button>
             </div>
@@ -78,7 +75,6 @@ import { NgClass } from "@angular/common";
           </div>
         </app-dialog>
       }}
-      
     `
 })
 export class CommentComponent {
@@ -103,7 +99,7 @@ export class CommentComponent {
         this.ownUser = user;
 
         // Enable like and dislike buttons if the user is signed in and this isn't the user's own comment
-        if (user.userId != this.comment.publisher.userId) {
+        if (user.userId !== this.comment.publisher.userId) {
           this.ratingButtonsEnabled = true;
         }
 
@@ -112,8 +108,8 @@ export class CommentComponent {
         // - the profile owner
         // - the level publisher
         // - an admin or mod
-        if (user.userId == this.comment.publisher.userId || user.role >= 96 // TODO: replace with enum value
-          || (this.comment.profile && user.userId == this.comment.profile?.userId)
+        if (user.userId === this.comment.publisher.userId || user.role >= 96 // TODO: replace with enum value
+          || (this.comment.profile && user.userId === this.comment.profile?.userId)
         ) {
           this.showDelete = true;
         }
@@ -129,36 +125,29 @@ export class CommentComponent {
     this.showDeletionPrompt = false;
   }
 
+  private handleDeleteResponse(request: Observable<Response>) {
+    request.subscribe({
+      error: error => {
+        const apiError: RefreshApiError | undefined = error.error?.error;
+        this.banner.error("Comment Deletion Failed", apiError == null ? error.message : apiError.message);
+        this.enableDelete = true;
+      },
+      next: _ => {
+        // Now get the owning list to remove this comment
+        this.onDelete.emit();
+      }
+    });
+  }
+
   protected delete() {
     this.enableDelete = false;
     this.closeDeleteDialog();
 
-    if (this.comment.level != null) {
-      this.client.deleteLevelComment(this.comment.commentId).subscribe({
-        error: error => {
-          const apiError: RefreshApiError | undefined = error.error?.error;
-          this.banner.error("Comment Deletion Failed", apiError == null ? error.message : apiError.message);
-          this.enableDelete = true;
-        },
-        next: response => {
-          // Now get the owning list to remove this comment
-          this.onDelete.emit();
-          this.enableDelete = true;
-        }
-      });
+    if (this.comment.level !== undefined) {
+      this.handleDeleteResponse(this.client.deleteLevelComment(this.comment.commentId));
     }
-    else if (this.comment.profile != null) {
-      this.client.deleteProfileComment(this.comment.commentId).subscribe({
-        error: error => {
-          const apiError: RefreshApiError | undefined = error.error?.error;
-          this.banner.error("Comment Deletion Failed", apiError == null ? error.message : apiError.message);
-          this.enableDelete = true;
-        },
-        next: response => {
-          this.onDelete.emit();
-          this.enableDelete = true;
-        }
-      });
+    else if (this.comment.profile !== undefined) {
+      this.handleDeleteResponse(this.client.deleteProfileComment(this.comment.commentId));
     }
     else {
       this.banner.error("Comment Deletion Failed", "Could not determine comment type.");
@@ -189,10 +178,10 @@ export class CommentComponent {
   }
 
   private rate(rating: RatingType): void {
-    if (this.comment.level) {
+    if (this.comment.level !== undefined) {
       this.submitRating(this.client.rateLevelComment(this.comment.commentId, rating), rating);
     }
-    else if (this.comment.profile) {
+    else if (this.comment.profile !== undefined) {
       this.submitRating(this.client.rateProfileComment(this.comment.commentId, rating), rating);
     }
     else {
@@ -211,7 +200,7 @@ export class CommentComponent {
         const apiError: RefreshApiError | undefined = error.error?.error;
         this.banner.warn("Rating " + this.comment.publisher.username + "'s comment failed", apiError == null ? error.message : apiError.message);
       },
-      next: response => {
+      next: _ => {
         this.waitingForResponse = false;
 
         switch(rating) {
