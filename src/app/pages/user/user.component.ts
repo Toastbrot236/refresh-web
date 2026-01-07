@@ -19,6 +19,7 @@ import { BannerService } from '../../banners/banner.service';
 import { CommentListComponent } from "../../components/items/comment-preview-list.component";
 import { AuthenticationService } from '../../api/authentication.service';
 import { ExtendedUser } from '../../api/types/users/extended-user';
+import { Subject } from 'rxjs';
 
 @Component({
     selector: 'app-user',
@@ -43,6 +44,7 @@ import { ExtendedUser } from '../../api/types/users/extended-user';
 export class UserComponent {
   user: User | undefined | null;
   protected ownUser: ExtendedUser | undefined;
+  protected userChange: Subject<User> = new Subject();
 
   constructor(private title: TitleService, private client: ClientService, route: ActivatedRoute, 
     protected layout: LayoutService, private auth: AuthenticationService) {
@@ -53,6 +55,7 @@ export class UserComponent {
 
       this.client.getUserByEitherLookup(username, uuid).subscribe(user => {
         this.user = user;
+        this.userChange.next(user);
       });
 
       this.auth.user.subscribe(user => {

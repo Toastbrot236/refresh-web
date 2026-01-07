@@ -26,7 +26,7 @@ import { FancyHeaderLevelButtonsComponent } from '../../components/ui/layouts/fa
 import { LevelRelations } from '../../api/types/levels/level-relations';
 import { BannerService } from '../../banners/banner.service';
 import { CommentListComponent } from "../../components/items/comment-preview-list.component";
-
+import { Subject } from 'rxjs';
 
 @Component({
     selector: 'app-level',
@@ -63,6 +63,7 @@ export class LevelComponent {
   protected isMobile: boolean = false;
   protected ownUser: ExtendedUser | undefined;
   protected relations: LevelRelations | undefined;
+  protected levelChange: Subject<Level> = new Subject();
 
   constructor(private embed: EmbedService, private client: ClientService, private slug: SlugPipe,
               route: ActivatedRoute, protected layout: LayoutService, private auth: AuthenticationService,
@@ -91,6 +92,7 @@ export class LevelComponent {
     }
 
     this.embed.embedLevel(data);
+    this.levelChange.next(data);
   }
 
   totalCommentCount: number = -1;

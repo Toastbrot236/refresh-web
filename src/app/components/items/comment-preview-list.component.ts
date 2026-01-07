@@ -10,6 +10,7 @@ import { Level } from '../../api/types/levels/level';
 import { User } from '../../api/types/users/user';
 import { RefreshApiError } from '../../api/refresh-api-error';
 import { DarkContainerComponent } from "../ui/dark-container.component";
+import { Observable } from 'rxjs';
 
 @Component({
     selector: 'app-comment-preview-list',
@@ -35,63 +36,72 @@ import { DarkContainerComponent } from "../ui/dark-container.component";
 })
 export class CommentListComponent {
     @Input() ownUser: ExtendedUser | undefined = undefined;
+    @Input() levelChange: Observable<Level> = new Observable();
+    @Input() level: Level | undefined;
+    @Input() profileChange: Observable<User> = new Observable();
+    @Input() profile: User | undefined;
 
     comments: Comment[] = [];
     listInfo: RefreshApiListInfo = defaultListInfo;
+    totalCount = output<number>();
     previewCommentCount: number = 4;
 
-    @Input() level: Level | undefined;
-    @Input() profile: User | undefined;
-    totalCount = output<number>();
-
-    initialized: boolean = false;
-
-    constructor(protected client: ClientService, protected banner: BannerService) {
-        
-    }
+    constructor(protected client: ClientService, protected banner: BannerService) {}
 
     ngOnInit() {
-        if (!this.initialized) {
-            this.initialized = true;
-            this.loadData();
-        }
-    }
-
-    loadData() {
-        if (this.comments.length == this.listInfo.totalItems) return; // No more items to fetch;
-
-        let newPage: Comment[] = [];
-        
+        // Initial load
         if (this.level !== undefined) {
-            this.client.getLevelComments(this.level.levelId, 0, this.previewCommentCount).subscribe({
-                error: error => {
-                    const apiError: RefreshApiError | undefined = error.error?.error;
-                    this.banner.error("Comment Fetching Failed", apiError == null ? error.message : apiError.message);
-                },
-                next: response => {
-                    this.comments = response.data.slice(0, this.previewCommentCount);
-                    this.listInfo = response.listInfo;
-                    this.totalCount.emit(response.listInfo.totalItems);
-                }
-            });
+            this.loadLevel();
         }
         else if (this.profile !== undefined) {
-            this.client.getProfileComments(this.profile.userId, 0, this.previewCommentCount).subscribe({
-                error: error => {
-                    const apiError: RefreshApiError | undefined = error.error?.error;
-                    this.banner.error("Comment Fetching Failed", apiError == null ? error.message : apiError.message);
-                },
-                next: response => {
-                    this.comments = response.data.slice(0, this.previewCommentCount);
-                    this.listInfo = response.listInfo;
-                    this.totalCount.emit(response.listInfo.totalItems);
-                }
-            });
+            this.loadProfile();
         }
-        else {
-            this.banner.error("Comment Fetching Failed", "Could not get comments because the commented object is unknown.");
-            return;
-        }
+
+        // All of this is necessary because if you change the user or level without changing the page, this component
+        // will not reload its comments, keeping those from the old profile/level. Aside from the subject/observable,
+        // we need to still expose the level/profile attributes themselves as inputs anyway, because the first subject emit
+        // doesn't get caught by this component otherwise (sent too early?)
+        this.levelChange.pipe().subscribe((newLevel) => {
+            if (newLevel && (!this.level || newLevel.levelId !== this.level.levelId)) {
+                this.level = newLevel;
+                this.loadLevel();
+            }
+        });
+
+        this.profileChange.pipe().subscribe((newProfile) => {
+            if (newProfile && (!this.profile || newProfile.userId !== this.profile.userId)) {
+                this.profile = newProfile;
+                this.loadProfile();
+            }
+        });
+    }
+
+    private loadLevel() {
+        this.client.getLevelComments(this.level!.levelId, 0, this.previewCommentCount).subscribe({
+            error: error => {
+                const apiError: RefreshApiError | undefined = error.error?.error;
+                this.banner.error("Comment Fetching Failed", apiError == null ? error.message : apiError.message);
+            },
+            next: response => {
+                this.comments = response.data.slice(0, this.previewCommentCount);
+                this.listInfo = response.listInfo;
+                this.totalCount.emit(response.listInfo.totalItems);
+            }
+        });
+    }
+
+    private loadProfile() {
+        this.client.getProfileComments(this.profile!.userId, 0, this.previewCommentCount).subscribe({
+            error: error => {
+                const apiError: RefreshApiError | undefined = error.error?.error;
+                this.banner.error("Comment Fetching Failed", apiError == null ? error.message : apiError.message);
+            },
+            next: response => {
+                this.comments = response.data.slice(0, this.previewCommentCount);
+                this.listInfo = response.listInfo;
+                this.totalCount.emit(response.listInfo.totalItems);
+            }
+        });
     }
 
     removeComment(index: number) {

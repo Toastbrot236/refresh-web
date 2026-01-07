@@ -52,7 +52,7 @@
             <span class="text-sm italic text-gentle text-base">({{this.totalCommentCount}} in total)</span>
           </app-pane-title>
           <app-divider></app-divider>
-          <app-comment-preview-list [ownUser]="ownUser" [level]="level" (totalCount)="setTotalCommentCount($event)"></app-comment-preview-list>
+          <app-comment-preview-list [ownUser]="ownUser" [level]="level" [levelChange]="levelChange" (totalCount)="setTotalCommentCount($event)"></app-comment-preview-list>
       </app-container>
       <app-container class="w-full">
           <app-pane-title>
