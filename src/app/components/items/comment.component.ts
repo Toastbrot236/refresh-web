@@ -58,19 +58,8 @@ import { NgClass } from "@angular/common";
           <div class="w-full h-full m-5 flex flex-col">
             <app-page-title title="Are you sure you want to delete this comment? This can not be undone!"></app-page-title>
             <div class="flex flex-row gap-x-6 justify-between mt-10">
-              <app-button
-                text="Yes, Delete!"
-                [icon]="faTrash"
-                color="bg-red"
-                (click)="delete()"
-                [enabled]="enableDelete"
-              ></app-button>
-              <app-button
-                text="No, Go back!"
-                [icon]="faSignOutAlt"
-                color="bg-secondary"
-                (click)="closeDeleteDialog()"
-              ></app-button>
+              <app-button text="Yes, Delete!" [icon]="faTrash" color="bg-red" (click)="delete()" [enabled]="enableDelete"></app-button>
+              <app-button text="No, Go back!" [icon]="faSignOutAlt" color="bg-secondary" (click)="closeDeleteDialog()"></app-button>
             </div>
           </div>
         </app-dialog>
@@ -79,6 +68,7 @@ import { NgClass } from "@angular/common";
 })
 export class CommentComponent {
   @Input({required: true}) comment: Comment = null!;
+  @Output() onDelete = new EventEmitter;
   ownUser: ExtendedUser | undefined | null;
 
   ratingButtonsEnabled: boolean = false;
@@ -87,11 +77,7 @@ export class CommentComponent {
   showDeletionPrompt: boolean = false;
   waitingForResponse: boolean = false; // So users couldn't spam requests by spam-clicking the same button
 
-  @Output() onDelete = new EventEmitter; 
-
-  constructor(private client: ClientService, private banner: BannerService, private auth: AuthenticationService) {
-    
-  }
+  constructor(private client: ClientService, private banner: BannerService, private auth: AuthenticationService) {}
 
   ngOnInit() {
     this.auth.user.subscribe(user => {
@@ -109,8 +95,7 @@ export class CommentComponent {
         // - the level publisher
         // - an admin or mod
         if (user.userId === this.comment.publisher.userId || user.role >= 96 // TODO: replace with enum value
-          || (this.comment.profile && user.userId === this.comment.profile?.userId)
-        ) {
+          || (this.comment.profile && user.userId === this.comment.profile?.userId)) {
           this.showDelete = true;
         }
       }
