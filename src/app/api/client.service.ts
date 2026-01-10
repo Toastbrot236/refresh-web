@@ -18,6 +18,7 @@ import { LevelRelations } from './types/levels/level-relations';
 import { Asset } from './types/asset';
 import { CommentPostRequest } from './types/comments/comment-post-request';
 import { RatingType } from './types/comments/rating-type';
+import { Comment } from './types/comments/comment';
 
 export const defaultPageSize: number = 40;
 
