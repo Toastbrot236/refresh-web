@@ -13,7 +13,7 @@ import {ClientService} from "../../../../api/client.service";
     template: `
         @if(user) {
             <app-user-router-link class="ml-1 inline text-nowrap" [user]=user>
-                <app-user-avatar [user]=user class="inline mr-1" borderRule="rounded-[3px]"></app-user-avatar>
+                <app-user-avatar [user]=user class="inline mr-1" borderRule="rounded-[3px]" [size]="iconSize"></app-user-avatar>
                 <span>{{ user.username }}</span>
             </app-user-router-link>
         } @else {
@@ -25,6 +25,7 @@ export class UserLinkComponent implements OnInit {
     @Input({required: true}) public user: User | undefined | null;
     @Input() public userId: string | undefined;
     @Input() public username: string = "Deleted User";
+    @Input() iconSize: number = 19;
 
     constructor(private client: ClientService) {
     }
