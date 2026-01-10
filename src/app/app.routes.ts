@@ -65,6 +65,16 @@ export const routes: Routes = [
         data: {title: "User Page"},
     },
     {
+        path: 'user/:username/comments',
+        loadComponent: () => import('./pages/user-comments/user-comments.component').then(x => x.UserCommentsComponent),
+        data: {title: "Profile Comments"},
+    },
+    {
+        path: 'u/:uuid/comments',
+        loadComponent: () => import('./pages/user-comments/user-comments.component').then(x => x.UserCommentsComponent),
+        data: {title: "Profile Comments"},
+    },
+    {
         path: 'settings/profile',
         loadComponent: () => import('./pages/user-settings/profile/user-profile-settings.component').then(x => x.UserProfileSettingsComponent),
         data: {title: "Profile Settings"},
