@@ -16,6 +16,8 @@ import {Contest} from "./types/contests/contest";
 import {Score} from "./types/levels/score";
 import { LevelRelations } from './types/levels/level-relations';
 import { Asset } from './types/asset';
+import { CommentPostRequest } from './types/comments/comment-post-request';
+import { RatingType } from './types/comments/rating-type';
 
 export const defaultPageSize: number = 40;
 
@@ -137,5 +139,25 @@ export class ClientService extends ApiImplementation {
 
   uploadAsset(hash: string, data: ArrayBuffer) {
     return this.http.post<Asset>(`/assets/${hash}`, data);
+  }
+
+  getProfileComments(uuid: string, skip: number = 0, count: number = 20, params: Params | null = null) {
+    return this.http.get<ListWithData<Comment>>(`/users/uuid/${uuid}/comments`, {params: this.setPageQuery(params, skip, count)});
+  }
+
+  getProfileComment(id: number) {
+    return this.http.get<Comment>(`/profileComments/id/${id}`);
+  }
+
+  postProfileComment(uuid: string, comment: CommentPostRequest) {
+    return this.http.post<Comment>(`/users/uuid/${uuid}/comments`, comment);
+  }
+
+  deleteProfileComment(id: number) {
+    return this.http.delete<Response>(`/profileComments/id/${id}`);
+  }
+
+  rateProfileComment(id: number, rating: RatingType) {
+    return this.http.post<Response>(`/profileComments/id/${id}/rate/${rating}`, null);
   }
 }
