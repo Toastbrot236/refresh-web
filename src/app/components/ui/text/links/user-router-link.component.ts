@@ -1,6 +1,6 @@
 import {Component, Input} from '@angular/core';
 import {RouterLink} from "@angular/router";
-import {User} from "../../../../api/types/users/user";
+import { MinimalUser } from '../../../../api/types/users/minimal-user';
 
 @Component({
     selector: 'app-user-router-link',
@@ -14,5 +14,5 @@ import {User} from "../../../../api/types/users/user";
   `
 })
 export class UserRouterLinkComponent {
-  @Input({required: true}) public user: User = undefined!;
+  @Input({required: true}) public user: MinimalUser = undefined!;
 }

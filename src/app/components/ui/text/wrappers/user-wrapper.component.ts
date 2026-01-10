@@ -1,8 +1,7 @@
 import {Component, Input} from '@angular/core';
-
 import {UserAvatarComponent} from "../../photos/user-avatar.component";
 import {UserRouterLinkComponent} from "../links/user-router-link.component";
-import {User} from "../../../../api/types/users/user";
+import { MinimalUser } from '../../../../api/types/users/minimal-user';
 
 @Component({
     selector: 'app-user-wrapper',
@@ -24,5 +23,5 @@ import {User} from "../../../../api/types/users/user";
   `
 })
 export class UserWrapperComponent {
-  @Input({required: true}) public user: User = null!;
+  @Input({required: true}) public user: MinimalUser = null!;
 }
