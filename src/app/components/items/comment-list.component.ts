@@ -59,11 +59,11 @@ import { ContainerHeaderComponent } from "../ui/container-header.component";
                         </app-container>
                     }
                 </div>
-                <app-infinite-scroller [isLoading]="this.isLoading" [listInfo]="this.listInfo" (loadData)="loadData()"></app-infinite-scroller>
             }
             @else {
                 <p>No comments yet... Why not post one?</p>
             }
+            <app-infinite-scroller [isLoading]="this.isLoading" [listInfo]="this.listInfo" (loadData)="loadData()"></app-infinite-scroller>
         </div>
     `,
     styles: ``
@@ -84,17 +84,14 @@ export class CommentListComponent {
 
     constructor(protected client: ClientService, protected banner: BannerService) {}
 
-    ngOnInit() {
-        this.reload();
-    }
-
     checkCommentForm() {
-        this.commentFormHasContent = this.form.controls.comment.getRawValue() != "";
+        this.commentFormHasContent = this.form.controls.comment.getRawValue() !== "";
     }
 
     loadData() {
         if (this.profile !== undefined) {
-            this.handleCommentListResponse(this.client.getProfileComments(this.profile.userId, defaultPageSize, this.listInfo.nextPageIndex));
+            this.isLoading = true;
+            this.handleCommentListResponse(this.client.getProfileComments(this.profile.userId, this.listInfo.nextPageIndex, defaultPageSize));
         }
     }
 
@@ -153,7 +150,7 @@ export class CommentListComponent {
         let oldList: Comment[] = this.comments;
         this.comments = [];
         for (let i = 0; i < oldList.length; i++) {
-            if (i != index) this.comments.push(oldList[i]);
+            if (i !== index) this.comments.push(oldList[i]);
         }
     }
 
