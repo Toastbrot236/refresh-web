@@ -18,9 +18,7 @@ import { MinimalUser } from '../../../../api/types/users/minimal-user';
       <div class="flex flex-col grow">
         <div class="flex flex-row">
           <app-user-router-link [user]="user" class="font-bold text-[17px]">
-            <div class="flex flex-row">
-              {{user.username}}
-            </div>
+            {{user.username}}
           </app-user-router-link>
           <ng-content select="[next]"></ng-content>
         </div>

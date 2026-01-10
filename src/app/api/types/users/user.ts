@@ -1,9 +1,10 @@
 import {Room} from "../rooms/room";
 import {MinimalUser} from "./minimal-user";
+import {UserRole} from "./user-role";
 import {UserStatistics} from "./user-statistics";
 
 export interface User extends MinimalUser {
-    role: number;
+    role: UserRole;
     
     description: string;
     joinDate: Date;
