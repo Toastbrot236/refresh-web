@@ -45,10 +45,12 @@ import { ContainerHeaderComponent } from "../ui/container-header.component";
                     <span class="text-sm italic text-gentle text-base content-center">({{this.listInfo.totalItems}} in total)</span>
                 </div>
                 
-                <app-textarea [icon]="faPencil" [form]="form" placeholder="Write a comment..." ctrlName="comment" (change)="checkCommentForm()"></app-textarea>
-                <div class="flex flex-row justify-end mt-4">
-                    <app-button [icon]="faPaperPlane" text="Send" color="bg-primary" [enabled]="commentFormHasContent && !isSubmittingComment" (click)="postComment()"></app-button>
-                </div>
+                @if (ownUser) {
+                    <app-textarea [icon]="faPencil" [form]="form" placeholder="Write a comment..." ctrlName="comment" (change)="checkCommentForm()"></app-textarea>
+                    <div class="flex flex-row justify-end mt-4">
+                        <app-button [icon]="faPaperPlane" text="Send" color="bg-primary" [enabled]="commentFormHasContent && !isSubmittingComment" (click)="postComment()"></app-button>
+                    </div>
+                }
             </app-container-header>
             
             @if (comments.length > 0) {
