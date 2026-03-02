@@ -12,6 +12,8 @@ import { AuthRefreshRequest } from "./types/auth/auth-refresh-request";
 import { RefreshApiResponse } from "./refresh-api-response";
 import { Router } from "@angular/router";
 import { ProfileUpdateRequest } from "./types/users/profile-update-request";
+import { AccountUpdateRequest } from "./types/users/profile-update-request copy";
+import { ResetPasswordRequest } from "./types/auth/reset-password-request";
 
 @Injectable({
     providedIn: 'root'
@@ -167,6 +169,22 @@ export class AuthenticationService extends ApiImplementation {
         })
     }
 
+    public UpdateAccount(data: AccountUpdateRequest): void {
+        this.http.patch<ExtendedUser>("/users/me", data).subscribe({
+            error: error => {
+                const apiError: RefreshApiError | undefined = error.error?.error;
+                this.bannerService.warn("Failed to update your account", apiError == null ? error.message : apiError.message);
+            },
+            next: response => {
+                this.bannerService.success("Account updated!", "Your account data was successfully updated.");
+
+                // Update local user data
+                this.user.next(response);
+                this.tokenStorage.SetStoredUser(response);
+            }
+        })
+    }
+
     public UpdateUserAvatar(hash: string): void {
         this.http.patch<ExtendedUser>("/users/me", {iconHash: hash}).subscribe({
             error: error => {
@@ -181,5 +199,53 @@ export class AuthenticationService extends ApiImplementation {
                 this.tokenStorage.SetStoredUser(response);
             }
         })
+    }
+
+    public SendPasswordResetEmail(emailAddress: string) {
+        this.http.put<Response>("/sendPasswordResetEmail", {emailAddress: emailAddress}).subscribe({
+            error: error => {
+                const apiError: RefreshApiError | undefined = error.error?.error;
+                this.bannerService.warn("Failed to send a password reset email", apiError == null ? error.message : apiError.message);
+            },
+            next: _ => {
+                this.bannerService.success("Email sent!", "A password reset email has been sent. Check your inbox!");
+            }
+        });
+    }
+
+    public ResetPassword(data: ResetPasswordRequest) {
+        this.http.put<Response>("/resetPassword", data).subscribe({
+            error: error => {
+                const apiError: RefreshApiError | undefined = error.error?.error;
+                this.bannerService.warn("Failed to reset password", apiError == null ? error.message : apiError.message);
+            },
+            next: _ => {
+                this.bannerService.success("Password reset!", "Try to not forget it!");
+            }
+        });
+    }
+
+    public SendEmailVerification() {
+        this.http.post<Response>("/verify/resend", null).subscribe({
+            error: error => {
+                const apiError: RefreshApiError | undefined = error.error?.error;
+                this.bannerService.warn("Failed to send a verification email", apiError == null ? error.message : apiError.message);
+            },
+            next: _ => {
+                this.bannerService.success("Email sent!", "A verification email has been sent to the given email address!");
+            }
+        });
+    }
+
+    public VerifyEmail(code: string) {
+        this.http.post<Response>("/verify?code=" + code, null).subscribe({
+            error: error => {
+                const apiError: RefreshApiError | undefined = error.error?.error;
+                this.bannerService.warn("Failed to verify email address", apiError == null ? error.message : apiError.message);
+            },
+            next: _ => {
+                this.bannerService.success("Email address verified!", "Your current email address is now verified");
+            }
+        });
     }
 }
