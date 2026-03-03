@@ -12,7 +12,7 @@ import { AuthRefreshRequest } from "./types/auth/auth-refresh-request";
 import { RefreshApiResponse } from "./refresh-api-response";
 import { Router } from "@angular/router";
 import { ProfileUpdateRequest } from "./types/users/profile-update-request";
-import { AccountUpdateRequest } from "./types/users/profile-update-request copy";
+import { AuthUpdateRequest } from "./types/users/auth-update-request";
 import { ResetPasswordRequest } from "./types/auth/reset-password-request";
 
 @Injectable({
@@ -169,14 +169,30 @@ export class AuthenticationService extends ApiImplementation {
         })
     }
 
-    public UpdateAccount(data: AccountUpdateRequest): void {
+    public UpdateAccount(data: AuthUpdateRequest): void {
         this.http.patch<ExtendedUser>("/users/me", data).subscribe({
             error: error => {
                 const apiError: RefreshApiError | undefined = error.error?.error;
-                this.bannerService.warn("Failed to update your account", apiError == null ? error.message : apiError.message);
+                this.bannerService.warn("Failed to update your game authentication settings", apiError == null ? error.message : apiError.message);
             },
             next: response => {
-                this.bannerService.success("Account updated!", "Your account data was successfully updated.");
+                this.bannerService.success("Account updated!", "Your game authentication settings were successfully updated.");
+
+                // Update local user data
+                this.user.next(response);
+                this.tokenStorage.SetStoredUser(response);
+            }
+        })
+    }
+
+    public UpdateEmailAddress(emailAddress: string): void {
+        this.http.patch<ExtendedUser>("/users/me", { emailAddress: emailAddress }).subscribe({
+            error: error => {
+                const apiError: RefreshApiError | undefined = error.error?.error;
+                this.bannerService.warn("Failed to update your email address", apiError == null ? error.message : apiError.message);
+            },
+            next: response => {
+                this.bannerService.success("Account updated!", "Your email address was successfully updated.");
 
                 // Update local user data
                 this.user.next(response);
@@ -213,7 +229,7 @@ export class AuthenticationService extends ApiImplementation {
         });
     }
 
-    public ResetPassword(data: ResetPasswordRequest) {
+    public ResetPassword(data: ResetPasswordRequest, redirectAfterResponse: boolean = false) {
         this.http.put<Response>("/resetPassword", data).subscribe({
             error: error => {
                 const apiError: RefreshApiError | undefined = error.error?.error;
@@ -221,6 +237,7 @@ export class AuthenticationService extends ApiImplementation {
             },
             next: _ => {
                 this.bannerService.success("Password reset!", "Try to not forget it!");
+                if (redirectAfterResponse) this.router.navigate(['/settings/account']);
             }
         });
     }
@@ -237,7 +254,7 @@ export class AuthenticationService extends ApiImplementation {
         });
     }
 
-    public VerifyEmail(code: string) {
+    public VerifyEmail(code: string, redirectAfterResponse: boolean = false) {
         this.http.post<Response>("/verify?code=" + code, null).subscribe({
             error: error => {
                 const apiError: RefreshApiError | undefined = error.error?.error;
@@ -245,6 +262,7 @@ export class AuthenticationService extends ApiImplementation {
             },
             next: _ => {
                 this.bannerService.success("Email address verified!", "Your current email address is now verified");
+                if (redirectAfterResponse) this.router.navigate(['/settings/account']);
             }
         });
     }
