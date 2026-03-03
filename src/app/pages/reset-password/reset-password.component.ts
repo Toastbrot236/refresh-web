@@ -6,13 +6,18 @@ import { AuthenticationService } from '../../api/authentication.service';
 import { TextboxComponent } from '../../components/ui/form/textbox.component';
 import { ButtonComponent } from '../../components/ui/form/button.component';
 import { sha512Async } from '../../helpers/crypto';
+import { PageTitleComponent } from "../../components/ui/text/page-title.component";
+import { faCancel, faKey } from '@fortawesome/free-solid-svg-icons';
+import { RouterLinkComponent } from "../../components/ui/text/links/router-link.component";
 
 @Component({
     selector: 'app-reset-password',
     imports: [
-        TextboxComponent,
-        ButtonComponent,
-    ],
+    TextboxComponent,
+    ButtonComponent,
+    PageTitleComponent,
+    RouterLinkComponent
+],
     templateUrl: './reset-password.component.html'
 })
 export class ResetPasswordComponent {
@@ -50,7 +55,7 @@ export class ResetPasswordComponent {
         this.doPasswordsMatch = this.form.controls.upperPassword.getRawValue() === this.form.controls.lowerPassword.getRawValue();
     }
 
-    private resetPassword() {
+    protected resetPassword() {
         if (!this.arePasswordsSet || !this.doPasswordsMatch || this.resetToken === undefined) return;
         const password: string = this.form.controls.upperPassword.getRawValue();
             
@@ -58,7 +63,10 @@ export class ResetPasswordComponent {
             this.auth.ResetPassword({
                 resetToken: this.resetToken!,
                 passwordSha512: passwordSha512
-            });
+            }, true);
         })
     }
+
+    protected readonly faKey = faKey;
+    protected readonly faCancel = faCancel;
 }

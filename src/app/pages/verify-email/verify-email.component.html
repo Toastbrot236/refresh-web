@@ -1,2 +1,12 @@
 <app-page-title></app-page-title>
-<p>lol</p>
+@if (!ownUser) {
+    <p>You are not signed in.</p>
+}
+@else if (!code) {
+    <p>Cannot verify your email address ({{ ownUser.emailAddress }}) without a verification code. You should have received one in your email as part of the website URL.</p>
+}
+@else {
+    <app-button text="Verify Email Address!" [icon]="faEnvelope" color="bg-primary" (click)="verifyEmail()"></app-button>
+}
+
+<app-router-link class="mt-4" routerLink="/settings/account">Go to account settings</app-router-link>
