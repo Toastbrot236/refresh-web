@@ -86,6 +86,21 @@ export const routes: Routes = [
         data: {title: "Profile Settings"},
     },
     {
+        path: 'settings/account',
+        loadComponent: () => import('./pages/user-settings/account/user-account-settings.component').then(x => x.UserAccountSettingsComponent),
+        data: {title: "Account Settings"},
+    },
+    {
+        path: 'verify',
+        loadComponent: () => import('./pages/verify-email/verify-email.component').then(x => x.VerifyEmailComponent),
+        data: {title: "Verify Email Address"},
+    },
+    {
+        path: 'resetPassword',
+        loadComponent: () => import('./pages/reset-password/reset-password.component').then(x => x.ResetPasswordComponent),
+        data: {title: "Reset Password"},
+    },
+    {
         path: 'u/:uuid/settings',
         loadComponent: () => import('./pages/user-settings/admin/admin-user-settings.component').then(x => x.AdminUserSettingsComponent),
         data: {title: "User Settings (Moderation)"},
