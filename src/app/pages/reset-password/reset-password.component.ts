@@ -7,7 +7,7 @@ import { TextboxComponent } from '../../components/ui/form/textbox.component';
 import { ButtonComponent } from '../../components/ui/form/button.component';
 import { sha512Async } from '../../helpers/crypto';
 import { PageTitleComponent } from "../../components/ui/text/page-title.component";
-import { faCancel, faKey } from '@fortawesome/free-solid-svg-icons';
+import { faCancel, faEnvelope, faKey } from '@fortawesome/free-solid-svg-icons';
 import { RouterLinkComponent } from "../../components/ui/text/links/router-link.component";
 
 @Component({
@@ -25,6 +25,7 @@ export class ResetPasswordComponent {
     form = new FormGroup({
         upperPassword: new FormControl(),
         lowerPassword: new FormControl(),
+        forgorPasswordEmail: new FormControl(),
     });
 
     isUpperPasswordSet: boolean = false;
@@ -34,9 +35,16 @@ export class ResetPasswordComponent {
 
     resetToken: string | undefined;
 
+    isForgorPasswordEmailSet: boolean = false;
+
     constructor(private auth: AuthenticationService, route: ActivatedRoute) {
-        route.params.subscribe(params => {
-            this.resetToken = params['token'];
+        this.auth.user.subscribe(user => {
+            if (user) {
+                this.ownUser = user;
+                route.queryParams.subscribe(params => {
+                    this.resetToken = params['token'];
+                });
+            }
         });
     }
 
@@ -67,6 +75,16 @@ export class ResetPasswordComponent {
         })
     }
 
+    protected checkForgorPasswordEmailChanges() {
+        this.isForgorPasswordEmailSet = this.form.controls.forgorPasswordEmail.getRawValue().length > 0;
+    }
+
+    protected sendPasswordResetEmail() {
+        if (!this.isForgorPasswordEmailSet) return;
+        this.auth.SendPasswordResetEmail(this.form.controls.forgorPasswordEmail.getRawValue());
+    }
+
     protected readonly faKey = faKey;
     protected readonly faCancel = faCancel;
+    protected readonly faEnvelope = faEnvelope;
 }

@@ -21,8 +21,13 @@ export class VerifyEmailComponent {
     code: string | undefined;
 
     constructor(private auth: AuthenticationService, route: ActivatedRoute) {
-        route.params.subscribe(params => {
-            this.code = params['code'];
+        this.auth.user.subscribe(user => {
+            if (user) {
+                this.ownUser = user;
+                route.queryParams.subscribe(params => {
+                    this.code = params['code'];
+                });
+            }
         });
     }
 

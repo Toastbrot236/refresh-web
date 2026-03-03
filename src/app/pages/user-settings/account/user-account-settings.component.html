@@ -1,41 +1,43 @@
+<app-page-title></app-page-title>
 @if (ownUser) {
-    <div class="flex flex-col">
-        <div class="mb-4">
-            <p>TODO</p>
-        </div>
-        <app-two-pane-layout>
-            <app-container class="w-full">
-                <app-pane-title>
-                    <p>
-                        Game Settings
-                    </p>
-                </app-pane-title>
-                <app-divider></app-divider>
-                <div>
-                    <app-checkbox [icon]="faGamePad" label="Allow PSN (PS3 / Vita / PSP) Authentication" [form]="settingsForm" ctrlName="allowPsnAuth" (change)="checkPsnAuthToggleChanges()"></app-checkbox>
-                    <app-checkbox [icon]="faDesktop" label="Allow RPCS3 Authentication" [form]="settingsForm" ctrlName="allowRpcnAuth" (change)="checkRpcnAuthToggleChanges()"></app-checkbox>
-                    <app-checkbox [icon]="faKey" label="Allow IP Authentication" [form]="settingsForm" ctrlName="allowIpAuth" (change)="checkIpAuthTogglePlanetsChanges()"></app-checkbox>
+    <app-two-pane-layout>
+        <app-container class="w-full">
+            <app-pane-title>
+                <p>Game Settings</p>
+            </app-pane-title>
+            <app-divider></app-divider>
+            <div>
+                <app-checkbox [icon]="faGamePad" label="Allow PSN (PS3 / Vita / PSP) Authentication" [form]="settingsForm" ctrlName="allowPsnAuth" (change)="checkPsnAuthToggleChanges()"></app-checkbox>
+                <app-checkbox [icon]="faDesktop" label="Allow RPCS3 Authentication" [form]="settingsForm" ctrlName="allowRpcnAuth" (change)="checkRpcnAuthToggleChanges()"></app-checkbox>
+                <app-checkbox [icon]="faKey" label="Allow IP Authentication" [form]="settingsForm" ctrlName="allowIpAuth" (change)="checkIpAuthTogglePlanetsChanges()"></app-checkbox>
+                <div class="flex flex-row gap-x-2">
+                    <app-button text="Discard Auth Settings" [icon]="faCancel" color="bg-red"></app-button>
+                    <app-button text="Save Auth Settings" [icon]="faFloppyDisk" color="bg-primary"></app-button>
                 </div>
-            </app-container>
-            <app-container class="w-full">
-                <app-pane-title>
-                    <p>
-                        Login Data
-                    </p>
-                </app-pane-title>
-                <app-divider></app-divider>
-                
-                <app-textbox [icon]="faEnvelope" label="Your email address" placeholder="example@mail.com" [form]="settingsForm" ctrlName="allowPsnAuth"></app-textbox>
-                @if (ownUser.emailAddressVerified) {
-                    <p class="text-emphasized-primary">Your current email address is verified!</p>
-                }
-                @else {
-                    <app-button text="Verify Email" [icon]="faKey" color="bg-primary"></app-button>
-                }
-                <app-button text="Reset Password" [icon]="faKey" color="bg-secondary"></app-button>
-                
-            </app-container>
-        </app-two-pane-layout>
-        <app-router-link class="mt-4" routerLink="/settings/profile">Not what you were looking for? Check out the Profile Settings page!</app-router-link>
-    </div>
+            </div>
+        </app-container>
+        <app-container class="w-full">
+            <app-pane-title>
+                <p>Login Data</p>
+            </app-pane-title>
+            <app-divider></app-divider>
+            
+            <app-textbox [icon]="faEnvelope" label="Your email address" placeholder="example@mail.com" [form]="settingsForm" ctrlName="allowPsnAuth"></app-textbox>
+            @if (hasEmailChanged) {
+                <div class="flex flex-row gap-x-2">
+                    <app-button text="Discard Address" [icon]="faCancel" color="bg-red"></app-button>
+                    <app-button text="Save Address" [icon]="faEnvelope" color="bg-primary" ></app-button>
+                </div>
+            }
+            @else if (ownUser.emailAddressVerified) {
+                <p class="text-emphasized-primary">Your current email address is verified!</p>
+            }
+            @else {
+                <app-button text="Verify Email Address (via Email)" [icon]="faEnvelope" color="bg-primary"></app-button>
+            }
+            <app-button text="Change Password (via Email)" [icon]="faKey" color="bg-secondary"></app-button>
+            
+        </app-container>
+    </app-two-pane-layout>
+    <app-router-link class="mt-4" routerLink="/settings/profile">Not what you were looking for? Check out the Profile Settings page!</app-router-link>
 }
