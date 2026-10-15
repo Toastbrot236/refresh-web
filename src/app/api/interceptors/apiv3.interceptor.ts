@@ -13,7 +13,7 @@ export class APIv3Interceptor implements HttpInterceptor {
         if (event instanceof HttpResponse) {
             const body: RefreshApiResponse<any> = event.body;
             if (!body.success) {
-                throw new Error(`${body.error!.name}: ${body.error!.name}`);
+                console.error(`Unsuccessful API response for ${event.url}, status ${event.status}: ${(body.error?.name ?? "no error name")}, ${(body.error?.message ?? "no error message")}`);
             }
 
             // if we have list info, we need to include that data in the response
