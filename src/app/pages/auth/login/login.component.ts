@@ -26,12 +26,12 @@ interface LoginFormInput {
     templateUrl: './login.component.html'
 })
 export class LoginComponent {
-  loginModel = signal<LoginFormInput>({
+  inputs = signal<LoginFormInput>({
     emailAddress: '',
     passwordClear: '',
   });
 
-  loginForm: FieldTree<LoginFormInput, string | number, "writable"> = form(this.loginModel, (f) => {
+  form: FieldTree<LoginFormInput, string | number, "writable"> = form(this.inputs, (f) => {
     required(f.emailAddress, { message: 'Email is required' });
     email(f.emailAddress, { message: 'Please enter a valid email' });
     required(f.passwordClear, { message: 'Password is required' });
@@ -43,11 +43,11 @@ export class LoginComponent {
     console.log("Login submit() called");
     event.preventDefault();
 
-    if (this.loginForm().valid()) {
-      console.log(this.loginModel())
+    if (this.form().valid()) {
+      console.log(this.inputs())
     }
 
-    this.loginForm.passwordClear
+    this.form.passwordClear
 
     /*
     const emailAddress: string = this.loginForm.emailAddress.
