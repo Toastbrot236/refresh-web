@@ -28,7 +28,7 @@ import { SlugPipe } from '../../pipes/slug.pipe';
 import { DialogComponent } from "../../components/ui/dialog.component";
 import { FieldTree, form, required, FormField } from '@angular/forms/signals';
 import { RadioButtonGroupComponent } from '../../components/ui/form/radio-button-group.component';
-import { addPipedButtonDataForValue } from '../../helpers/button-data';
+import { addOptionFromPipeValue } from '../../helpers/button-data';
 
 interface MetadataFormInput {
   name: string,
@@ -126,12 +126,12 @@ export class LevelEditComponent {
 
     // init games selectable via dropdown, so we could pass it to the radio button group.
     // website value is missing because that's invalid for levels.
-    addPipedButtonDataForValue(GameVersion.LBP1, this.gameVersionOptions, this.gamePipe);
-    addPipedButtonDataForValue(GameVersion.LBP2, this.gameVersionOptions, this.gamePipe);
-    addPipedButtonDataForValue(GameVersion.LBP3, this.gameVersionOptions, this.gamePipe);
-    addPipedButtonDataForValue(GameVersion.LBPVita, this.gameVersionOptions, this.gamePipe);
-    addPipedButtonDataForValue(GameVersion.LBPPSP, this.gameVersionOptions, this.gamePipe);
-    addPipedButtonDataForValue(GameVersion.BetaBuild, this.gameVersionOptions, this.gamePipe);
+    addOptionFromPipeValue(GameVersion.LBP1, this.gameVersionOptions, this.gamePipe);
+    addOptionFromPipeValue(GameVersion.LBP2, this.gameVersionOptions, this.gamePipe);
+    addOptionFromPipeValue(GameVersion.LBP3, this.gameVersionOptions, this.gamePipe);
+    addOptionFromPipeValue(GameVersion.LBPVita, this.gameVersionOptions, this.gamePipe);
+    addOptionFromPipeValue(GameVersion.LBPPSP, this.gameVersionOptions, this.gamePipe);
+    addOptionFromPipeValue(GameVersion.BetaBuild, this.gameVersionOptions, this.gamePipe);
 
     route.params.subscribe(params => {
       const id: number = +params['id'];
