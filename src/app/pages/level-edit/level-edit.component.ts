@@ -14,7 +14,6 @@ import { PageTitleComponent } from "../../components/ui/text/page-title.componen
 import { ButtonComponent } from "../../components/ui/form/button.component";
 import { faCertificate, faChevronDown, faChevronUp, faClone, faFloppyDisk, faPencil, faSignOutAlt, faTrash, faUser } from '@fortawesome/free-solid-svg-icons';
 import { TextboxComponent } from '../../components/ui/form/textbox.component';
-import { FormControl, FormGroup } from '@angular/forms';
 import { LevelUpdateRequest } from '../../api/types/levels/level-update-request';
 import { BannerService } from '../../banners/banner.service';
 import { RefreshApiError } from '../../api/refresh-api-error';
@@ -29,6 +28,7 @@ import { SlugPipe } from '../../pipes/slug.pipe';
 import { DialogComponent } from "../../components/ui/dialog.component";
 import { FieldTree, form, required, FormField } from '@angular/forms/signals';
 import { RadioButtonGroupComponent } from '../../components/ui/form/radio-button-group.component';
+import { addPipedButtonDataForValue } from '../../helpers/button-data';
 
 interface MetadataFormInput {
   name: string,
@@ -110,11 +110,11 @@ export class LevelEditComponent {
   isUserModerator: boolean = false;
   isUserPublisher: boolean = false;
 
-  gameMap: Map<GameVersion, string> = new Map<GameVersion, string>();
+  gameVersionOptions: Map<GameVersion, string> = new Map<GameVersion, string>();
 
   constructor(private client: ClientService, protected banner: BannerService, route: ActivatedRoute, 
               protected layout: LayoutService, private auth: AuthenticationService,
-              @Inject(PLATFORM_ID) platformId: Object, private router: Router, private slug: SlugPipe, private game: GamePipe)
+              @Inject(PLATFORM_ID) platformId: Object, private router: Router, private slug: SlugPipe, private gamePipe: GamePipe)
   {
     this.isBrowser = isPlatformBrowser(platformId);
 
@@ -124,14 +124,14 @@ export class LevelEditComponent {
       this.setGameButtonColor(this.curatorInputs().gameVersion);
     });
 
-    // init games selectable via dropdown, so we could pass it to the radio button group
-    this.gameMap.set(GameVersion.LBP1, this.game.transform(GameVersion.LBP1, false));
-    this.gameMap.set(GameVersion.LBP2, this.game.transform(GameVersion.LBP2, false));
-    this.gameMap.set(GameVersion.LBP3, this.game.transform(GameVersion.LBP3, false));
-    this.gameMap.set(GameVersion.LBPVita, this.game.transform(GameVersion.LBPVita, false));
-    this.gameMap.set(GameVersion.LBPPSP, this.game.transform(GameVersion.LBPPSP, false));
-    // no website, since that's not an actual game version of a level
-    this.gameMap.set(GameVersion.BetaBuild, this.game.transform(GameVersion.BetaBuild, false));
+    // init games selectable via dropdown, so we could pass it to the radio button group.
+    // website value is missing because that's invalid for levels.
+    addPipedButtonDataForValue(GameVersion.LBP1, this.gameVersionOptions, this.gamePipe);
+    addPipedButtonDataForValue(GameVersion.LBP2, this.gameVersionOptions, this.gamePipe);
+    addPipedButtonDataForValue(GameVersion.LBP3, this.gameVersionOptions, this.gamePipe);
+    addPipedButtonDataForValue(GameVersion.LBPVita, this.gameVersionOptions, this.gamePipe);
+    addPipedButtonDataForValue(GameVersion.LBPPSP, this.gameVersionOptions, this.gamePipe);
+    addPipedButtonDataForValue(GameVersion.BetaBuild, this.gameVersionOptions, this.gamePipe);
 
     route.params.subscribe(params => {
       const id: number = +params['id'];
