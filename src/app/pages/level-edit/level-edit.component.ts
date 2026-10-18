@@ -1,4 +1,4 @@
-import {Component, Inject, PLATFORM_ID} from '@angular/core';
+import {Component, effect, Inject, PLATFORM_ID, signal} from '@angular/core';
 import {Level} from "../../api/types/levels/level";
 import {ClientService} from "../../api/client.service";
 import {ActivatedRoute, Router} from "@angular/router";
@@ -22,12 +22,27 @@ import { sha1Async } from '../../helpers/crypto';
 import { CheckboxComponent } from "../../components/ui/form/checkbox.component";
 import { GameVersion } from '../../api/types/game-version';
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
-import { RadioButtonComponent } from "../../components/ui/form/radio-button.component";
 import { TextAreaComponent } from "../../components/ui/form/textarea.component";
 import { DateComponent } from "../../components/ui/info/date.component";
 import { DropdownMenuComponent } from "../../components/ui/form/dropdown-menu.component";
 import { SlugPipe } from '../../pipes/slug.pipe';
 import { DialogComponent } from "../../components/ui/dialog.component";
+import { FieldTree, form, required, FormField } from '@angular/forms/signals';
+import { RadioButtonGroupComponent } from '../../components/ui/form/radio-button-group.component';
+
+interface MetadataFormInput {
+  name: string,
+  description: string,
+};
+
+// TODO since we already allow users to set reupload data of their own levels via attributes
+// in the level name/description, we should also allow them to set it graphically here aswell.
+interface LevelCuratorFormInput {
+  isTeamPicked: boolean,
+  gameVersion: GameVersion,
+  isReupload: boolean,
+  originalPublisher: string,
+};
 
 @Component({
     selector: 'app-level-edit',
@@ -41,12 +56,13 @@ import { DialogComponent } from "../../components/ui/dialog.component";
     NgIf,
     CheckboxComponent,
     FaIconComponent,
-    RadioButtonComponent,
     GamePipe,
     TextAreaComponent,
     DateComponent,
     DropdownMenuComponent,
-    DialogComponent
+    DialogComponent,
+    RadioButtonGroupComponent,
+    FormField
 ],
     providers: [
         SlugPipe
@@ -60,30 +76,31 @@ export class LevelEditComponent {
   protected isMobile: boolean = false;
   protected ownUser: ExtendedUser | undefined;
 
-  metadataForm = new FormGroup({
-    title: new FormControl(),
-    description: new FormControl(),
+  metadataInputs = signal<MetadataFormInput>({
+    name: '',
+    description: '',
   });
-  
-  curatorForm = new FormGroup({
-    isReupload: new FormControl(),
-    originalPublisher: new FormControl(),
-    isTeamPicked: new FormControl(),
-    gameVersion: new FormControl(0),
-  });
-  
-  iconHash: string = "0";
-  hasTitleChanged: boolean = false;
-  hasDescriptionChanged: boolean = false;
 
-  hasReuploadChanged: boolean = false;
-  hasOriginalPublisherChanged: boolean = false;
-  hasTeamPickedChanged: boolean = false;
-  hasGameChanged: boolean = false;
+  metadataForm: FieldTree<MetadataFormInput, string | number, "writable"> = form(this.metadataInputs, (f) => {
+    required(f.name, { message: 'Enter a name for your level' });
+  });
+
+  curatorInputs = signal<LevelCuratorFormInput>({
+    isTeamPicked: false,
+    gameVersion: GameVersion.LBP1,
+    isReupload: false,
+    originalPublisher: "",
+  });
+
+  curatorForm: FieldTree<LevelCuratorFormInput, string | number, "writable"> = form(this.curatorInputs, (f) => {
+    required(f.gameVersion, { message: 'This level needs a valid game version' });
+  });
 
   hasAnyPendingChanges: boolean = false;
   hasPendingMetadataChanges: boolean = false;
   hasPendingCuratorChanges: boolean = false;
+  // team pick status is updated with a separate API request, so track it separately
+  hasTeamPickedChanged: boolean = false;
 
   showDeletionPrompt: boolean = false;
   showGameMenu: boolean = false;
@@ -93,11 +110,28 @@ export class LevelEditComponent {
   isUserModerator: boolean = false;
   isUserPublisher: boolean = false;
 
+  gameMap: Map<GameVersion, string> = new Map<GameVersion, string>();
+
   constructor(private client: ClientService, protected banner: BannerService, route: ActivatedRoute, 
               protected layout: LayoutService, private auth: AuthenticationService,
-              @Inject(PLATFORM_ID) platformId: Object, private router: Router, private slug: SlugPipe)
+              @Inject(PLATFORM_ID) platformId: Object, private router: Router, private slug: SlugPipe, private game: GamePipe)
   {
     this.isBrowser = isPlatformBrowser(platformId);
+
+    // listen for radio button changes
+    effect(() => {
+      console.log("level edit form effect callbaclk executed: gaversion " + this.curatorInputs().gameVersion);
+      this.setGameButtonColor(this.curatorInputs().gameVersion);
+    });
+
+    // init games selectable via dropdown, so we could pass it to the radio button group
+    this.gameMap.set(GameVersion.LBP1, this.game.transform(GameVersion.LBP1, false));
+    this.gameMap.set(GameVersion.LBP2, this.game.transform(GameVersion.LBP2, false));
+    this.gameMap.set(GameVersion.LBP3, this.game.transform(GameVersion.LBP3, false));
+    this.gameMap.set(GameVersion.LBPVita, this.game.transform(GameVersion.LBPVita, false));
+    this.gameMap.set(GameVersion.LBPPSP, this.game.transform(GameVersion.LBPPSP, false));
+    // no website, since that's not an actual game version of a level
+    this.gameMap.set(GameVersion.BetaBuild, this.game.transform(GameVersion.BetaBuild, false));
 
     route.params.subscribe(params => {
       const id: number = +params['id'];
@@ -125,23 +159,6 @@ export class LevelEditComponent {
     this.layout.isMobile.subscribe(v => this.isMobile = v);
   }
 
-  checkTitleChanges() {
-    this.hasTitleChanged = this.metadataForm.controls.title.getRawValue() != this.level?.title;
-    this.doesPageHavePendingChanges();
-  }
-
-  checkDescriptionChanges() {
-    this.hasDescriptionChanged = this.metadataForm.controls.description.getRawValue() != this.level?.description;
-    this.doesPageHavePendingChanges();
-  }
-
-  setGame(input: GameVersion) {
-    this.curatorForm.controls.gameVersion.setValue(input);
-    this.hasGameChanged = input != this.level!.gameVersion;
-    this.doesPageHavePendingChanges();
-    this.setGameButtonColor(input);
-  }
-
   setGameButtonColor(game: GameVersion) {
     switch (game) {
       case 0: this.gameButtonColor = "bg-dark-pink"; break;
@@ -154,62 +171,21 @@ export class LevelEditComponent {
     }
   }
 
-  checkIsReuploadChanges() {
-    this.hasReuploadChanged = this.curatorForm.controls.isReupload.getRawValue() != this.level?.isReUpload;
-    this.doesPageHavePendingChanges();
-  }
-
-  checkOriginalPublisherChanges() {
-    this.hasOriginalPublisherChanged = this.curatorForm.controls.originalPublisher.getRawValue() != (this.level?.originalPublisher ?? "");
-    this.doesPageHavePendingChanges();
-  }
-
-  checkTeamPickChanges() {
-    this.hasTeamPickedChanged = this.curatorForm.controls.isTeamPicked.getRawValue() != this.level?.teamPicked;
-    this.doesPageHavePendingChanges();
-  }
-
-  doesPageHavePendingChanges() {
-    this.hasAnyPendingChanges =
-      this.doesLevelHavePendingChanges()
-      || this.hasTeamPickedChanged;
-  }
-
-  doesLevelHavePendingChanges(): boolean {
-    return this.hasPendingMetadataChanges =
-      this.hasTitleChanged
-      || this.hasDescriptionChanged
-      || this.doesLevelHavePendingCuratorSettingChanges();
-  }
-
-  doesLevelHavePendingCuratorSettingChanges(): boolean {
-    return this.hasPendingCuratorChanges =
-      this.hasGameChanged
-      || this.hasReuploadChanged
-      || this.hasOriginalPublisherChanged;
-  }
-
   updateInputs(level: Level) {
     this.hasAnyPendingChanges = false;
     this.hasPendingMetadataChanges = false;
     this.hasPendingCuratorChanges = false;
 
-    this.metadataForm.controls.title.setValue(level.title);
-    this.metadataForm.controls.description.setValue(level.description);
+    this.metadataForm.name().value.set(level.title);
+    this.metadataForm.description().value.set(level.description);
 
-    this.curatorForm.controls.gameVersion.setValue(level.gameVersion);
-    this.curatorForm.controls.isTeamPicked.setValue(level.teamPicked);
-    this.curatorForm.controls.isReupload.setValue(level.isReUpload);
-    this.curatorForm.controls.originalPublisher.setValue(level.originalPublisher);
+    this.curatorForm.gameVersion().value.set(level.gameVersion);
+    this.curatorForm.isTeamPicked().value.set(level.teamPicked);
+    this.curatorForm.isReupload().value.set(level.isReUpload);
+    // Can't set to null, but we can still use isReupload to determine whether this needs any updating
+    this.curatorForm.originalPublisher().value.set(level.originalPublisher ?? "");
 
     this.setGameButtonColor(level.gameVersion);
-
-    this.hasTitleChanged = false;
-    this.hasDescriptionChanged = false;
-    this.hasTeamPickedChanged = false;
-    this.hasReuploadChanged = false;
-    this.hasOriginalPublisherChanged = false;
-    this.hasGameChanged = false;
   }
 
   async gameButtonClick() {
@@ -225,7 +201,7 @@ export class LevelEditComponent {
   }
 
   updateTeamPick() {
-    if (this.curatorForm.controls.isTeamPicked.getRawValue()) {
+    if (this.curatorForm.isTeamPicked().value()) {
       this.client.teamPickLevel(this.level!.levelId).subscribe({
         error: error => {
           const apiError: RefreshApiError | undefined = error.error?.error;
@@ -256,12 +232,12 @@ export class LevelEditComponent {
 
   updateLevel() {
     let request: LevelUpdateRequest = {
-      title: this.metadataForm.controls.title.getRawValue(),
-      description: this.metadataForm.controls.description.getRawValue(),
+      title: this.metadataForm.name().value(),
+      description: this.metadataForm.description().value(),
 
-      gameVersion: this.curatorForm.controls.gameVersion.getRawValue()!,
-      isReUpload: this.curatorForm.controls.isReupload.getRawValue(),
-      originalPublisher: this.curatorForm.controls.originalPublisher.getRawValue(),
+      gameVersion: this.curatorForm.gameVersion().value(),
+      isReUpload: this.curatorForm.isReupload().value(),
+      originalPublisher: this.curatorForm.originalPublisher().value(),
     };
 
     // Only make an admin request if the curator has either changed any curator options on the level, 
