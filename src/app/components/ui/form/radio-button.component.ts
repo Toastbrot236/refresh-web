@@ -26,5 +26,5 @@ export class RadioButtonComponent {
   // and value should be a unique value for this button, unique only in this group,
   // so name + value gets us an ID which is unique across the whole final page for this one button.
   @Input({required: true}) name: string = "";
-  @Input({required: true}) value: number = 0;
+  @Input({required: true}) value: number | string = 0;
 }

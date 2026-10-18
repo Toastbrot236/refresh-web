@@ -19,13 +19,13 @@ import { RadioButtonComponent } from './radio-button.component';
     `
 })
 // number so we can use this with enums
-export class RadioButtonGroupComponent implements FormValueControl<number> {
+export class RadioButtonGroupComponent implements FormValueControl<number | string> {
   // gets prepended to the enum value per button, to create a unique HTML element id per button,
   // and also used as the name value for each radio button, to create a group
   @Input({required: true}) groupName: string = "";
 
   // maps enum value -> text to show on the button
-  @Input({required: true}) buttons: Map<number, string> = new Map<number, string>();
+  @Input({required: true}) buttons: Map<number | string, string> = new Map<number, string>();
 
-  readonly value = model(0);
+  readonly value = model<number | string>(0);
 }
