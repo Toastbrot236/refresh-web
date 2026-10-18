@@ -1,4 +1,4 @@
-import {Component, Inject, PLATFORM_ID} from '@angular/core';
+import {Component, Inject, PLATFORM_ID, signal} from '@angular/core';
 import {ClientService, defaultPageSize} from "../../api/client.service";
 import {ActivatedRoute} from "@angular/router";
 import {PageTitleComponent} from "../../components/ui/text/page-title.component";
@@ -22,6 +22,14 @@ import { PhotoComponent } from "../../components/items/photo.component";
 import { isPlatformBrowser } from '@angular/common';
 import { RefreshApiError } from '../../api/refresh-api-error';
 import { CachedListWithData } from '../../api/cached-list-with-data';
+import { RadioButtonGroupComponent } from '../../components/ui/form/radio-button-group.component';
+import { FieldTree, form, FormField } from '@angular/forms/signals';
+import { PhotoCategoryPipe } from '../../pipes/photo-category.pipe';
+import { addOptionFromPipeValue } from '../../helpers/button-data';
+
+interface FilterFormInput {
+  category: string,
+}
 
 @Component({
     selector: 'app-photo-user-listing',
@@ -35,7 +43,9 @@ import { CachedListWithData } from '../../api/cached-list-with-data';
     DropdownMenuComponent,
     ButtonComponent,
     ContainerHeaderComponent,
-    PhotoComponent
+    PhotoComponent,
+    RadioButtonGroupComponent,
+    FormField
 ],
     templateUrl: './photo-user-listing.component.html'
 })
@@ -50,14 +60,28 @@ export class PhotoUserListingComponent implements Scrollable {
   };
 
   showPhotoDropdown: boolean = false;
-  photoSelectionString: string = "";
-  filterForm = new FormGroup({
-    selection: new FormControl(-1)
+
+  filterInputs = signal<FilterFormInput>({
+    category: '',
   });
 
-  protected readonly isBrowser: boolean;
+  filterForm: FieldTree<FilterFormInput, string | number, "writable"> = form(this.filterInputs);
 
-  constructor(private client: ClientService, protected banner: BannerService, private route: ActivatedRoute, @Inject(PLATFORM_ID) platformId: Object) {
+  // TODO enum which maps numbers to special-cased categories?
+  photoCategories: Map<string, string> = new Map<string, string>();
+
+  protected readonly isBrowser: boolean;
+  protected readonly byUserCategoryKey: string = "by";
+  protected readonly withUserCategoryKey: string = "with";
+
+  constructor(private client: ClientService, protected banner: BannerService, private route: ActivatedRoute, @Inject(PLATFORM_ID) platformId: Object,
+    categoryPipe: PhotoCategoryPipe) {
+    
+    // init category options
+    addOptionFromPipeValue
+    this.photoCategories.set(this.byUserCategoryKey, "By");
+    this.photoCategories.set(this.withUserCategoryKey, "With");
+    
     route.params.subscribe(params => {
       const username: string | undefined = params['username'];
       const category: string | undefined = params['category'];
@@ -72,18 +96,7 @@ export class PhotoUserListingComponent implements Scrollable {
             this.user = user;
 
             if (category != null) {
-              this.photoSelectionString = category;
-              switch (category) {
-                case "by":
-                  this.setPhotoSelection(0);
-                  break;
-                case "with":
-                  this.setPhotoSelection(1);
-                  break;
-                default:
-                  this.banner.warn("Cannot get photos", "Selection '" + category + "' is unknown");
-                  return;
-              }
+              this.setPhotoSelection(category);
             }
           }
         });
@@ -97,47 +110,26 @@ export class PhotoUserListingComponent implements Scrollable {
     this.showPhotoDropdown = !this.showPhotoDropdown;
   }
 
-  getPhotoSelectionText(selection: number): string {
-    switch (selection) {
-      case 0: return "By";
-      case 1: return "With";
-      default: return "Something";
-    }
-  }
-
-  setPhotoSelection(selection: number) {
-    if (this.user == null) return;
-
-    let previousSelection: number = this.filterForm.controls.selection.getRawValue()!;
-    if (selection === previousSelection) return;
-
-    switch (previousSelection) {
-      case 0:
-        this.photosByUser = this.currentPhotos;
-        break;
-      case 1:
-        this.photosWithUser = this.currentPhotos;
-        break;
-    }
+  setPhotoSelection(category: string) {
+    if (!this.user) return;
 
     let cachedList: CachedListWithData<Photo> | undefined;
-    switch (selection) {
-      case 0:
-        this.photoSelectionString = "by";
+    switch (category) {
+      case this.byUserCategoryKey:
         cachedList = this.photosByUser;
         break;
-      case 1:
-        this.photoSelectionString = "with";
+      case this.withUserCategoryKey:
         cachedList = this.photosWithUser;
         break;
       default:
-        this.banner.warn("Cannot get photos", "Selection " + selection + " is unknown");
+        this.banner.warn("Cannot get photos", "Selected category '" + category + "' is unknown");
         return;
     }
 
-    this.filterForm.controls.selection.setValue(selection);
+    this.filterForm.category().value.set(category);
+
     if(this.isBrowser) {
-      window.history.replaceState({}, '', `/photos/${this.photoSelectionString}/user/${this.user.username}`);
+      window.history.replaceState({}, '', `/photos/${category}/user/${this.user.username}`);
     }
 
     if (cachedList != null) {
@@ -160,17 +152,29 @@ export class PhotoUserListingComponent implements Scrollable {
   loadData(): void {
     if(!this.user) return;
 
+    const category: string = this.filterForm.category().value();
+
     this.isLoading = true;
-    this.client.getPhotosRelatedToUserUuid(this.user.userId, this.photoSelectionString, this.currentPhotos.listInfo.nextPageIndex, defaultPageSize).subscribe({
+    this.client.getPhotosRelatedToUserUuid(this.user.userId, category, this.currentPhotos.listInfo.nextPageIndex, defaultPageSize).subscribe({
       error: error => {
         const apiError: RefreshApiError | undefined = error.error?.error;
         this.banner.warn("Failed to get photos", apiError == null ? error.message : apiError.message);
       },
       next: list => {
-        this.isLoading = false;
-
         this.currentPhotos.data = this.currentPhotos.data.concat(list.data);
         this.currentPhotos.listInfo = list.listInfo;
+        this.isLoading = false;
+
+        // Cache our results
+        switch (category) {
+          case this.byUserCategoryKey:
+            this.photosByUser = this.currentPhotos;
+            break;
+
+          case this.withUserCategoryKey:
+            this.photosWithUser = this.currentPhotos;
+            break;
+        }
       }
     });
   }

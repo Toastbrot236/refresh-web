@@ -1,8 +1,8 @@
-import {Component, Inject, PLATFORM_ID} from '@angular/core';
+import {Component, Inject, PLATFORM_ID, signal} from '@angular/core';
 import {Level} from "../../api/types/levels/level";
 import {ClientService, defaultPageSize} from "../../api/client.service";
-import {ActivatedRoute, Params, Router} from "@angular/router";
-import { AsyncPipe, isPlatformBrowser, NgClass, NgIf } from "@angular/common";
+import {ActivatedRoute, Router} from "@angular/router";
+import { isPlatformBrowser } from "@angular/common";
 import {LayoutService} from "../../services/layout.service";
 import {AuthenticationService} from "../../api/authentication.service";
 import { ExtendedUser } from '../../api/types/users/extended-user';
@@ -10,7 +10,6 @@ import { UserRoles } from '../../api/types/users/user-roles';
 import { PageTitleComponent } from "../../components/ui/text/page-title.component";
 import { ButtonComponent } from "../../components/ui/form/button.component";
 import { faChevronDown, faChevronUp, faTrash, faUser, faUsers } from '@fortawesome/free-solid-svg-icons';
-import { FormControl, FormGroup } from '@angular/forms';
 import { BannerService } from '../../banners/banner.service';
 import { RefreshApiError } from '../../api/refresh-api-error';
 import { RadioButtonComponent } from "../../components/ui/form/radio-button.component";
@@ -25,6 +24,13 @@ import { LevelLinkComponent } from "../../components/ui/text/links/level-link.co
 import { ContainerHeaderComponent } from "../../components/ui/container-header.component";
 import { LevelType } from '../../api/types/levels/level-type';
 import { ListWithData } from '../../api/list-with-data';
+import { FieldTree, form, FormField } from '@angular/forms/signals';
+import { RadioButtonGroupComponent } from '../../components/ui/form/radio-button-group.component';
+import { addOptionFromPipeValue } from '../../helpers/button-data';
+
+interface FilterFormInput {
+  scoreType: number,
+}
 
 @Component({
     selector: 'app-level-leaderboard',
@@ -37,7 +43,9 @@ import { ListWithData } from '../../api/list-with-data';
     ScorePreviewComponent,
     ScoreTypePipe,
     LevelLinkComponent,
-    ContainerHeaderComponent
+    ContainerHeaderComponent,
+    RadioButtonGroupComponent,
+    FormField
 ],
     providers: [
         SlugPipe,
@@ -59,17 +67,26 @@ export class LevelLeaderboardComponent {
   protected readonly isBrowser: boolean;
   protected ownUser: ExtendedUser | undefined;
 
-  filterForm = new FormGroup({
-    // TODO: showAll parameter
-    scoreType: new FormControl(0)
+  filterInputs = signal<FilterFormInput>({
+    scoreType: 1,
   });
+
+  filterForm: FieldTree<FilterFormInput, string | number, "writable"> = form(this.filterInputs);
   showFilterMenu: boolean = false;
+  scoreTypeOptions: Map<number, string> = new Map<number, string>();
 
   constructor(private client: ClientService, protected banner: BannerService, route: ActivatedRoute, 
               protected layout: LayoutService, private auth: AuthenticationService,
-              @Inject(PLATFORM_ID) platformId: Object, private router: Router, private slug: SlugPipe)
+              @Inject(PLATFORM_ID) platformId: Object, private router: Router, private slug: SlugPipe, private scoreTypePipe: ScoreTypePipe)
   {
     this.isBrowser = isPlatformBrowser(platformId);
+
+    // init score type options
+    addOptionFromPipeValue(0, this.scoreTypeOptions, this.scoreTypePipe);
+    addOptionFromPipeValue(1, this.scoreTypeOptions, this.scoreTypePipe);
+    addOptionFromPipeValue(2, this.scoreTypeOptions, this.scoreTypePipe);
+    addOptionFromPipeValue(3, this.scoreTypeOptions, this.scoreTypePipe);
+    addOptionFromPipeValue(4, this.scoreTypeOptions, this.scoreTypePipe);
 
     route.params.subscribe(params => {
       const id: number = +params['id'];
@@ -82,8 +99,8 @@ export class LevelLeaderboardComponent {
         next: response => {
           if (response) {
             this.level = response;
-            // Type doesn't matter for cutscenes
-            this.filterForm.controls.scoreType.setValue(response.levelType === LevelType.Cutscene ? 0 : 1);
+            // Type doesn't matter for cutscenes, so just show scores from all player modes by default
+            this.filterForm.scoreType().value.set(response.levelType === LevelType.Cutscene ? 0 : 1);
 
             this.auth.user.subscribe(user => {
               if (user) {
@@ -110,7 +127,7 @@ export class LevelLeaderboardComponent {
   getNextPage(): void {
     if(!this.level) return;
 
-    let scoreType: number = this.filterForm.controls.scoreType.getRawValue() ?? 0;
+    let scoreType: number = this.filterForm.scoreType().value();
     this.isLoading = true;
 
     this.client.getScoresForLevel(this.level.levelId, scoreType, this.listInfo.nextPageIndex, defaultPageSize).subscribe({
@@ -129,13 +146,13 @@ export class LevelLeaderboardComponent {
   }
 
   setScoreType(type: number) {
-    let previousType: number = this.filterForm.controls.scoreType.getRawValue()!;
+    let previousType: number = this.filterForm.scoreType().value();
     this.scoresPerType.set(previousType, {
       listInfo: this.listInfo,
       data: this.currentScores,
     });
 
-    this.filterForm.controls.scoreType.setValue(type);
+    this.filterForm.scoreType().value.set(type);
     
     let cachedList: ListWithData<Score> | undefined = this.scoresPerType.get(type);
     if (cachedList != null) {

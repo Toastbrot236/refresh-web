@@ -11,18 +11,12 @@
         <app-dropdown-menu [showMenu]="showFilterMenu" offsets="top-9 -left-5" [width]="64">
           <app-button trigger
             width="flex flex-shrink justify-evenly flex-grow w-48 text-nowrap"
-            [text]="filterForm.controls.scoreType.getRawValue()! | scoreType"
+            [text]="filterForm.scoreType().value()| scoreType"
             [icon]="showFilterMenu ? faChevronUp : faChevronDown"
             color="bg-secondary"
             (click)="scoreTypeButtonClick()">
           </app-button>
-          <div content>
-            <app-radio-button [label]="0 | scoreType" [form]="filterForm" ctrlName="scoreType" id="t0" [value]='0' (click)="setScoreType(0)"></app-radio-button>
-            <app-radio-button [label]="1 | scoreType" [form]="filterForm" ctrlName="scoreType" id="t1" [value]='1' (click)="setScoreType(1)"></app-radio-button>
-            <app-radio-button [label]="2 | scoreType" [form]="filterForm" ctrlName="scoreType" id="t2" [value]='2' (click)="setScoreType(2)"></app-radio-button>
-            <app-radio-button [label]="3 | scoreType" [form]="filterForm" ctrlName="scoreType" id="t3" [value]='3' (click)="setScoreType(3)"></app-radio-button>
-            <app-radio-button [label]="4 | scoreType" [form]="filterForm" ctrlName="scoreType" id="t4" [value]='4' (click)="setScoreType(4)"></app-radio-button>
-          </div>
+          <app-radio-button-group groupName="scoreType" [buttons]="scoreTypeOptions" [formField]="filterForm.scoreType"></app-radio-button-group>
         </app-dropdown-menu>
       </div>
     </div>
