@@ -6,16 +6,13 @@
         <app-dropdown-menu [showMenu]="showLevelDropdown" offsets="top-9 -left-5" [width]="56">
           <app-button trigger
               width="flex flex-shrink justify-evenly flex-grow w-42 text-nowrap"
-              [text]="getLevelSelectionText(filterForm.controls.selection.getRawValue()!)"
+              [text]="filterForm.category().value()"
               [icon]="showLevelDropdown ? faChevronUp : faChevronDown"
               color="bg-secondary"
               (click)="levelSelectionButtonClick()">
           </app-button>
-          <div content>
-              <app-radio-button [label]="getLevelSelectionText(0)" [form]="filterForm" ctrlName="selection" id="l0" [value]='0' (click)="setLevelSelection(0)"></app-radio-button>
-              <app-radio-button [label]="getLevelSelectionText(1)" [form]="filterForm" ctrlName="selection" id="l1" [value]='1' (click)="setLevelSelection(1)"></app-radio-button>
-          </div>
-          </app-dropdown-menu>
+          <app-radio-button-group groupName="levelCategory" [buttons]="levelCategories" [formField]="filterForm.category"></app-radio-button-group>
+        </app-dropdown-menu>
         <app-user-link class="content-center text-[20px]" [user]="user"></app-user-link>
         <span class="content-center text-sm italic text-gentle text-base">({{this.listInfo.totalItems}} in total)</span>
       </div>

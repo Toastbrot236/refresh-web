@@ -1,4 +1,4 @@
-import {Component, Inject, PLATFORM_ID} from '@angular/core';
+import {Component, Inject, PLATFORM_ID, signal} from '@angular/core';
 import {ClientService, defaultPageSize} from "../../api/client.service";
 import {ActivatedRoute} from "@angular/router";
 import {PageTitleComponent} from "../../components/ui/text/page-title.component";
@@ -11,17 +11,20 @@ import {defaultListInfo, RefreshApiListInfo} from "../../api/refresh-api-list-in
 import {InfiniteScrollerComponent} from "../../components/ui/infinite-scroller.component";
 import { User } from '../../api/types/users/user';
 import { UserLinkComponent } from "../../components/ui/text/links/user-link.component";
-import { RadioButtonComponent } from "../../components/ui/form/radio-button.component";
 import { DropdownMenuComponent } from "../../components/ui/form/dropdown-menu.component";
 import { ButtonComponent } from "../../components/ui/form/button.component";
 import { ContainerHeaderComponent } from "../../components/ui/container-header.component";
-import { FormControl, FormGroup } from '@angular/forms';
-import { ListWithData } from '../../api/list-with-data';
 import { BannerService } from '../../banners/banner.service';
 import { faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
 import { isPlatformBrowser } from '@angular/common';
 import { RefreshApiError } from '../../api/refresh-api-error';
 import { CachedListWithData } from '../../api/cached-list-with-data';
+import { RadioButtonGroupComponent } from '../../components/ui/form/radio-button-group.component';
+import { FieldTree, form, FormField } from '@angular/forms/signals';
+
+interface FilterFormInput {
+  category: string,
+}
 
 @Component({
     selector: 'app-level-user-listing',
@@ -32,10 +35,11 @@ import { CachedListWithData } from '../../api/cached-list-with-data';
     ContainerComponent,
     InfiniteScrollerComponent,
     UserLinkComponent,
-    RadioButtonComponent,
     DropdownMenuComponent,
     ButtonComponent,
-    ContainerHeaderComponent
+    ContainerHeaderComponent,
+    RadioButtonGroupComponent,
+    FormField
 ],
     templateUrl: './level-user-listing.component.html'
 })
@@ -50,14 +54,29 @@ export class LevelUserListingComponent implements Scrollable {
   };
 
   showLevelDropdown: boolean = false;
-  levelSelectionString: string = "";
-  filterForm = new FormGroup({
-    selection: new FormControl(-1)
+
+  filterInputs = signal<FilterFormInput>({
+    category: '',
   });
 
+  filterForm: FieldTree<FilterFormInput, string | number, "writable"> = form(this.filterInputs);
+
+  // TODO enum which maps numbers to special-cased categories?
+  levelCategories: Map<string, string> = new Map<string, string>();
+
   protected readonly isBrowser: boolean;
+  protected readonly byUserCategoryKey: string = "byUser";
+  protected readonly heartedCategoryKey: string = "hearted";
+
+  // this is only used so we can compare it against the current signal value, to determine where
+  // to cache the previous category results
+  currentlyShownCategory: string = this.byUserCategoryKey;
 
   constructor(private client: ClientService, protected banner: BannerService, private route: ActivatedRoute, @Inject(PLATFORM_ID) platformId: Object) {
+    // init category options
+    this.levelCategories.set(this.byUserCategoryKey, "Published by");
+    this.levelCategories.set(this.heartedCategoryKey, "Hearted by");
+    
     route.params.subscribe(params => {
       const username: string | undefined = params['username'];
       const category: string | undefined = params['category'];
@@ -72,18 +91,7 @@ export class LevelUserListingComponent implements Scrollable {
             this.user = user;
 
             if (category != null) {
-              this.levelSelectionString = category;
-              switch (category) {
-                case "byUser":
-                  this.setLevelSelection(0);
-                  break;
-                case "hearted":
-                  this.setLevelSelection(1);
-                  break;
-                default:
-                  this.banner.warn("Cannot get levels", "Selection '" + category + "' is unknown");
-                  return;
-              }
+              this.setLevelSelection(category);
             }
           }
         });
@@ -97,49 +105,32 @@ export class LevelUserListingComponent implements Scrollable {
     this.showLevelDropdown = !this.showLevelDropdown;
   }
 
-  getLevelSelectionText(selection: number): string {
-    switch (selection) {
-      case 0: return "Published by";
-      case 1: return "Hearted by";
-      default: return "Something by";
-    }
-  }
-
-  setLevelSelection(selection: number) {
-    if (this.user == null) return;
-
-    let previousSelection: number = this.filterForm.controls.selection.getRawValue()!;
-    if (selection === previousSelection) return;
-
-    switch (previousSelection) {
-      case 0:
-        this.levelsPublishedByUser = this.currentLevels;
-        break;
-      case 1:
-        this.levelsHeartedByUser = this.currentLevels;
-        break;
-    }
+  setLevelSelection(category: string) {
+    if (!this.user) return;
 
     let cachedList: CachedListWithData<Level> | undefined;
-    switch (selection) {
-      case 0:
-        this.levelSelectionString = "byUser";
+    switch (category) {
+      case this.byUserCategoryKey:
         cachedList = this.levelsPublishedByUser;
         break;
-      case 1:
-        this.levelSelectionString = "hearted";
+
+      case this.heartedCategoryKey:
         cachedList = this.levelsHeartedByUser;
         break;
+
       default:
-        this.banner.warn("Cannot get levels", "Selection " + selection + " is unknown");
+        this.banner.warn("Cannot get levels", "Selected category '" + category + "' is unknown");
         return;
     }
 
-    this.filterForm.controls.selection.setValue(selection);
+    this.filterForm.category().value.set(category);
+
     if(this.isBrowser) {
-      window.history.replaceState({}, '', `/levels/${this.levelSelectionString}/user/${this.user.username}`);
+      window.history.replaceState({}, '', `/levels/${category}/user/${this.user.username}`);
     }
 
+    // If we have already cached the wanted category's results, set the current list to the cache and stop here.
+    // Otherwise proceed to download the list from the server, and then cache it.
     if (cachedList != null) {
       this.currentLevels = cachedList;
       return;
@@ -160,8 +151,10 @@ export class LevelUserListingComponent implements Scrollable {
   loadData(): void {
     if(!this.user) return;
 
+    const category: string = this.filterForm.category().value();
+
     this.isLoading = true;
-    this.client.getLevelsInCategory(this.levelSelectionString, this.listInfo.nextPageIndex, defaultPageSize, {u: this.user.username}).subscribe({
+    this.client.getLevelsInCategory(category, this.listInfo.nextPageIndex, defaultPageSize, {u: this.user.username}).subscribe({
       error: error => {
         const apiError: RefreshApiError | undefined = error.error?.error;
         this.banner.warn("Failed to get levels", apiError == null ? error.message : apiError.message);
@@ -170,6 +163,17 @@ export class LevelUserListingComponent implements Scrollable {
         this.currentLevels.data = this.currentLevels.data.concat(list.data);
         this.currentLevels.listInfo = list.listInfo;
         this.isLoading = false;
+
+        // Cache our results
+        switch (category) {
+          case this.byUserCategoryKey:
+            this.levelsPublishedByUser = this.currentLevels;
+            break;
+
+          case this.heartedCategoryKey:
+            this.levelsHeartedByUser = this.currentLevels;
+            break;
+        }
       }
     });
   }
