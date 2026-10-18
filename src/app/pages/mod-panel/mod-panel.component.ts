@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, computed, effect, signal } from '@angular/core';
 import {ClientService} from "../../api/client.service";
 import { PageTitleComponent } from "../../components/ui/text/page-title.component";
 import { ExtendedUser } from '../../api/types/users/extended-user';
@@ -23,6 +23,12 @@ import { TwoPaneLayoutComponent } from "../../components/ui/layouts/two-pane-lay
 import { ContainerComponent } from "../../components/ui/container.component";
 import { PaneTitleComponent } from "../../components/ui/text/pane-title.component";
 import { ConfirmationDialogComponent } from "../../components/ui/confirmation-dialog.component";
+import { FieldTree, form, required } from '@angular/forms/signals';
+
+interface AnnouncementFormInput {
+  title: string,
+  text: string,
+}
 
 @Component({
     selector: 'app-mod-panel',
@@ -54,22 +60,34 @@ export class ModPanelComponent {
   protected statistics: Statistics | undefined;
   protected statisticsDownloadFailed: boolean = false;
 
+  announcementInputs = signal<AnnouncementFormInput>({
+    title: '',
+    text: '',
+  });
+
+  announcementForm: FieldTree<AnnouncementFormInput, string | number, "writable"> = form(this.announcementInputs, (f) => {
+    required(f.title, { message: 'Please give this announcement a title.' });
+    required(f.text, { message: 'Please give this announcement some content.' });
+  });
+
   protected previewAnnouncement: Announcement = {
     announcementId: "",
     title: "",
     text: "",
     createdAt: undefined,
   };
-  protected announcementForm = new FormGroup({
-    title: new FormControl(),
-    text: new FormControl(),
-  });
-  protected isAnnouncementComplete: boolean = false;
   protected showAnnouncementPostDialog: boolean = false;
 
   protected grafanaSafeUrl: SafeUrl | undefined;
 
   constructor(private auth: AuthenticationService, private client: ClientService, protected banner: BannerService, private sanitizer: DomSanitizer) {
+    // Set listeners for the preview announcement object
+    effect(() => {
+      console.log("annunvemnetn form effect callbaclk executed: title " + this.announcementInputs().title + ", text: " + this.announcementInputs().text);
+      this.previewAnnouncement.title = this.announcementInputs().title;
+      this.previewAnnouncement.text = this.announcementInputs().text;
+    });
+
     this.auth.user.subscribe(user => {
       if (user) {
         if (user.role < UserRoles.Moderator) {
@@ -123,6 +141,7 @@ export class ModPanelComponent {
     });
   }
 
+  /*
   protected checkAnnouncementTitleChanges() {
     let currentTitle: string = this.announcementForm.controls.title.getRawValue();
     this.previewAnnouncement.title = currentTitle;
@@ -138,11 +157,11 @@ export class ModPanelComponent {
   protected checkAnnouncementCompleteness() {
     this.isAnnouncementComplete = this.previewAnnouncement.title.length > 0 && this.previewAnnouncement.text.length > 0;
   }
+  */
 
   protected resetAnnouncementInputs() {
-    this.isAnnouncementComplete = false;
-    this.announcementForm.controls.title.setValue("");
-    this.announcementForm.controls.text.setValue("");
+    this.announcementForm.title().value.set("");
+    this.announcementForm.text().value.set("");
 
     this.previewAnnouncement = {
       announcementId: "",
@@ -157,7 +176,7 @@ export class ModPanelComponent {
   }
 
   protected postAnnouncement() {
-    if (!this.isAnnouncementComplete) return;
+    if (this.announcementForm().invalid()) return;
     this.toggleAnnouncementPostDialog(false);
 
     this.client.postAnnouncement(this.previewAnnouncement).subscribe({
@@ -170,8 +189,10 @@ export class ModPanelComponent {
         let newList: Announcement[] = [];
         newList.push(response);
 
-        if (!this.announcements) this.announcements = newList
-        else this.announcements = newList.concat(this.announcements);
+        // If already loaded announcements list is somehow undefined, set it to a new list containing just the new announcement,
+        // otherwise add the new announcement to the existing list.
+        // We concatenate with the old list to insert the new announcement to the front, instead of pushing it to the end of the list.
+        this.announcements = !this.announcements ? newList : newList.concat(this.announcements);
       }
     });
   }
