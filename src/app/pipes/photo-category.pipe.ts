@@ -6,10 +6,10 @@ import {GameVersion} from "../api/types/game-version";
   standalone: true
 })
 export class PhotoCategoryPipe implements PipeTransform {
-  transform(value: string, short: boolean = false): string {
+  transform(value: string): string {
     switch (value) {
       case "by":
-        return short ? "Published" : "Published by";
+        return "Published by";
       case "with":
         return "Starring"
       default:
