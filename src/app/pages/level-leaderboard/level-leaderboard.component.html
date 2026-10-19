@@ -16,7 +16,7 @@
             color="bg-secondary"
             (click)="scoreTypeButtonClick()">
           </app-button>
-          <app-radio-button-group groupName="scoreType" [buttons]="scoreTypeOptions" [formField]="filterForm.scoreType"></app-radio-button-group>
+          <app-radio-button-group groupName="scoreType" [buttonValues]="[0, 1, 2, 3, 4]" [textPipe]="scoreTypePipe" [formField]="filterForm.scoreType"></app-radio-button-group>
         </app-dropdown-menu>
       </div>
     </div>

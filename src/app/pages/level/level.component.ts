@@ -1,4 +1,4 @@
-import {Component, Inject, PLATFORM_ID} from '@angular/core';
+import {Component, Inject, PLATFORM_ID, signal} from '@angular/core';
 import {Level} from "../../api/types/levels/level";
 import {ClientService} from "../../api/client.service";
 import {ActivatedRoute, RouterLink} from "@angular/router";
@@ -28,7 +28,6 @@ import { LevelRelations } from '../../api/types/levels/level-relations';
 import { OriginalPublisherRouterLink } from "../../components/ui/text/links/original-publisher-router-link.component";
 import { LargerLabelComponent } from "../../components/ui/info/larger-label.component";
 import { TooltipComponent } from "../../components/ui/text/tooltip.component";
-import { FormControl, FormGroup } from '@angular/forms';
 import { ButtonComponent } from '../../components/ui/form/button.component';
 import { RadioButtonComponent } from '../../components/ui/form/radio-button.component';
 import { ScoreTypePipe } from '../../pipes/score-type.pipe';
@@ -39,7 +38,12 @@ import { ScorePreviewComponent } from "../../components/items/score-preview.comp
 import { Score } from '../../api/types/levels/score';
 import { BannerService } from '../../banners/banner.service';
 import { RefreshApiError } from '../../api/refresh-api-error';
+import { RadioButtonGroupComponent } from '../../components/ui/form/radio-button-group.component';
+import { FieldTree, form, FormField } from '@angular/forms/signals';
 
+interface ScoreFilterFormInput {
+  scoreType: number,
+}
 
 @Component({
     selector: 'app-level',
@@ -64,10 +68,11 @@ import { RefreshApiError } from '../../api/refresh-api-error';
     LargerLabelComponent,
     TooltipComponent,
     ButtonComponent,
-    RadioButtonComponent,
     DropdownMenuComponent,
     ScoreTypePipe,
-    ScorePreviewComponent
+    ScorePreviewComponent,
+    RadioButtonGroupComponent,
+    FormField
 ],
     providers: [
         SlugPipe,
@@ -86,12 +91,15 @@ export class LevelComponent {
   protected ownUser: ExtendedUser | undefined;
   protected relations: LevelRelations | undefined;
 
-  scoreFilterForm = new FormGroup({
-    scoreType: new FormControl(0)
+  scoreFilterInputs = signal<ScoreFilterFormInput>({
+    scoreType: 1,
   });
+
+  scoreFilterForm: FieldTree<ScoreFilterFormInput, string | number, "writable"> = form(this.scoreFilterInputs);
+
   protected showScoreFilterMenu: boolean = false;
 
-  constructor(private embed: EmbedService, private client: ClientService, private slug: SlugPipe,
+  constructor(private embed: EmbedService, private client: ClientService, private slug: SlugPipe, protected scoreTypePipe: ScoreTypePipe,
               route: ActivatedRoute, protected layout: LayoutService, private auth: AuthenticationService,
               @Inject(PLATFORM_ID) platformId: Object, protected banner: BannerService)
   {
@@ -146,10 +154,12 @@ export class LevelComponent {
   }
 
   setScoreType(type: number) {
-    this.scoreFilterForm.controls.scoreType.setValue(type);
+    this.scoreFilterForm.scoreType().value.set(type);
     this.getScores(type);
   }
 
+  // TODO would be good to somehow deduplicate all of this stuff into a component which we can just reuse for both
+  // preview and paginated
   private getScores(type: number) {
     if (!this.level) return;
 

@@ -12,7 +12,6 @@ import { ButtonComponent } from "../../components/ui/form/button.component";
 import { faChevronDown, faChevronUp, faTrash, faUser, faUsers } from '@fortawesome/free-solid-svg-icons';
 import { BannerService } from '../../banners/banner.service';
 import { RefreshApiError } from '../../api/refresh-api-error';
-import { RadioButtonComponent } from "../../components/ui/form/radio-button.component";
 import { DropdownMenuComponent } from "../../components/ui/form/dropdown-menu.component";
 import { SlugPipe } from '../../pipes/slug.pipe';
 import { Score } from '../../api/types/levels/score';
@@ -26,7 +25,6 @@ import { LevelType } from '../../api/types/levels/level-type';
 import { ListWithData } from '../../api/list-with-data';
 import { FieldTree, form, FormField } from '@angular/forms/signals';
 import { RadioButtonGroupComponent } from '../../components/ui/form/radio-button-group.component';
-import { addOptionFromPipeValue } from '../../helpers/button-data';
 
 interface FilterFormInput {
   scoreType: number,
@@ -37,7 +35,6 @@ interface FilterFormInput {
     imports: [
     PageTitleComponent,
     ButtonComponent,
-    RadioButtonComponent,
     DropdownMenuComponent,
     InfiniteScrollerComponent,
     ScorePreviewComponent,
@@ -73,20 +70,12 @@ export class LevelLeaderboardComponent {
 
   filterForm: FieldTree<FilterFormInput, string | number, "writable"> = form(this.filterInputs);
   showFilterMenu: boolean = false;
-  scoreTypeOptions: Map<number, string> = new Map<number, string>();
 
   constructor(private client: ClientService, protected banner: BannerService, route: ActivatedRoute, 
               protected layout: LayoutService, private auth: AuthenticationService,
-              @Inject(PLATFORM_ID) platformId: Object, private router: Router, private slug: SlugPipe, private scoreTypePipe: ScoreTypePipe)
+              @Inject(PLATFORM_ID) platformId: Object, private router: Router, private slug: SlugPipe, protected scoreTypePipe: ScoreTypePipe)
   {
     this.isBrowser = isPlatformBrowser(platformId);
-
-    // init score type options
-    addOptionFromPipeValue(0, this.scoreTypeOptions, this.scoreTypePipe);
-    addOptionFromPipeValue(1, this.scoreTypeOptions, this.scoreTypePipe);
-    addOptionFromPipeValue(2, this.scoreTypeOptions, this.scoreTypePipe);
-    addOptionFromPipeValue(3, this.scoreTypeOptions, this.scoreTypePipe);
-    addOptionFromPipeValue(4, this.scoreTypeOptions, this.scoreTypePipe);
 
     route.params.subscribe(params => {
       const id: number = +params['id'];

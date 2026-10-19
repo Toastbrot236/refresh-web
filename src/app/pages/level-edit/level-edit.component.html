@@ -58,7 +58,15 @@
               [color]="gameButtonColor"
               (click)="gameButtonClick()">
             </app-button>
-            <app-radio-button-group groupName="game" [buttons]="gameVersionOptions" [formField]="curatorForm.gameVersion"></app-radio-button-group>
+            <!-- Website is missing as an option because that's not really a valid game version for levels -->
+            <app-radio-button-group groupName="game" [buttonValues]="[
+              gameVersions.LBP1,
+              gameVersions.LBP2,
+              gameVersions.LBP3,
+              gameVersions.LBPVita,
+              gameVersions.LBPPSP,
+              gameVersions.BetaBuild,
+            ]" [textPipe]="gamePipe" [formField]="curatorForm.gameVersion"></app-radio-button-group>
           </app-dropdown-menu>
         </div>
 

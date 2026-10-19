@@ -1,4 +1,4 @@
-import {Component, Input, model} from '@angular/core';
+import {Component, Input, model, PipeTransform} from '@angular/core';
 import {ReactiveFormsModule} from "@angular/forms";
 import { FormValueControl } from '@angular/forms/signals';
 import { RadioButtonComponent } from './radio-button.component';
@@ -11,9 +11,9 @@ import { RadioButtonComponent } from './radio-button.component';
 ],
     template: `
         <div class="cursor-pointer min-w-full flex flex-row content-center justify-start rounded-md px-2 py-1 hover-within:outline-2 hover-within:outline hover-within:outline-secondary-bright max-w-fit transition-[outline]">
-            <!-- 0 is enum value (key), 1 is the text to be displayed to the user -->
-            @for (buttonData of buttons; track buttonData[0]) {
-                <app-radio-button [name]="groupName" [value]="buttonData[0]" [label]="buttonData[1]" (click)="value.set(buttonData[0])"></app-radio-button>
+            <!-- Use the given pipe to get the label to show to the user; if no pipe was passed, just fall back to the value, but prefix it with 'Option' for better formatting -->
+            @for (buttonValue of buttonValues; track buttonValue) {
+                <app-radio-button [name]="groupName" [value]="buttonValue" [label]="textPipe != null ? textPipe.transform(buttonValue) : ('Option ' + buttonValue)" (click)="value.set(buttonValue)"></app-radio-button>
             }
         </div>
     `
@@ -25,7 +25,10 @@ export class RadioButtonGroupComponent implements FormValueControl<number | stri
   @Input({required: true}) groupName: string = "";
 
   // maps enum value -> text to show on the button
-  @Input({required: true}) buttons: Map<number | string, string> = new Map<number, string>();
+  @Input({required: true}) buttonValues: string[] | number[] = [];
+  @Input() textPipe: PipeTransform | undefined;
 
   readonly value = model<number | string>(0);
+  buttonMappings: Map<string | number, string> = new Map<string | number, string>();
+
 }

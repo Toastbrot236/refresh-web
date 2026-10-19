@@ -28,7 +28,6 @@ import { SlugPipe } from '../../pipes/slug.pipe';
 import { DialogComponent } from "../../components/ui/dialog.component";
 import { FieldTree, form, required, FormField } from '@angular/forms/signals';
 import { RadioButtonGroupComponent } from '../../components/ui/form/radio-button-group.component';
-import { addOptionFromPipeValue } from '../../helpers/button-data';
 
 interface MetadataFormInput {
   name: string,
@@ -65,7 +64,8 @@ interface LevelCuratorFormInput {
     FormField
 ],
     providers: [
-        SlugPipe
+        SlugPipe,
+        GamePipe,
     ],
     templateUrl: './level-edit.component.html'
 })
@@ -110,11 +110,9 @@ export class LevelEditComponent {
   isUserModerator: boolean = false;
   isUserPublisher: boolean = false;
 
-  gameVersionOptions: Map<GameVersion, string> = new Map<GameVersion, string>();
-
   constructor(private client: ClientService, protected banner: BannerService, route: ActivatedRoute, 
               protected layout: LayoutService, private auth: AuthenticationService,
-              @Inject(PLATFORM_ID) platformId: Object, private router: Router, private slug: SlugPipe, private gamePipe: GamePipe)
+              @Inject(PLATFORM_ID) platformId: Object, private router: Router, private slug: SlugPipe, protected gamePipe: GamePipe)
   {
     this.isBrowser = isPlatformBrowser(platformId);
 
@@ -123,15 +121,6 @@ export class LevelEditComponent {
       console.log("level edit form effect callbaclk executed: gaversion " + this.curatorInputs().gameVersion);
       this.setGameButtonColor(this.curatorInputs().gameVersion);
     });
-
-    // init games selectable via dropdown, so we could pass it to the radio button group.
-    // website value is missing because that's invalid for levels.
-    addOptionFromPipeValue(GameVersion.LBP1, this.gameVersionOptions, this.gamePipe);
-    addOptionFromPipeValue(GameVersion.LBP2, this.gameVersionOptions, this.gamePipe);
-    addOptionFromPipeValue(GameVersion.LBP3, this.gameVersionOptions, this.gamePipe);
-    addOptionFromPipeValue(GameVersion.LBPVita, this.gameVersionOptions, this.gamePipe);
-    addOptionFromPipeValue(GameVersion.LBPPSP, this.gameVersionOptions, this.gamePipe);
-    addOptionFromPipeValue(GameVersion.BetaBuild, this.gameVersionOptions, this.gamePipe);
 
     route.params.subscribe(params => {
       const id: number = +params['id'];
@@ -330,4 +319,5 @@ export class LevelEditComponent {
   protected readonly faChevronDown = faChevronDown;
   protected readonly faChevronUp = faChevronUp;
   protected readonly faSignOutAlt = faSignOutAlt;
+  protected readonly gameVersions = GameVersion;
 }
