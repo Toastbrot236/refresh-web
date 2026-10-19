@@ -26,7 +26,7 @@
         <app-container class="w-full">
             <div class="flex flex-row flex-grow flex-wrap justify-between gap-x-2 gap-y-1">
                 <app-pane-title>
-                    <a [routerLink]="'/levels/' + levelSelectionString + '/user/' + user.username">
+                    <a [routerLink]="'/levels/' + filterForm.levelCategory().value() + '/user/' + user.username">
                         Levels
                     </a>
                     <span class="text-sm italic text-gentle text-base">({{this.currentLevels.listInfo.totalItems}} in total)</span>
@@ -34,15 +34,12 @@
                 <app-dropdown-menu [showMenu]="showLevelDropdown" offsets="top-9 -left-7" [width]="60">
                     <app-button trigger
                         width="flex flex-shrink justify-evenly flex-grow w-48 text-nowrap"
-                        [text]="getLevelSelectionText(levelForm.controls.selection.getRawValue()!)"
+                        [text]="filterForm.levelCategory().value() | levelCategory"
                         [icon]="showLevelDropdown ? faChevronUp : faChevronDown"
                         color="bg-secondary"
                         (click)="levelSelectionButtonClick()">
                     </app-button>
-                    <div content>
-                        <app-radio-button [label]="getLevelSelectionText(0)" [form]="levelForm" ctrlName="selection" id="l0" [value]='0' (click)="getLevels(0)"></app-radio-button>
-                        <app-radio-button [label]="getLevelSelectionText(1)" [form]="levelForm" ctrlName="selection" id="l1" [value]='1' (click)="getLevels(1)"></app-radio-button>
-                    </div>
+                    <app-radio-button-group groupName="levelCategory" [buttonValues]="[levelsByUserCategoryKey, levelsHeartedCategoryKey]" [textPipe]="levelCategoryPipe" [formField]="filterForm.levelCategory"></app-radio-button-group>
                 </app-dropdown-menu>
             </div>
             <app-divider></app-divider>
@@ -65,7 +62,7 @@
         <app-container class="w-full">
             <div class="flex flex-row flex-grow flex-wrap justify-between gap-x-2 gap-y-1">
                 <app-pane-title>
-                    <a [routerLink]="'/photos/' + photoSelectionString + '/user/' + user.username">
+                    <a [routerLink]="'/photos/' + filterForm.photoCategory().value() + '/user/' + user.username">
                         Photos
                     </a>
                     <span class="text-sm italic text-gentle text-base">({{this.currentPhotos.listInfo.totalItems}} in total)</span>
@@ -73,15 +70,12 @@
                 <app-dropdown-menu [showMenu]="showPhotoDropdown" offsets="top-9 -left-2" [width]="56">
                     <app-button trigger
                         width="flex flex-shrink justify-evenly flex-grow w-48 text-nowrap"
-                        [text]="getPhotoSelectionText(photoForm.controls.selection.getRawValue()!)"
+                        [text]="filterForm.photoCategory().value() | photoCategory"
                         [icon]="showPhotoDropdown ? faChevronUp : faChevronDown"
                         color="bg-secondary"
                         (click)="photoSelectionButtonClick()">
                     </app-button>
-                    <div content>
-                        <app-radio-button [label]="getPhotoSelectionText(0)" [form]="photoForm" ctrlName="selection" id="p0" [value]='0' (click)="getPhotos(0)"></app-radio-button>
-                        <app-radio-button [label]="getPhotoSelectionText(1)" [form]="photoForm" ctrlName="selection" id="p1" [value]='1' (click)="getPhotos(1)"></app-radio-button>
-                    </div>
+                    <app-radio-button-group groupName="photoCategory" [buttonValues]="[photosByUserCategoryKey, photosWithUserCategoryKey]" [textPipe]="photoCategoryPipe" [formField]="filterForm.photoCategory"></app-radio-button-group>
                 </app-dropdown-menu>
             </div>
             <app-divider></app-divider>
