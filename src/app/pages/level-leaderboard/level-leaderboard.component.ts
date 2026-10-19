@@ -1,4 +1,4 @@
-import {Component, Inject, PLATFORM_ID, signal} from '@angular/core';
+import {Component, effect, Inject, PLATFORM_ID, signal} from '@angular/core';
 import {Level} from "../../api/types/levels/level";
 import {ClientService, defaultPageSize} from "../../api/client.service";
 import {ActivatedRoute, Router} from "@angular/router";
@@ -76,6 +76,12 @@ export class LevelLeaderboardComponent {
               @Inject(PLATFORM_ID) platformId: Object, private router: Router, private slug: SlugPipe, protected scoreTypePipe: ScoreTypePipe)
   {
     this.isBrowser = isPlatformBrowser(platformId);
+    
+    // listen for radio button changes
+    effect(() => {
+      console.log("lvl scores filter form effect callback executed: score tpe " + this.filterInputs().scoreType);
+      this.getScores();
+    });
 
     route.params.subscribe(params => {
       const id: number = +params['id'];
@@ -113,10 +119,10 @@ export class LevelLeaderboardComponent {
     });
   }
 
-  getNextPage(): void {
+  getScores(): void {
     if(!this.level) return;
 
-    let scoreType: number = this.filterForm.scoreType().value();
+    const scoreType: number = this.filterForm.scoreType().value();
     this.isLoading = true;
 
     this.client.getScoresForLevel(this.level.levelId, scoreType, this.listInfo.nextPageIndex, defaultPageSize).subscribe({
@@ -132,33 +138,6 @@ export class LevelLeaderboardComponent {
         this.listInfo = list.listInfo;
       }
     });
-  }
-
-  setScoreType(type: number) {
-    let previousType: number = this.filterForm.scoreType().value();
-    this.scoresPerType.set(previousType, {
-      listInfo: this.listInfo,
-      data: this.currentScores,
-    });
-
-    this.filterForm.scoreType().value.set(type);
-    
-    let cachedList: ListWithData<Score> | undefined = this.scoresPerType.get(type);
-    if (cachedList != null) {
-      this.currentScores = cachedList.data;
-      this.listInfo = cachedList.listInfo;
-      return;
-    }
-
-    this.currentScores = [];
-    this.listInfo = defaultListInfo;
-    this.getNextPage();
-  }
-
-  reset(): void {
-    this.currentScores = [];
-    this.isLoading = false;
-    this.listInfo = defaultListInfo;
   }
 
   scoreTypeButtonClick() {

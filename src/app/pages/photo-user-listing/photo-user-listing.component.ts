@@ -77,7 +77,7 @@ export class PhotoUserListingComponent implements Scrollable {
     
     // listen for radio button changes
     effect(() => {
-      console.log("filter form effect callback executed: lvl category " + this.filterInputs().category);
+      console.log("filter form effect callback executed: photo user category " + this.filterInputs().category);
       this.getPhotos();
     });
     

@@ -119,7 +119,7 @@ export class UserComponent {
     
     // listen for radio button changes
     effect(() => {
-      console.log("filter form effect callback executed: lvl category " + this.filterInputs().levelCategory + ", photo cat " + this.filterInputs().photoCategory);
+      console.log("filter form effect callback executed: user lvl category " + this.filterInputs().levelCategory + ", user photo cat " + this.filterInputs().photoCategory);
       this.getLevels();
       this.getPhotos();
     });

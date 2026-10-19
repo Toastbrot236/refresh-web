@@ -1,4 +1,4 @@
-import {Component, Inject, PLATFORM_ID, signal} from '@angular/core';
+import {Component, effect, Inject, PLATFORM_ID, signal} from '@angular/core';
 import {Level} from "../../api/types/levels/level";
 import {ClientService} from "../../api/client.service";
 import {ActivatedRoute, RouterLink} from "@angular/router";
@@ -104,6 +104,13 @@ export class LevelComponent {
               @Inject(PLATFORM_ID) platformId: Object, protected banner: BannerService)
   {
     this.isBrowser = isPlatformBrowser(platformId);
+    
+    // listen for radio button changes
+    effect(() => {
+      console.log("lvl filter form effect callback executed: score tpe " + this.scoreFilterInputs().scoreType);
+      this.getScores();
+    });
+
     route.params.subscribe(params => {
       const id: number = +params['id'];
       this.client.getLevelById(id).subscribe({
@@ -146,22 +153,20 @@ export class LevelComponent {
     });
 
     // Type doesn't matter for cutscenes
-    this.setScoreType(data.levelType === LevelType.Cutscene ? 0 : 1);
+    // listener above will take care of calling getScores() when we set the signal value
+    this.scoreFilterForm.scoreType().value.set(data.levelType === LevelType.Cutscene ? 0 : 1);
   }
 
   scoreTypeButtonClick() {
     this.showScoreFilterMenu = !this.showScoreFilterMenu;
   }
 
-  setScoreType(type: number) {
-    this.scoreFilterForm.scoreType().value.set(type);
-    this.getScores(type);
-  }
-
   // TODO would be good to somehow deduplicate all of this stuff into a component which we can just reuse for both
   // preview and paginated
-  private getScores(type: number) {
+  private getScores() {
     if (!this.level) return;
+
+    const type: number = this.scoreFilterInputs().scoreType;
 
     let cachedList: Score[] | undefined = this.scoresPerType.get(type);
     if (cachedList != null) {

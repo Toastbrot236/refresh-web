@@ -44,10 +44,11 @@ export class LoginComponent {
     event.preventDefault();
 
     if (this.form().valid()) {
-      console.log(this.inputs())
+      console.log("valid login form inputs: " + this.inputs());
     }
 
-    this.form.passwordClear
+    console.log("login email: " + this.form.emailAddress().value());
+    console.log("login pass: " + this.form.passwordClear().value());
 
     /*
     const emailAddress: string = this.loginForm.emailAddress.

@@ -31,5 +31,5 @@
   @if (isLoading) {
     <p>Loading scores...</p>
   }
-  <app-infinite-scroller [isLoading]="this.isLoading" [listInfo]="this.listInfo" (loadData)="getNextPage()"></app-infinite-scroller>
+  <app-infinite-scroller [isLoading]="this.isLoading" [listInfo]="this.listInfo" (loadData)="getScores()"></app-infinite-scroller>
 }
