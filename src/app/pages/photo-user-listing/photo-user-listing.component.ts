@@ -1,20 +1,17 @@
-import {Component, Inject, PLATFORM_ID, signal} from '@angular/core';
+import {Component, effect, Inject, PLATFORM_ID, signal} from '@angular/core';
 import {ClientService, defaultPageSize} from "../../api/client.service";
 import {ActivatedRoute} from "@angular/router";
 import {PageTitleComponent} from "../../components/ui/text/page-title.component";
 import {ResponsiveGridComponent} from "../../components/ui/responsive-grid.component";
 import {ContainerComponent} from "../../components/ui/container.component";
 import {Scrollable} from "../../helpers/scrollable";
-import {defaultListInfo, RefreshApiListInfo} from "../../api/refresh-api-list-info";
+import {defaultListInfo} from "../../api/refresh-api-list-info";
 import {InfiniteScrollerComponent} from "../../components/ui/infinite-scroller.component";
 import { User } from '../../api/types/users/user';
 import { UserLinkComponent } from "../../components/ui/text/links/user-link.component";
-import { RadioButtonComponent } from "../../components/ui/form/radio-button.component";
 import { DropdownMenuComponent } from "../../components/ui/form/dropdown-menu.component";
 import { ButtonComponent } from "../../components/ui/form/button.component";
 import { ContainerHeaderComponent } from "../../components/ui/container-header.component";
-import { FormControl, FormGroup } from '@angular/forms';
-import { ListWithData } from '../../api/list-with-data';
 import { BannerService } from '../../banners/banner.service';
 import { faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
 import { Photo } from '../../api/types/photos/photo';
@@ -25,7 +22,6 @@ import { CachedListWithData } from '../../api/cached-list-with-data';
 import { RadioButtonGroupComponent } from '../../components/ui/form/radio-button-group.component';
 import { FieldTree, form, FormField } from '@angular/forms/signals';
 import { PhotoCategoryPipe } from '../../pipes/photo-category.pipe';
-import { addOptionFromPipeValue } from '../../helpers/button-data';
 
 interface FilterFormInput {
   category: string,
@@ -39,14 +35,17 @@ interface FilterFormInput {
     ContainerComponent,
     InfiniteScrollerComponent,
     UserLinkComponent,
-    RadioButtonComponent,
     DropdownMenuComponent,
     ButtonComponent,
     ContainerHeaderComponent,
     PhotoComponent,
     RadioButtonGroupComponent,
-    FormField
+    FormField,
+    PhotoCategoryPipe,
 ],
+    providers: [
+      PhotoCategoryPipe,
+    ],
     templateUrl: './photo-user-listing.component.html'
 })
 export class PhotoUserListingComponent implements Scrollable {
@@ -61,26 +60,26 @@ export class PhotoUserListingComponent implements Scrollable {
 
   showPhotoDropdown: boolean = false;
 
+  // Category names used for the API request routes, and internally to identify cache, radio buttons (ID and value) etc
+  protected readonly byUserCategoryKey: string = "by";
+  protected readonly withUserCategoryKey: string = "with";
+
   filterInputs = signal<FilterFormInput>({
-    category: '',
+    category: this.byUserCategoryKey,
   });
 
   filterForm: FieldTree<FilterFormInput, string | number, "writable"> = form(this.filterInputs);
 
-  // TODO enum which maps numbers to special-cased categories?
-  photoCategories: Map<string, string> = new Map<string, string>();
-
   protected readonly isBrowser: boolean;
-  protected readonly byUserCategoryKey: string = "by";
-  protected readonly withUserCategoryKey: string = "with";
 
   constructor(private client: ClientService, protected banner: BannerService, private route: ActivatedRoute, @Inject(PLATFORM_ID) platformId: Object,
-    categoryPipe: PhotoCategoryPipe) {
+    protected categoryPipe: PhotoCategoryPipe) {
     
-    // init category options
-    addOptionFromPipeValue
-    this.photoCategories.set(this.byUserCategoryKey, "By");
-    this.photoCategories.set(this.withUserCategoryKey, "With");
+    // listen for radio button changes
+    effect(() => {
+      console.log("filter form effect callback executed: lvl category " + this.filterInputs().category);
+      this.getPhotos();
+    });
     
     route.params.subscribe(params => {
       const username: string | undefined = params['username'];
@@ -96,7 +95,8 @@ export class PhotoUserListingComponent implements Scrollable {
             this.user = user;
 
             if (category != null) {
-              this.setPhotoSelection(category);
+              // listener above will take care of calling getPhotos() when we set the signal value
+              this.filterForm.category().value.set(category);
             }
           }
         });
@@ -110,10 +110,12 @@ export class PhotoUserListingComponent implements Scrollable {
     this.showPhotoDropdown = !this.showPhotoDropdown;
   }
 
-  setPhotoSelection(category: string) {
+  getPhotos() {
     if (!this.user) return;
-
     let cachedList: CachedListWithData<Photo> | undefined;
+
+    const category: string = this.filterInputs().category;
+
     switch (category) {
       case this.byUserCategoryKey:
         cachedList = this.photosByUser;
