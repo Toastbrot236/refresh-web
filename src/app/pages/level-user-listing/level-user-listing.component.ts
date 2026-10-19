@@ -1,4 +1,4 @@
-import {Component, Inject, PLATFORM_ID, signal} from '@angular/core';
+import {Component, effect, Inject, PLATFORM_ID, signal} from '@angular/core';
 import {ClientService, defaultPageSize} from "../../api/client.service";
 import {ActivatedRoute} from "@angular/router";
 import {PageTitleComponent} from "../../components/ui/text/page-title.component";
@@ -21,6 +21,7 @@ import { RefreshApiError } from '../../api/refresh-api-error';
 import { CachedListWithData } from '../../api/cached-list-with-data';
 import { RadioButtonGroupComponent } from '../../components/ui/form/radio-button-group.component';
 import { FieldTree, form, FormField } from '@angular/forms/signals';
+import { LevelCategoryPipe } from '../../pipes/level-category.pipe';
 
 interface FilterFormInput {
   category: string,
@@ -39,8 +40,12 @@ interface FilterFormInput {
     ButtonComponent,
     ContainerHeaderComponent,
     RadioButtonGroupComponent,
-    FormField
+    FormField,
+    LevelCategoryPipe
 ],
+    providers: [
+      LevelCategoryPipe
+    ],
     templateUrl: './level-user-listing.component.html'
 })
 export class LevelUserListingComponent implements Scrollable {
@@ -55,27 +60,26 @@ export class LevelUserListingComponent implements Scrollable {
 
   showLevelDropdown: boolean = false;
 
+  // Category names used for the API request routes, and internally to identify cache, radio buttons (ID and value) etc
+  protected readonly byUserCategoryKey: string = "byUser";
+  protected readonly heartedCategoryKey: string = "hearted";
+
   filterInputs = signal<FilterFormInput>({
     category: '',
   });
 
   filterForm: FieldTree<FilterFormInput, string | number, "writable"> = form(this.filterInputs);
 
-  // TODO enum which maps numbers to special-cased categories?
-  levelCategories: Map<string, string> = new Map<string, string>();
-
   protected readonly isBrowser: boolean;
-  protected readonly byUserCategoryKey: string = "byUser";
-  protected readonly heartedCategoryKey: string = "hearted";
 
-  // this is only used so we can compare it against the current signal value, to determine where
-  // to cache the previous category results
-  currentlyShownCategory: string = this.byUserCategoryKey;
-
-  constructor(private client: ClientService, protected banner: BannerService, private route: ActivatedRoute, @Inject(PLATFORM_ID) platformId: Object) {
-    // init category options
-    this.levelCategories.set(this.byUserCategoryKey, "Published by");
-    this.levelCategories.set(this.heartedCategoryKey, "Hearted by");
+  constructor(private client: ClientService, protected banner: BannerService, private route: ActivatedRoute, @Inject(PLATFORM_ID) platformId: Object,
+    protected categoryPipe: LevelCategoryPipe) {
+    
+    // listen for radio button changes
+    effect(() => {
+      console.log("filter form effect callback executed: lvl category " + this.filterInputs().category);
+      this.getLevels();
+    });
     
     route.params.subscribe(params => {
       const username: string | undefined = params['username'];
@@ -91,7 +95,8 @@ export class LevelUserListingComponent implements Scrollable {
             this.user = user;
 
             if (category != null) {
-              this.setLevelSelection(category);
+              // listener above will take care of calling getLevels() when we set the signal value
+              this.filterForm.category().value.set(category);
             }
           }
         });
@@ -105,10 +110,12 @@ export class LevelUserListingComponent implements Scrollable {
     this.showLevelDropdown = !this.showLevelDropdown;
   }
 
-  setLevelSelection(category: string) {
+  getLevels() {
     if (!this.user) return;
-
     let cachedList: CachedListWithData<Level> | undefined;
+
+    const category: string = this.filterInputs().category;
+
     switch (category) {
       case this.byUserCategoryKey:
         cachedList = this.levelsPublishedByUser;
