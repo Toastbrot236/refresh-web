@@ -26,7 +26,7 @@ import { DateComponent } from "../../components/ui/info/date.component";
 import { DropdownMenuComponent } from "../../components/ui/form/dropdown-menu.component";
 import { SlugPipe } from '../../pipes/slug.pipe';
 import { DialogComponent } from "../../components/ui/dialog.component";
-import { FieldTree, form, required, FormField } from '@angular/forms/signals';
+import { FieldTree, form, required, FormField, maxLength } from '@angular/forms/signals';
 import { RadioButtonGroupComponent } from '../../components/ui/form/radio-button-group.component';
 
 interface MetadataFormInput {
@@ -83,6 +83,8 @@ export class LevelEditComponent {
 
   metadataForm: FieldTree<MetadataFormInput, string | number, "writable"> = form(this.metadataInputs, (f) => {
     required(f.name, { message: 'Enter a name for your level' });
+    maxLength(f.name, 64, { message: 'Title seems to be too long' });
+    maxLength(f.description, 512, { message: 'Description seems to be too long' });
   });
 
   curatorInputs = signal<LevelCuratorFormInput>({
