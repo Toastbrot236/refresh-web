@@ -2,7 +2,7 @@ import { Pipe, PipeTransform } from '@angular/core';
 import {GameVersion} from "../api/types/game-version";
 
 @Pipe({
-  name: 'game',
+  name: 'levelCategory',
   standalone: true
 })
 export class LevelCategoryPipe implements PipeTransform {
