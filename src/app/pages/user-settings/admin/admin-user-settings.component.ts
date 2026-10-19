@@ -1,4 +1,4 @@
-import { Component } from "@angular/core";
+import { Component, signal } from "@angular/core";
 import { FormControl, FormGroup, ReactiveFormsModule } from "@angular/forms";
 import { faBan, faCamera, faCancel, faCheckCircle, faChevronDown, faChevronUp, faComment, faEarthAmerica, faFlag, 
     faFloppyDisk, faGavel, faListOl, faPencil, faSignOutAlt, faStar, faTrash, faUser } from "@fortawesome/free-solid-svg-icons";
@@ -30,6 +30,23 @@ import { PunishUserRequest } from "../../../api/types/moderation/punish-user-req
 import { ConfirmationDialogComponent } from "../../../components/ui/confirmation-dialog.component";
 import { DarkContainerComponent } from "../../../components/ui/dark-container.component";
 import { UserAvatarComponent } from "../../../components/ui/photos/user-avatar.component";
+import { FieldTree, form, maxLength, minLength, FormField, required } from "@angular/forms/signals";
+import { RadioButtonGroupComponent } from "../../../components/ui/form/radio-button-group.component";
+
+interface MetadataFormInput {
+    username: string,
+    description: string,
+    role: UserRoles,
+    resetIcon: boolean,
+    resetVitaIcon: boolean,
+    resetBetaIcon: boolean,
+};
+
+interface PunishmentFormInput {
+    reason: string,
+    expiryDate: string,
+    isPermanently: boolean,
+};
 
 @Component({
     selector: 'app-admin-user-settings',
@@ -44,14 +61,15 @@ import { UserAvatarComponent } from "../../../components/ui/photos/user-avatar.c
     ContainerComponent,
     PaneTitleComponent,
     DropdownMenuComponent,
-    RadioButtonComponent,
     DividerComponent,
     TextboxComponent,
     LabelComponent,
     ConfirmationDialogComponent,
     DarkContainerComponent,
     ReactiveFormsModule,
-    UserAvatarComponent
+    UserAvatarComponent,
+    RadioButtonGroupComponent,
+    FormField
 ],
     providers: [
         RolePipe
@@ -63,14 +81,32 @@ import { UserAvatarComponent } from "../../../components/ui/photos/user-avatar.c
 export class AdminUserSettingsComponent {
     protected ownUser: ExtendedUser | undefined | null;
     protected targetUser: ExtendedUser | undefined | null;
-    
-    protected metadataForm = new FormGroup({
-        username: new FormControl(),
-        description: new FormControl(),
-        role: new FormControl(UserRoles.User),
-        resetIcon: new FormControl(),
-        resetVitaIcon: new FormControl(),
-        resetBetaIcon: new FormControl(),
+
+    metadataInputs = signal<MetadataFormInput>({
+        username: '',
+        description: '',
+        role: UserRoles.User,
+        resetIcon: false,
+        resetVitaIcon: false,
+        resetBetaIcon: false,
+    });
+
+    // allow 17 chars for username incase it's a fake user which has a 16 character name after prefix
+    metadataForm: FieldTree<MetadataFormInput, string | number, "writable"> = form(this.metadataInputs, (f) => {
+        minLength(f.username, 3, { message: 'Username seems to be too short' });
+        maxLength(f.username, 17, { message: 'Username seems to be too long' });
+        maxLength(f.description, 512, { message: 'Description seems to be too long' });
+    });
+
+    punishmentInputs = signal<PunishmentFormInput>({
+        reason: '',
+        expiryDate: '',
+        isPermanently: false,
+    });
+
+    // allow 17 chars for username incase it's a fake user which has a 16 character name after prefix
+    punishmentForm: FieldTree<PunishmentFormInput, string | number, "writable"> = form(this.punishmentInputs, (f) => {
+        minLength(f.reason, 3, { message: 'Punishment reason is too short! Atleast 3 characters required' });
     });
 
     protected hasUsernameChanged: boolean = false;
@@ -82,13 +118,6 @@ export class AdminUserSettingsComponent {
 
     protected showRoleMenu: boolean = false;
     protected hasPendingMetadataChanges: boolean = false;
-
-    protected adminValue: UserRoles = UserRoles.Admin;
-    protected moderatorValue: UserRoles = UserRoles.Moderator;
-    protected curatorValue: UserRoles = UserRoles.Curator;
-    protected trustedValue: UserRoles = UserRoles.Trusted;
-    protected userValue: UserRoles = UserRoles.User;
-    protected restrictedValue: UserRoles = UserRoles.Restricted;
 
     protected planets: PlanetInfo | undefined;
     protected isMobile: boolean = false;
@@ -137,56 +166,8 @@ export class AdminUserSettingsComponent {
         this.layout.isMobile.subscribe(v => this.isMobile = v);
     }
 
-    protected checkResetIcon() {
-        this.shouldResetIcon = this.metadataForm.controls.resetIcon.getRawValue();
-        this.doesMetadataHavePendingChanges();
-    }
-
-    protected checkResetVitaIcon() {
-        this.shouldResetVitaIcon = this.metadataForm.controls.resetVitaIcon.getRawValue();
-        this.doesMetadataHavePendingChanges();
-    }
-
-    protected checkResetBetaIcon() {
-        this.shouldResetBetaIcon = this.metadataForm.controls.resetBetaIcon.getRawValue();
-        this.doesMetadataHavePendingChanges();
-    }
-
-    protected checkUsernameChanges() {
-        this.hasUsernameChanged = this.metadataForm.controls.username.getRawValue() !== this.targetUser?.username;
-        this.doesMetadataHavePendingChanges();
-    }
-
-    protected checkDescriptionChanges() {
-        this.hasDescriptionChanged = this.metadataForm.controls.description.getRawValue() !== this.targetUser?.description;
-        this.doesMetadataHavePendingChanges();
-    }
-
-    protected setRole(input: UserRoles) {
-        this.metadataForm.controls.role.setValue(input);
-        this.hasRoleChanged = input !== this.targetUser!.role;
-        this.doesMetadataHavePendingChanges();
-    }
-
-    private overrideRole(input: UserRoles) {
-        if (!this.targetUser) return;
-        this.targetUser.role = input;
-        this.metadataForm.controls.role.setValue(input);
-        this.hasRoleChanged = false;
-    }
-
     protected roleDropdownButtonClick() {
         this.showRoleMenu = !this.showRoleMenu;
-    }
-
-    private doesMetadataHavePendingChanges() {
-        this.hasPendingMetadataChanges =
-            this.hasDescriptionChanged
-            || this.hasUsernameChanged
-            || this.hasRoleChanged
-            || this.shouldResetIcon
-            || this.shouldResetVitaIcon
-            || this.shouldResetBetaIcon;
     }
 
     private updateInputs(user: ExtendedUser) {
@@ -201,13 +182,13 @@ export class AdminUserSettingsComponent {
         this.hasUsernameChanged = false;
         this.hasRoleChanged = false;
 
-        this.metadataForm.controls.resetIcon.setValue(false);
-        this.metadataForm.controls.resetVitaIcon.setValue(false);
-        this.metadataForm.controls.resetBetaIcon.setValue(false);
-        
-        this.metadataForm.controls.description.setValue(user.description);
-        this.metadataForm.controls.username.setValue(user.username);
-        this.metadataForm.controls.role.setValue(user.role);
+        this.metadataForm.description().value.set(user.description);
+        this.metadataForm.username().value.set(user.username);
+        this.metadataForm.role().value.set(user.role);
+
+        this.metadataForm.resetIcon().value.set(false);
+        this.metadataForm.resetVitaIcon().value.set(false);
+        this.metadataForm.resetBetaIcon().value.set(false);
     }
 
     protected discardChanges() {
@@ -227,13 +208,13 @@ export class AdminUserSettingsComponent {
         this.toggleUpdateDialog(false);
 
         let request: AdminUserUpdateRequest = {
-            role: this.hasRoleChanged ? this.metadataForm.controls.role.getRawValue() : null,
-            username: this.hasUsernameChanged ? this.metadataForm.controls.username.getRawValue() : null,
-            description: this.hasDescriptionChanged ? this.metadataForm.controls.description.getRawValue() : null,
+            role: this.metadataForm.role().value(),
+            username: this.metadataForm.username().value(),
+            description: this.metadataForm.description().value(),
 
-            iconHash: this.shouldResetIcon ? "0" : null,
-            vitaIconHash: this.shouldResetVitaIcon ? "0" : null,
-            betaIconHash: this.shouldResetBetaIcon ? "0" : null,
+            iconHash: this.metadataForm.role().value() ? "0" : null,
+            vitaIconHash: this.metadataForm.role().value() ? "0" : null,
+            betaIconHash: this.metadataForm.role().value() ? "0" : null,
         };
 
         this.client.updateUserByUuid(this.targetUser.userId, request).subscribe({
@@ -332,6 +313,12 @@ export class AdminUserSettingsComponent {
             }
         });
     }
+    
+    private overrideRole(input: UserRoles) {
+        if (!this.targetUser) return;
+        this.targetUser.role = input;
+        this.metadataForm.role().value.set(input);
+    }
 
     protected showBanDialog: boolean = false;
 
@@ -388,13 +375,6 @@ export class AdminUserSettingsComponent {
         });
     }
 
-    protected punishmentForm = new FormGroup({
-        reason: new FormControl(),
-        expiryDate: new FormControl()
-    });
-
-    protected hasEnteredReason: boolean = false;
-    protected hasEnteredExpiryDate: boolean = false;
     protected isPunishmentReady: boolean = false;
     protected waitingForPunishmentResponse = false;
 
@@ -534,4 +514,5 @@ export class AdminUserSettingsComponent {
     protected readonly faListOl = faListOl;
     protected readonly faComment = faComment;
     protected readonly faStar = faStar;
+    protected readonly userRoles = UserRoles;
 }
