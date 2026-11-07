@@ -1,15 +1,16 @@
 import { Pipe, PipeTransform } from '@angular/core';
+import { PhotoCategoryRoute } from '../api/types/photos/photo-category-route';
 
 @Pipe({
   name: 'photoCategory',
   standalone: true
 })
 export class PhotoCategoryPipe implements PipeTransform {
-  transform(value: string): string {
+  transform(value: PhotoCategoryRoute): string {
     switch (value) {
-      case "by":
+      case PhotoCategoryRoute.ByUser:
         return "Published by";
-      case "with":
+      case PhotoCategoryRoute.WithUser:
         return "With"
       default:
         return value; // whatever lol
