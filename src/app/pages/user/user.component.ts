@@ -249,5 +249,5 @@ export class UserComponent {
   protected readonly faChevronDown = faChevronDown;
   protected readonly faChevronUp = faChevronUp;
   protected readonly levelCategoryRoutes = LevelCategoryRoute;
-  protected readonly photoCategoryRoutes = PhotoCategoryRoute ;
+  protected readonly photoCategoryRoutes = PhotoCategoryRoute;
 }

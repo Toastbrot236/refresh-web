@@ -11,8 +11,10 @@
               color="bg-secondary"
               (click)="levelSelectionButtonClick()">
           </app-button>
-          <app-radio-button-group groupName="levelCategory" [buttonValues]="[byUserCategoryKey, heartedCategoryKey]" [textPipe]="categoryPipe"
-            [formField]="filterForm.category">
+          <app-radio-button-group groupName="levelCategory" [buttonValues]="[
+              levelCategoryRoutes.ByUser,
+              levelCategoryRoutes.HeartedByUser,
+            ]" [textPipe]="categoryPipe" [formField]="filterForm.category">
           </app-radio-button-group>
         </app-dropdown-menu>
         <app-user-link class="content-center text-[20px]" [user]="user"></app-user-link>

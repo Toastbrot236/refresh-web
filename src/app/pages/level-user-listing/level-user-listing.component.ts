@@ -22,9 +22,11 @@ import { CachedListWithData } from '../../api/cached-list-with-data';
 import { RadioButtonGroupComponent } from '../../components/ui/form/radio-button-group.component';
 import { FieldTree, form, FormField } from '@angular/forms/signals';
 import { LevelCategoryPipe } from '../../pipes/level-category.pipe';
+import { LevelCategoryRoute } from '../../api/types/levels/level-category-route';
+import { PhotoCategoryRoute } from '../../api/types/photos/photo-category-route';
 
 interface FilterFormInput {
-  category: string,
+  category: LevelCategoryRoute,
 }
 
 @Component({
@@ -60,12 +62,8 @@ export class LevelUserListingComponent implements Scrollable {
 
   showLevelDropdown: boolean = false;
 
-  // Category names used for the API request routes, and internally to identify cache, radio buttons (ID and value) etc
-  protected readonly byUserCategoryKey: string = "byUser";
-  protected readonly heartedCategoryKey: string = "hearted";
-
   filterInputs = signal<FilterFormInput>({
-    category: '',
+    category: LevelCategoryRoute.ByUser,
   });
 
   filterForm: FieldTree<FilterFormInput, string | number, "writable"> = form(this.filterInputs);
@@ -96,7 +94,7 @@ export class LevelUserListingComponent implements Scrollable {
 
             if (category != null) {
               // listener above will take care of calling getLevels() when we set the signal value
-              this.filterForm.category().value.set(category);
+              this.filterForm.category().value.set(category as LevelCategoryRoute);
             }
           }
         });
@@ -117,11 +115,11 @@ export class LevelUserListingComponent implements Scrollable {
     const category: string = this.filterInputs().category;
 
     switch (category) {
-      case this.byUserCategoryKey:
+      case LevelCategoryRoute.ByUser:
         cachedList = this.levelsPublishedByUser;
         break;
 
-      case this.heartedCategoryKey:
+      case LevelCategoryRoute.HeartedByUser:
         cachedList = this.levelsHeartedByUser;
         break;
 
@@ -173,11 +171,11 @@ export class LevelUserListingComponent implements Scrollable {
 
         // Cache our results
         switch (category) {
-          case this.byUserCategoryKey:
+          case LevelCategoryRoute.ByUser:
             this.levelsPublishedByUser = this.currentLevels;
             break;
 
-          case this.heartedCategoryKey:
+          case LevelCategoryRoute.HeartedByUser:
             this.levelsHeartedByUser = this.currentLevels;
             break;
         }
@@ -191,4 +189,6 @@ export class LevelUserListingComponent implements Scrollable {
 
   protected readonly faChevronDown = faChevronDown;
   protected readonly faChevronUp = faChevronUp;
+  protected readonly levelCategoryRoutes = LevelCategoryRoute;
+  protected readonly photoCategoryRoutes = PhotoCategoryRoute;
 }

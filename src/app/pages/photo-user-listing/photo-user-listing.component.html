@@ -11,10 +11,11 @@
               color="bg-secondary"
               (click)="photoSelectionButtonClick()">
           </app-button>
-          <div content>
-              <app-radio-button [label]="getPhotoSelectionText(0)" [form]="filterForm" ctrlName="selection" id="p0" [value]='0' (click)="setPhotoSelection(0)"></app-radio-button>
-              <app-radio-button [label]="getPhotoSelectionText(1)" [form]="filterForm" ctrlName="selection" id="p1" [value]='1' (click)="setPhotoSelection(1)"></app-radio-button>
-          </div>
+          <app-radio-button-group groupName="photoCategory" [buttonValues]="[
+              photoCategoryRoutes.ByUser,
+              photoCategoryRoutes.WithUser,
+            ]" [textPipe]="photoCategoryPipe" [formField]="filterForm.photoCategory">
+          </app-radio-button-group>
           </app-dropdown-menu>
         <app-user-link class="content-center text-[20px]" [user]="user"></app-user-link>
         <span class="content-center text-sm italic text-gentle text-base">({{this.currentPhotos.listInfo.totalItems}} in total)</span>

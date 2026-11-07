@@ -1,4 +1,4 @@
-import {Component, Inject, PLATFORM_ID, ChangeDetectionStrategy} from '@angular/core';
+import {Component, Inject, PLATFORM_ID, ChangeDetectionStrategy, signal} from '@angular/core';
 import {ClientService, defaultPageSize} from "../../api/client.service";
 import {ActivatedRoute} from "@angular/router";
 import {PageTitleComponent} from "../../components/ui/text/page-title.component";
@@ -9,12 +9,10 @@ import {defaultListInfo, RefreshApiListInfo} from "../../api/refresh-api-list-in
 import {InfiniteScrollerComponent} from "../../components/ui/infinite-scroller.component";
 import { User } from '../../api/types/users/user';
 import { UserLinkComponent } from "../../components/ui/text/links/user-link.component";
-import { RadioButtonComponent } from "../../components/ui/form/radio-button.component";
 import { DropdownMenuComponent } from "../../components/ui/form/dropdown-menu.component";
 import { ButtonComponent } from "../../components/ui/form/button.component";
 import { ContainerHeaderComponent } from "../../components/ui/container-header.component";
 import { FormControl, FormGroup } from '@angular/forms';
-import { ListWithData } from '../../api/list-with-data';
 import { BannerService } from '../../banners/banner.service';
 import { faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
 import { Photo } from '../../api/types/photos/photo';
@@ -22,6 +20,14 @@ import { PhotoComponent } from "../../components/items/photo.component";
 import { isPlatformBrowser } from '@angular/common';
 import { RefreshApiError } from '../../api/refresh-api-error';
 import { CachedListWithData } from '../../api/cached-list-with-data';
+import { RadioButtonGroupComponent } from '../../components/ui/form/radio-button-group.component';
+import { PhotoCategoryRoute } from '../../api/types/photos/photo-category-route';
+import { PhotoCategoryPipe } from '../../pipes/photo-category.pipe';
+import { FieldTree, form } from '@angular/forms/signals';
+
+interface FilterFormInput {
+  photoCategory: PhotoCategoryRoute,
+}
 
 @Component({
     selector: 'app-photo-user-listing',
@@ -31,12 +37,15 @@ import { CachedListWithData } from '../../api/cached-list-with-data';
     ContainerComponent,
     InfiniteScrollerComponent,
     UserLinkComponent,
-    RadioButtonComponent,
     DropdownMenuComponent,
     ButtonComponent,
     ContainerHeaderComponent,
-    PhotoComponent
+    PhotoComponent,
+    RadioButtonGroupComponent
 ],
+    providers: [
+      PhotoCategoryPipe,
+    ],
     changeDetection: ChangeDetectionStrategy.Eager,
     templateUrl: './photo-user-listing.component.html'
 })
@@ -51,10 +60,12 @@ export class PhotoUserListingComponent implements Scrollable {
   };
 
   showPhotoDropdown: boolean = false;
-  photoSelectionString: string = "";
-  filterForm = new FormGroup({
-    selection: new FormControl(-1)
+
+  filterInputs = signal<FilterFormInput>({
+    photoCategory: PhotoCategoryRoute.ByUser,
   });
+
+  filterForm: FieldTree<FilterFormInput, string | number, "writable"> = form(this.filterInputs);
 
   protected readonly isBrowser: boolean;
 
@@ -73,7 +84,6 @@ export class PhotoUserListingComponent implements Scrollable {
             this.user = user;
 
             if (category != null) {
-              this.photoSelectionString = category;
               switch (category) {
                 case "by":
                   this.setPhotoSelection(0);
@@ -182,4 +192,5 @@ export class PhotoUserListingComponent implements Scrollable {
 
   protected readonly faChevronDown = faChevronDown;
   protected readonly faChevronUp = faChevronUp;
+  protected readonly photoCategoryRoutes = PhotoCategoryRoute;
 }

@@ -1,6 +1,5 @@
 import { Component, ChangeDetectionStrategy, signal } from "@angular/core";
 import { ExtendedUser } from "../../../api/types/users/extended-user";
-import { TitleService } from "../../../services/title.service";
 import { AuthenticationService } from "../../../api/authentication.service";
 import { LayoutService } from "../../../services/layout.service";
 import { ClientService } from "../../../api/client.service";
@@ -8,7 +7,6 @@ import { ProfileUpdateRequest } from "../../../api/types/users/profile-update-re
 import { PageTitleComponent } from "../../../components/ui/text/page-title.component";
 import { TwoPaneLayoutComponent } from "../../../components/ui/layouts/two-pane-layout.component";
 import { ContainerComponent } from "../../../components/ui/container.component";
-import { FormControl, FormGroup } from "@angular/forms";
 import { faFloppyDisk, faPencil } from "@fortawesome/free-solid-svg-icons";
 import { PaneTitleComponent } from "../../../components/ui/text/pane-title.component";
 import { DividerComponent } from "../../../components/ui/divider.component";
@@ -21,7 +19,6 @@ import { ButtonComponent } from "../../../components/ui/form/button.component";
 import { BannerService } from "../../../banners/banner.service";
 import { RefreshApiError } from "../../../api/refresh-api-error";
 import { CheckboxComponent } from "../../../components/ui/form/checkbox.component";
-import { RadioButtonComponent } from "../../../components/ui/form/radio-button.component";
 import { ContentVisibility } from "../../../api/types/content-visibility";
 import { RouterLinkComponent } from "../../../components/ui/text/links/router-link.component";
 import { FieldTree, form, maxLength } from "@angular/forms/signals";
@@ -52,7 +49,6 @@ interface MetadataFormInput {
     UserAvatarComponent,
     ButtonComponent,
     CheckboxComponent,
-    RadioButtonComponent,
     RouterLinkComponent,
     RadioButtonGroupComponent
 ],

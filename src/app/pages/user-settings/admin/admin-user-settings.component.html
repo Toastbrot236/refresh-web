@@ -85,12 +85,13 @@
                             (click)="roleDropdownButtonClick()">
                         </app-button>
                         <app-radio-button-group groupName="userRole" [buttonValues]="[
-                            userRoles.Admin,
-                            userRoles.Moderator,
-                            userRoles.Curator,
-                            userRoles.Trusted,
-                            userRoles.User,
-                        ]" [textPipe]="role" [formField]="metadataForm.role"></app-radio-button-group>
+                                userRoles.Admin,
+                                userRoles.Moderator,
+                                userRoles.Curator,
+                                userRoles.Trusted,
+                                userRoles.User,
+                            ]" [textPipe]="role" [formField]="metadataForm.role">
+                        </app-radio-button-group>
                         <!-- all roles below cannot be set this way -->
                     </app-dropdown-menu>
                 </div>
