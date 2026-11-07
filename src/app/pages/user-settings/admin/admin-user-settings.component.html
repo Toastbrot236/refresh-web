@@ -12,8 +12,13 @@
                 }
                 
                 <div class="flex flex-row flex-wrap gap-x-2 gap-y-4 justify-between">
-                    <app-button text="Discard Changes" [icon]="faCancel" [enabled]="hasPendingMetadataChanges" color="bg-red" (click)="discardChanges()"></app-button>
-                    <app-button text="Save Changes" [icon]="faFloppyDisk" [enabled]="hasPendingMetadataChanges" color="bg-primary" (click)="toggleUpdateDialog(true)"></app-button>
+                    <app-button text="Discard Changes" [icon]="faCancel" [enabled]="hasPendingMetadataChanges" color="bg-red"
+                        (click)="discardChanges()">
+                    </app-button>
+                    
+                    <app-button text="Save Changes" [icon]="faFloppyDisk" [enabled]="hasPendingMetadataChanges" color="bg-primary"
+                        (click)="toggleUpdateDialog(true)">
+                    </app-button>
                 </div>
             </div>
             <div class="flex flex-row flex-wrap justify-evenly gap-x-2">
@@ -26,7 +31,7 @@
                     @else {
                         <app-user-avatar [iconHash]="targetUser.iconHash" [size]="(layout.isMobile | async) ? 100 : 176" avatar></app-user-avatar>
                     }
-                    <app-checkbox label="Reset" [form]="metadataForm" ctrlName="resetIcon" (change)="checkResetIcon()"></app-checkbox>
+                    <app-checkbox label="Reset" [formField]="metadataForm.resetIcon"></app-checkbox>
                 </div>
 
                 <div class="flex flex-col justify-center items-center aspect-square my-2.5" >
@@ -37,7 +42,7 @@
                     @else {
                         <app-user-avatar [iconHash]="targetUser.vitaIconHash" [size]="(layout.isMobile | async) ? 100 : 176" avatar></app-user-avatar>
                     }
-                    <app-checkbox label="Reset" [form]="metadataForm" ctrlName="resetVitaIcon" (change)="checkResetVitaIcon()"></app-checkbox>
+                    <app-checkbox label="Reset" [formField]="metadataForm.resetVitaIcon"></app-checkbox>
                 </div>
 
                 <div class="flex flex-col justify-center items-center aspect-square my-2.5" >
@@ -48,24 +53,24 @@
                     @else {
                         <app-user-avatar [iconHash]="targetUser.betaIconHash" [size]="(layout.isMobile | async) ? 100 : 176" avatar></app-user-avatar>
                     }
-                    <app-checkbox label="Reset" [form]="metadataForm" ctrlName="resetBetaIcon" (change)="checkResetBetaIcon()"></app-checkbox>
+                    <app-checkbox label="Reset" [formField]="metadataForm.resetBetaIcon"></app-checkbox>
                 </div>
             </div>
 
-            <app-textbox label="Username" [showMaxLength]="true" [maxLength]="16" [form]="metadataForm" 
-                placeholder="greek-player_50" ctrlName="username" [icon]="faUser" (change)="checkUsernameChanges()"></app-textbox>
+            <app-textbox label="Username" [showMaxLength]="true" [maxLength]="17"
+                placeholder="greek-player_50" [formField]="metadataForm.username" [icon]="faUser"></app-textbox>
             
             @if (hasUsernameChanged) {
                 <p class="text-emphasized-primary">You are about to rename this user</p>
             }
 
-            <app-textarea class="w-full py-4" [icon]="faPencil" [form]="metadataForm" placeholder="Change this user's description..." 
-                ctrlName="description" type="description" (change)="checkDescriptionChanges()" [maxLength]="512" [showMaxLength]="true"></app-textarea>
+            <app-textarea class="w-full py-4" [icon]="faPencil" placeholder="Change this user's description..." 
+                [formField]="metadataForm.description"  [maxLength]="512" [showMaxLength]="true"></app-textarea>
             
-            @if (ownUser.role < adminValue) {
+            @if (ownUser.role < userRoles.Admin) {
                 <p>You don't have perms to update this user's role</p>
             }
-            @else if (targetUser.role < userValue) {
+            @else if (targetUser.role < userRoles.User) {
                 <p>This user's role cannot be updated this way due to their current role: {{ targetUser.role | role }}</p>
             }
             @else {
@@ -74,19 +79,19 @@
                     <app-dropdown-menu [showMenu]="showRoleMenu" offsets="top-9 " [width]="32">
                         <app-button trigger
                             width="flex flex-shrink justify-evenly flex-grow text-nowrap"
-                            [text]="metadataForm.controls.role.getRawValue()! | role"
+                            [text]="metadataForm.role().value() | role"
                             [icon]="showRoleMenu ? faChevronUp : faChevronDown"
                             color="bg-primary"
                             (click)="roleDropdownButtonClick()">
                         </app-button>
-                        <div class="" content>
-                            <app-radio-button label="Admin" [form]="metadataForm" ctrlName="role" id="r0" [value]='adminValue' (click)="setRole(adminValue)"></app-radio-button>
-                            <app-radio-button label="Moderator" [form]="metadataForm" ctrlName="role" id="r1" [value]='moderatorValue' (click)="setRole(moderatorValue)"></app-radio-button>
-                            <app-radio-button label="Curator" [form]="metadataForm" ctrlName="role" id="r2" [value]='curatorValue' (click)="setRole(curatorValue)"></app-radio-button>
-                            <app-radio-button label="Trusted" [form]="metadataForm" ctrlName="role" id="r3" [value]='trustedValue' (click)="setRole(trustedValue)"></app-radio-button>
-                            <app-radio-button label="User" [form]="metadataForm" ctrlName="role" id="r4" [value]='userValue' (click)="setRole(userValue)"></app-radio-button>
-                            <!-- all roles below cannot be set this way -->
-                        </div>
+                        <app-radio-button-group groupName="userRole" [buttonValues]="[
+                            userRoles.Admin,
+                            userRoles.Moderator,
+                            userRoles.Curator,
+                            userRoles.Trusted,
+                            userRoles.User,
+                        ]"></app-radio-button-group>
+                        <!-- all roles below cannot be set this way -->
                     </app-dropdown-menu>
                 </div>
             }
@@ -157,7 +162,7 @@
                         }
 
                         <div class="pt-4">
-                            <app-button text="Reset!" [icon]="faEarthAmerica" color="bg-red" (click)="togglePlanetResetDialog(true)" width="w-full"></app-button>
+                            <app-button text="Reset!" [icon]="faEarthAmerica" color="bg-red" (click)="togglePlanetResetDialog(true)" width="w-full"/>
                         </div>
                     </div>
                 </app-container>
@@ -167,14 +172,12 @@
                     </app-pane-title>
                     <app-divider></app-divider>
                     <div class="flex flex-col gap-y-4">
-                        <app-textarea class="w-full" [icon]="faPencil" [form]="punishmentForm" placeholder="Provide a reason..." 
-                            ctrlName="reason" type="reason" (change)="checkReasonChanges()"></app-textarea>
+                        <app-textarea class="w-full" [icon]="faPencil" [formField]="metadataForm.punishmentReason" placeholder="Provide a reason..."/>
 
                         <div [formGroup]="punishmentForm" class="flex flex-row flex-wrap gap-x-2 justify-start content-center">
                             <p class="content-center text-2xl">Expiry date:</p>
                             <app-dark-container>
-                                <input type="datetime-local" id="expiryDateInput" (change)="checkExpiryDateChanges()"
-                                    formControlName="expiryDate">
+                                <input type="datetime-local" id="expiryDateInput" [formField]="metadataForm.punishmentExpiryDate">
                             </app-dark-container>
                         </div>
 
@@ -184,7 +187,7 @@
                             <app-button text="Ban" [icon]="faBan" color="bg-red" (click)="toggleBanDialog(true)"
                                 [enabled]="!waitingForPunishmentResponse && isPunishmentReady"></app-button>
                             <app-button text="Pardon instead" [icon]="faFlag" color="bg-green" (click)="togglePardonDialog(true)"
-                                [enabled]="!waitingForPunishmentResponse && targetUser.role <= restrictedValue"></app-button>
+                                [enabled]="!waitingForPunishmentResponse && targetUser.role <= userRoles.Restricted"></app-button>
                         </div>
                         @if (waitingForPunishmentResponse) {
                             <p>Waiting for response...</p>
@@ -202,11 +205,11 @@
                     </app-pane-title>
                     <app-divider></app-divider>
                     <div class="flex flex-col gap-y-3">
-                        <app-button text="Delete all scores" [icon]="faListOl" color="bg-red" (click)="toggleScoreDeleteDialog(true)"></app-button>
-                        <app-button text="Delete all photos" [icon]="faCamera" color="bg-red" (click)="togglePhotoDeleteDialog(true)"></app-button>
-                        <app-button text="Delete all level comments" [icon]="faComment" color="bg-red" (click)="toggleLevelCommentsDeleteDialog(true)"></app-button>
-                        <app-button text="Delete all profile comments" [icon]="faComment" color="bg-red" (click)="toggleProfileCommentsDialog(true)"></app-button>
-                        <app-button text="Delete all reviews" [icon]="faStar" color="bg-red" (click)="toggleReviewDeleteDialog(true)"></app-button>
+                        <app-button text="Delete all scores" [icon]="faListOl" color="bg-red" (click)="toggleScoreDeleteDialog(true)"/>
+                        <app-button text="Delete all photos" [icon]="faCamera" color="bg-red" (click)="togglePhotoDeleteDialog(true)"/>
+                        <app-button text="Delete all level comments" [icon]="faComment" color="bg-red" (click)="toggleLevelCommentsDeleteDialog(true)"/>
+                        <app-button text="Delete all profile comments" [icon]="faComment" color="bg-red" (click)="toggleProfileCommentsDialog(true)"/>
+                        <app-button text="Delete all reviews" [icon]="faStar" color="bg-red" (click)="toggleReviewDeleteDialog(true)"/>
                     </div>
                 </app-container>
                 <app-container class="w-full">
@@ -224,7 +227,9 @@
 
     <!-- Metadata update prompt -->
     @defer (when showUpdateDialog) { @if (showUpdateDialog) {
-        <app-confirmation-dialog [infoText]="'Do you really want to update this user?' + (hasUsernameChanged ? ' Updating will also RENAME this user!' : '')" (closeDialog)="toggleUpdateDialog(false)">
+        <app-confirmation-dialog [infoText]="'Do you really want to update this user?' + (hasUsernameChanged ? ' Updating will also RENAME this user!' : '')"
+            (closeDialog)="toggleUpdateDialog(false)">
+
             <app-button text="No, go back" [icon]="faSignOutAlt" color="bg-secondary" (click)="toggleUpdateDialog(false)"></app-button>
             <app-button text="Yes, Update!" [icon]="faCheckCircle" color="bg-green" (click)="uploadChanges()"></app-button>
         </app-confirmation-dialog>

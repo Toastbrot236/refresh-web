@@ -1,4 +1,4 @@
-import {Component, Inject, PLATFORM_ID, ChangeDetectionStrategy} from '@angular/core';
+import {Component, effect, Inject, PLATFORM_ID, signal} from '@angular/core';
 import {Level} from "../../api/types/levels/level";
 import {ClientService} from "../../api/client.service";
 import {ActivatedRoute, RouterLink} from "@angular/router";
@@ -28,7 +28,6 @@ import { LevelRelations } from '../../api/types/levels/level-relations';
 import { OriginalPublisherRouterLink } from "../../components/ui/text/links/original-publisher-router-link.component";
 import { LargerLabelComponent } from "../../components/ui/info/larger-label.component";
 import { TooltipComponent } from "../../components/ui/text/tooltip.component";
-import { FormControl, FormGroup } from '@angular/forms';
 import { ButtonComponent } from '../../components/ui/form/button.component';
 import { RadioButtonComponent } from '../../components/ui/form/radio-button.component';
 import { ScoreTypePipe } from '../../pipes/score-type.pipe';
@@ -39,7 +38,12 @@ import { ScorePreviewComponent } from "../../components/items/score-preview.comp
 import { Score } from '../../api/types/levels/score';
 import { BannerService } from '../../banners/banner.service';
 import { RefreshApiError } from '../../api/refresh-api-error';
+import { RadioButtonGroupComponent } from '../../components/ui/form/radio-button-group.component';
+import { FieldTree, form, FormField } from '@angular/forms/signals';
 
+interface ScoreFilterFormInput {
+  scoreType: number,
+}
 
 @Component({
     selector: 'app-level',
@@ -64,16 +68,16 @@ import { RefreshApiError } from '../../api/refresh-api-error';
     LargerLabelComponent,
     TooltipComponent,
     ButtonComponent,
-    RadioButtonComponent,
     DropdownMenuComponent,
     ScoreTypePipe,
-    ScorePreviewComponent
+    ScorePreviewComponent,
+    RadioButtonGroupComponent,
+    FormField
 ],
     providers: [
         SlugPipe,
         ScoreTypePipe
     ],
-    changeDetection: ChangeDetectionStrategy.Eager,
     templateUrl: './level.component.html'
 })
 export class LevelComponent {
@@ -87,16 +91,26 @@ export class LevelComponent {
   protected ownUser: ExtendedUser | undefined;
   protected relations: LevelRelations | undefined;
 
-  scoreFilterForm = new FormGroup({
-    scoreType: new FormControl(0)
+  scoreFilterInputs = signal<ScoreFilterFormInput>({
+    scoreType: 1,
   });
+
+  scoreFilterForm: FieldTree<ScoreFilterFormInput, string | number, "writable"> = form(this.scoreFilterInputs);
+
   protected showScoreFilterMenu: boolean = false;
 
-  constructor(private embed: EmbedService, private client: ClientService, private slug: SlugPipe,
+  constructor(private embed: EmbedService, private client: ClientService, private slug: SlugPipe, protected scoreTypePipe: ScoreTypePipe,
               route: ActivatedRoute, protected layout: LayoutService, private auth: AuthenticationService,
               @Inject(PLATFORM_ID) platformId: Object, protected banner: BannerService)
   {
     this.isBrowser = isPlatformBrowser(platformId);
+    
+    // listen for radio button changes
+    effect(() => {
+      console.log("lvl filter form effect callback executed: score tpe " + this.scoreFilterInputs().scoreType);
+      this.getScores();
+    });
+
     route.params.subscribe(params => {
       const id: number = +params['id'];
       this.client.getLevelById(id).subscribe({
@@ -139,20 +153,20 @@ export class LevelComponent {
     });
 
     // Type doesn't matter for cutscenes
-    this.setScoreType(data.levelType === LevelType.Cutscene ? 0 : 1);
+    // listener above will take care of calling getScores() when we set the signal value
+    this.scoreFilterForm.scoreType().value.set(data.levelType === LevelType.Cutscene ? 0 : 1);
   }
 
   scoreTypeButtonClick() {
     this.showScoreFilterMenu = !this.showScoreFilterMenu;
   }
 
-  setScoreType(type: number) {
-    this.scoreFilterForm.controls.scoreType.setValue(type);
-    this.getScores(type);
-  }
-
-  private getScores(type: number) {
+  // TODO would be good to somehow deduplicate all of this stuff into a component which we can just reuse for both
+  // preview and paginated
+  private getScores() {
     if (!this.level) return;
+
+    const type: number = this.scoreFilterInputs().scoreType;
 
     let cachedList: Score[] | undefined = this.scoresPerType.get(type);
     if (cachedList != null) {
