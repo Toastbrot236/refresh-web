@@ -12,11 +12,11 @@
                 }
                 
                 <div class="flex flex-row flex-wrap gap-x-2 gap-y-4 justify-between">
-                    <app-button text="Discard Changes" [icon]="faCancel" [enabled]="hasPendingMetadataChanges" color="bg-red"
+                    <app-button text="Discard Changes" [icon]="faCancel" [enabled]="metadataForm().touched()" color="bg-red"
                         (click)="discardChanges()">
                     </app-button>
                     
-                    <app-button text="Save Changes" [icon]="faFloppyDisk" [enabled]="hasPendingMetadataChanges" color="bg-primary"
+                    <app-button text="Save Changes" [icon]="faFloppyDisk" [enabled]="metadataForm().touched()" color="bg-primary"
                         (click)="toggleUpdateDialog(true)">
                     </app-button>
                 </div>
@@ -60,7 +60,7 @@
             <app-textbox label="Username" [showMaxLength]="true" [maxLength]="17"
                 placeholder="greek-player_50" [formField]="metadataForm.username" [icon]="faUser"></app-textbox>
             
-            @if (hasUsernameChanged) {
+            @if (getUsernameIfChanged()) {
                 <p class="text-emphasized-primary">You are about to rename this user</p>
             }
 
@@ -90,7 +90,7 @@
                             userRoles.Curator,
                             userRoles.Trusted,
                             userRoles.User,
-                        ]"></app-radio-button-group>
+                        ]" [textPipe]="role" [formField]="metadataForm.role"></app-radio-button-group>
                         <!-- all roles below cannot be set this way -->
                     </app-dropdown-menu>
                 </div>
@@ -172,27 +172,28 @@
                     </app-pane-title>
                     <app-divider></app-divider>
                     <div class="flex flex-col gap-y-4">
-                        <app-textarea class="w-full" [icon]="faPencil" [formField]="metadataForm.punishmentReason" placeholder="Provide a reason..."/>
+                        <app-textarea class="w-full" [icon]="faPencil" [formField]="punishmentForm.reason" placeholder="Provide a reason (3 characters minimum)..."/>
 
-                        <div [formGroup]="punishmentForm" class="flex flex-row flex-wrap gap-x-2 justify-start content-center">
+                        <div class="flex flex-row flex-wrap gap-x-2 justify-start content-center">
                             <p class="content-center text-2xl">Expiry date:</p>
                             <app-dark-container>
-                                <input type="datetime-local" id="expiryDateInput" [formField]="metadataForm.punishmentExpiryDate">
+                                <input type="datetime-local" id="expiryDateInput" [formField]="punishmentForm.expiryDate">
                             </app-dark-container>
                         </div>
 
                         <div class="flex flex-row flex-wrap gap-x-2 gap-y-2 justify-start content-center pt-2">
                             <app-button text="Restrict" [icon]="faGavel" color="bg-red" (click)="toggleRestrictionDialog(true)"
-                                [enabled]="!waitingForPunishmentResponse && isPunishmentReady"></app-button>
+                                [enabled]="!waitingForPunishmentResponse"></app-button>
                             <app-button text="Ban" [icon]="faBan" color="bg-red" (click)="toggleBanDialog(true)"
-                                [enabled]="!waitingForPunishmentResponse && isPunishmentReady"></app-button>
+                                [enabled]="!waitingForPunishmentResponse"></app-button>
                             <app-button text="Pardon instead" [icon]="faFlag" color="bg-green" (click)="togglePardonDialog(true)"
                                 [enabled]="!waitingForPunishmentResponse && targetUser.role <= userRoles.Restricted"></app-button>
                         </div>
                         @if (waitingForPunishmentResponse) {
                             <p>Waiting for response...</p>
                         }
-                        @else if (!isPunishmentReady) {
+                        <!-- lets see what will happen -->
+                        @else if (punishmentForm().invalid()) {
                             <p class="text-emphasized-primary">You must enter a reason and an expiry date to punish this user</p>
                         }
                     </div>
@@ -214,11 +215,11 @@
                 </app-container>
                 <app-container class="w-full">
                     <app-pane-title>
-                        <p> Placeholder </p>
+                        <p> Authentication Stuff </p>
                     </app-pane-title>
                     <app-divider></app-divider>
                     <div class="flex flex-col gap-y-4">
-                        idk what to put here
+                        TODO move rename here + put email edit here
                     </div>
                 </app-container>
             </app-two-pane-layout>
@@ -227,11 +228,11 @@
 
     <!-- Metadata update prompt -->
     @defer (when showUpdateDialog) { @if (showUpdateDialog) {
-        <app-confirmation-dialog [infoText]="'Do you really want to update this user?' + (hasUsernameChanged ? ' Updating will also RENAME this user!' : '')"
+        <app-confirmation-dialog [infoText]="'Do you really want to update this user?' + (this.getUsernameIfChanged() ? ' Updating will also RENAME this user!' : '')"
             (closeDialog)="toggleUpdateDialog(false)">
 
             <app-button text="No, go back" [icon]="faSignOutAlt" color="bg-secondary" (click)="toggleUpdateDialog(false)"></app-button>
-            <app-button text="Yes, Update!" [icon]="faCheckCircle" color="bg-green" (click)="uploadChanges()"></app-button>
+            <app-button text="Yes, Update!" [icon]="faCheckCircle" color="bg-green" (click)="uploadMetadataChanges()"></app-button>
         </app-confirmation-dialog>
     }}
 

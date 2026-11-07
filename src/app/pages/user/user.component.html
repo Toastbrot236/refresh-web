@@ -39,8 +39,10 @@
                         color="bg-secondary"
                         (click)="levelSelectionButtonClick()">
                     </app-button>
-                    <app-radio-button-group groupName="levelCategory" [buttonValues]="[levelsByUserCategoryKey, levelsHeartedCategoryKey]"
-                        [textPipe]="levelCategoryPipe" [formField]="filterForm.levelCategory">
+                    <app-radio-button-group groupName="levelCategory" [buttonValues]="[
+                            levelCategoryRoutes.ByUser,
+                            levelCategoryRoutes.HeartedByUser,
+                        ]" [textPipe]="levelCategoryPipe" [formField]="filterForm.levelCategory">
                     </app-radio-button-group>
                 </app-dropdown-menu>
             </div>
@@ -77,8 +79,10 @@
                         color="bg-secondary"
                         (click)="photoSelectionButtonClick()">
                     </app-button>
-                    <app-radio-button-group groupName="photoCategory" [buttonValues]="[photosByUserCategoryKey, photosWithUserCategoryKey]"
-                        [textPipe]="photoCategoryPipe" [formField]="filterForm.photoCategory">
+                    <app-radio-button-group groupName="photoCategory" [buttonValues]="[
+                            photoCategoryRoutes.ByUser,
+                            photoCategoryRoutes.WithUser,
+                        ]" [textPipe]="photoCategoryPipe" [formField]="filterForm.photoCategory">
                     </app-radio-button-group>
                 </app-dropdown-menu>
             </div>

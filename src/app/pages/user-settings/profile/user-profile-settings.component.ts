@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy } from "@angular/core";
+import { Component, ChangeDetectionStrategy, signal } from "@angular/core";
 import { ExtendedUser } from "../../../api/types/users/extended-user";
 import { TitleService } from "../../../services/title.service";
 import { AuthenticationService } from "../../../api/authentication.service";
@@ -24,6 +24,19 @@ import { CheckboxComponent } from "../../../components/ui/form/checkbox.componen
 import { RadioButtonComponent } from "../../../components/ui/form/radio-button.component";
 import { ContentVisibility } from "../../../api/types/content-visibility";
 import { RouterLinkComponent } from "../../../components/ui/text/links/router-link.component";
+import { FieldTree, form, maxLength } from "@angular/forms/signals";
+import { RadioButtonGroupComponent } from "../../../components/ui/form/radio-button-group.component";
+
+interface MetadataFormInput {
+    description: string,
+    unescapeXML: boolean,
+    showModdedLevels: boolean,
+    showModdedPlanets: boolean,
+    showReuploadedLevels: boolean,
+    griefToPhotos: boolean,
+    levelVisibility: ContentVisibility,
+    profileVisibility: ContentVisibility,
+};
 
 @Component({
     selector: 'app-user-profile-settings',
@@ -40,7 +53,8 @@ import { RouterLinkComponent } from "../../../components/ui/text/links/router-li
     ButtonComponent,
     CheckboxComponent,
     RadioButtonComponent,
-    RouterLinkComponent
+    RouterLinkComponent,
+    RadioButtonGroupComponent
 ],
     templateUrl: './user-profile-settings.component.html',
     changeDetection: ChangeDetectionStrategy.Eager,
@@ -49,28 +63,25 @@ import { RouterLinkComponent } from "../../../components/ui/text/links/router-li
 
 export class UserProfileSettingsComponent {
     ownUser: ExtendedUser | undefined | null;
-    settingsForm = new FormGroup({
-        description: new FormControl(),
-        unescapeXml: new FormControl(),
-        showModded: new FormControl(),
-        showModdedPlanets: new FormControl(),
-        showReuploaded: new FormControl(),
-        griefToPhotos: new FormControl(),
-        levelVisibility: new FormControl(0),
-        profileVisibility: new FormControl(0),
+
+    profileInputs = signal<MetadataFormInput>({
+        // default values, should be overwritten when getting user data anyway
+        description: '',
+        unescapeXML: false,
+        showModdedLevels: true,
+        showModdedPlanets: true,
+        showReuploadedLevels: true,
+        griefToPhotos: false,
+        levelVisibility: ContentVisibility.Everyone,
+        profileVisibility: ContentVisibility.Everyone,
+    });
+
+    // allow 17 chars for username incase it's a fake user which has a 16 character name after prefix
+    profileForm: FieldTree<MetadataFormInput, string | number, "writable"> = form(this.profileInputs, (f) => {
+        maxLength(f.description, 512, { message: 'Description seems to be too long (max is 512 characters)' });
     });
 
     iconHash: string = "0";
-
-    hasDescriptionChanged: boolean = false;
-    hasGriefToPhotoChanged: boolean = false;
-    hasShowModdedChanged: boolean = false;
-    hasShowModdedPlanetsChanged: boolean = false;
-    hasShowReuploadedChanged: boolean = false;
-    hasUnescapeXmlChanged: boolean = false;
-    hasLevelVisibilityChanged: boolean = false;
-    hasProfileVisibilityChanged: boolean = false;
-    hasPendingChanges: boolean = false;
 
     protected isMobile: boolean = false;
 
@@ -87,91 +98,43 @@ export class UserProfileSettingsComponent {
         this.layout.isMobile.subscribe(v => this.isMobile = v);
     }
 
-    checkDescriptionChanges() {
-        this.hasDescriptionChanged = this.settingsForm.controls.description.getRawValue() != this.ownUser?.description;
-        this.doesPageHavePendingChanges();
-    }
-
-    checkGriefToPhotosChanges() {
-        this.hasGriefToPhotoChanged = this.settingsForm.controls.griefToPhotos.getRawValue() != this.ownUser?.redirectGriefReportsToPhotos;
-        this.doesPageHavePendingChanges();
-    }
-
-    checkShowModdedChanges() {
-        this.hasShowModdedChanged = this.settingsForm.controls.showModded.getRawValue() != this.ownUser?.showModdedContent;
-        this.doesPageHavePendingChanges();
-    }
-
-    checkShowModdedPlanetsChanges() {
-        this.hasShowModdedPlanetsChanged = this.settingsForm.controls.showModdedPlanets.getRawValue() != this.ownUser?.showModdedPlanets;
-        this.doesPageHavePendingChanges();
-    }
-
-    checkShowReuploadedChanges() {
-        this.hasShowReuploadedChanged = this.settingsForm.controls.showReuploaded.getRawValue() != this.ownUser?.showReuploadedContent;
-        this.doesPageHavePendingChanges();
-    }
-
-    checkUnescapeXmlChanges() {
-        this.hasUnescapeXmlChanged = this.settingsForm.controls.unescapeXml.getRawValue() != this.ownUser?.unescapeXmlSequences;
-        this.doesPageHavePendingChanges();
-    }
-
-    setLevelVisibility(input: ContentVisibility) {
-        this.settingsForm.controls.levelVisibility.setValue(input);
-        this.hasLevelVisibilityChanged = input != this.ownUser!.levelVisibility;
-        this.doesPageHavePendingChanges();
-    }
-
-    setProfileVisibility(input: ContentVisibility) {
-        this.settingsForm.controls.profileVisibility.setValue(input);
-        this.hasProfileVisibilityChanged = input != this.ownUser!.profileVisibility;
-        this.doesPageHavePendingChanges();
-    }
-
-    doesPageHavePendingChanges() {
-        this.hasPendingChanges =
-            this.hasDescriptionChanged
-            || this.hasGriefToPhotoChanged
-            || this.hasShowModdedChanged
-            || this.hasShowModdedPlanetsChanged
-            || this.hasShowReuploadedChanged
-            || this.hasShowModdedChanged
-            || this.hasUnescapeXmlChanged
-            || this.hasLevelVisibilityChanged
-            || this.hasProfileVisibilityChanged;
+    protected getDescriptionIfChanged(): string | undefined {
+        if (!this.ownUser) return undefined;
+        let newDescription: string = this.profileForm.description().value();
+        return newDescription !== this.ownUser.description ? newDescription : undefined;
     }
 
     updateInputs(user: ExtendedUser) {
-        this.hasPendingChanges = false;
+        this.ownUser = user;
 
         this.iconHash = user.iconHash;
-        this.settingsForm.controls.description.setValue(user.description);
+        this.profileForm.description().value.set(user.description);
 
-        this.settingsForm.controls.unescapeXml.setValue(user.unescapeXmlSequences);
-        this.settingsForm.controls.showModded.setValue(user.showModdedContent);
-        this.settingsForm.controls.showModdedPlanets.setValue(user.showModdedPlanets);
-        this.settingsForm.controls.showReuploaded.setValue(user.showReuploadedContent);
-        this.settingsForm.controls.griefToPhotos.setValue(user.redirectGriefReportsToPhotos);
+        this.profileForm.unescapeXML().value.set(user.unescapeXmlSequences);
+        this.profileForm.showModdedLevels().value.set(user.showModdedContent);
+        this.profileForm.showModdedPlanets().value.set(user.showModdedPlanets);
+        this.profileForm.showReuploadedLevels().value.set(user.showReuploadedContent);
+        this.profileForm.griefToPhotos().value.set(user.redirectGriefReportsToPhotos);
 
-        this.settingsForm.controls.levelVisibility.setValue(user.levelVisibility);
-        this.settingsForm.controls.profileVisibility.setValue(user.profileVisibility);
+        this.profileForm.levelVisibility().value.set(user.levelVisibility);
+        this.profileForm.profileVisibility().value.set(user.profileVisibility);
     }
 
     uploadChanges() {
-        if (!this.hasPendingChanges) return;
+        if (this.profileForm().invalid()) return;
+        if (!this.ownUser) return;
 
         let request: ProfileUpdateRequest = {
-            description: this.settingsForm.controls.description.getRawValue(),
+            description: this.getDescriptionIfChanged(),
 
-            unescapeXmlSequences: this.settingsForm.controls.unescapeXml.getRawValue(),
-            showModdedContent: this.settingsForm.controls.showModded.getRawValue(),
-            showModdedPlanets: this.settingsForm.controls.showModdedPlanets.getRawValue(),
-            showReuploadedContent: this.settingsForm.controls.showReuploaded.getRawValue(),
-            redirectGriefReportsToPhotos: this.settingsForm.controls.griefToPhotos.getRawValue(),
+            unescapeXmlSequences: this.profileForm.unescapeXML().value(),
+            showModdedContent: this.profileForm.showModdedLevels().value(),
+            showModdedPlanets: this.profileForm.showModdedPlanets().value(),
+            showReuploadedContent: this.profileForm.showReuploadedLevels().value(),
+            redirectGriefReportsToPhotos: this.profileForm.griefToPhotos().value(),
 
-            levelVisibility: this.settingsForm.controls.levelVisibility.getRawValue()!,
-            profileVisibility: this.settingsForm.controls.profileVisibility.getRawValue()!,
+            levelVisibility: this.profileForm.levelVisibility().value(),
+            profileVisibility: this.profileForm.profileVisibility().value(),
         };
 
         this.auth.UpdateProfile(request);
@@ -202,4 +165,5 @@ export class UserProfileSettingsComponent {
 
     protected readonly faPencil = faPencil;
     protected readonly faFloppyDisk = faFloppyDisk;
+    protected readonly contentVisibility = ContentVisibility;
 }

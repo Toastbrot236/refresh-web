@@ -35,10 +35,12 @@ import { RadioButtonGroupComponent } from '../../components/ui/form/radio-button
 import { FieldTree, form, FormField } from '@angular/forms/signals';
 import { LevelCategoryPipe } from '../../pipes/level-category.pipe';
 import { PhotoCategoryPipe } from '../../pipes/photo-category.pipe';
+import { LevelCategoryRoute } from '../../api/types/levels/level-category-route';
+import { PhotoCategoryRoute } from '../../api/types/photos/photo-category-route';
 
 interface FilterFormInput {
-  levelCategory: string,
-  photoCategory: string,
+  levelCategory: LevelCategoryRoute,
+  photoCategory: PhotoCategoryRoute,
 }
 
 @Component({
@@ -90,16 +92,9 @@ export class UserComponent {
 
   showLevelDropdown: boolean = false;
 
-  // Category names used for the API request routes, and internally to identify cache, radio buttons (ID and value) etc
-  protected readonly levelsByUserCategoryKey: string = "byUser";
-  protected readonly levelsHeartedCategoryKey: string = "hearted";
-
-  protected readonly photosByUserCategoryKey: string = "by";
-  protected readonly photosWithUserCategoryKey: string = "with";
-
   filterInputs = signal<FilterFormInput>({
-    levelCategory: this.levelsByUserCategoryKey,
-    photoCategory: this.photosByUserCategoryKey,
+    levelCategory: LevelCategoryRoute.ByUser,
+    photoCategory: PhotoCategoryRoute.ByUser,
   });
 
   filterForm: FieldTree<FilterFormInput, string | number, "writable"> = form(this.filterInputs);
@@ -155,14 +150,14 @@ export class UserComponent {
     if (this.user == null) return;
     let cachedList: ListWithData<Level> | undefined;
 
-    const category: string = this.filterInputs().levelCategory;
+    const category: LevelCategoryRoute = this.filterInputs().levelCategory;
 
     switch (category) {
-      case this.levelsByUserCategoryKey:
+      case LevelCategoryRoute.ByUser:
         cachedList = this.levelsPublishedByUser;
         break;
 
-      case this.levelsHeartedCategoryKey:
+      case LevelCategoryRoute.HeartedByUser:
         cachedList = this.levelsHeartedByUser;
         break;
 
@@ -186,10 +181,10 @@ export class UserComponent {
       next: levelPage => {
         // cache the page
         switch (category) {
-          case this.levelsByUserCategoryKey:
+          case LevelCategoryRoute.ByUser:
             this.levelsPublishedByUser = levelPage;
             break;
-          case this.levelsHeartedCategoryKey:
+          case LevelCategoryRoute.HeartedByUser:
             this.levelsHeartedByUser = levelPage;
             break;
         }
@@ -197,14 +192,6 @@ export class UserComponent {
         this.currentLevels = levelPage;
       }
     });
-  }
-
-  getLevelSelectionText(selection: number): string {
-    switch (selection) {
-      case 0: return "Published by user";
-      case 1: return "Hearted by user";
-      default: return "Something by user";
-    }
   }
 
   photoSelectionButtonClick() {
@@ -215,13 +202,13 @@ export class UserComponent {
     if (this.user == null) return;
     let cachedList: ListWithData<Photo> | undefined;
 
-    const category: string = this.filterInputs().photoCategory;
+    const category: PhotoCategoryRoute = this.filterInputs().photoCategory;
 
     switch (category) {
-      case this.photosByUserCategoryKey:
+      case PhotoCategoryRoute.ByUser:
         cachedList = this.photosByUser;
         break;
-      case this.photosWithUserCategoryKey:
+      case PhotoCategoryRoute.WithUser:
         cachedList = this.photosWithUser;
         break;
       default:
@@ -245,11 +232,11 @@ export class UserComponent {
       next: photoPage => {
         // cache the page
         switch (category) {
-          case this.photosByUserCategoryKey:
+          case PhotoCategoryRoute.ByUser:
             this.photosByUser = this.currentPhotos;
             break;
 
-          case this.photosWithUserCategoryKey:
+          case PhotoCategoryRoute.WithUser:
             this.photosWithUser = this.currentPhotos;
             break;
         }
@@ -259,14 +246,8 @@ export class UserComponent {
     });
   }
 
-  getPhotoSelectionText(selection: number): string {
-    switch (selection) {
-      case 0: return "By user";
-      case 1: return "With user";
-      default: return "Something user";
-    }
-  }
-
   protected readonly faChevronDown = faChevronDown;
   protected readonly faChevronUp = faChevronUp;
+  protected readonly levelCategoryRoutes = LevelCategoryRoute;
+  protected readonly photoCategoryRoutes = PhotoCategoryRoute ;
 }
