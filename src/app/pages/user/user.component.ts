@@ -16,27 +16,20 @@ import { ExtendedUser } from '../../api/types/users/extended-user';
 import { AuthenticationService } from '../../api/authentication.service';
 import { TwoPaneLayoutComponent } from "../../components/ui/layouts/two-pane-layout.component";
 import { ContainerComponent } from "../../components/ui/container.component";
-import { PaneTitleComponent } from "../../components/ui/text/pane-title.component";
-import { DropdownMenuComponent } from "../../components/ui/form/dropdown-menu.component";
-import { ButtonComponent } from "../../components/ui/form/button.component";
 import { Level } from '../../api/types/levels/level';
 import { Photo } from '../../api/types/photos/photo';
-import { faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
-import { DividerComponent } from "../../components/ui/divider.component";
 import { BannerService } from '../../banners/banner.service';
 import { RefreshApiError } from '../../api/refresh-api-error';
-import { LevelPreviewComponent } from "../../components/items/level-preview.component";
-import { PhotoComponent } from "../../components/items/photo.component";
-import { DarkContainerComponent } from "../../components/ui/dark-container.component";
 import { ListWithData } from '../../api/list-with-data';
 import { defaultListInfo } from '../../api/refresh-api-list-info';
 import { UserRoleComponent } from "../../components/ui/info/user-role.component";
-import { RadioButtonGroupComponent } from '../../components/ui/form/radio-button-group.component';
-import { FieldTree, form, FormField } from '@angular/forms/signals';
+import { FieldTree, form } from '@angular/forms/signals';
 import { LevelCategoryPipe } from '../../pipes/level-category.pipe';
 import { PhotoCategoryPipe } from '../../pipes/photo-category.pipe';
 import { LevelCategoryRoute } from '../../api/types/levels/level-category-route';
 import { PhotoCategoryRoute } from '../../api/types/photos/photo-category-route';
+import { UserPhotoListingComponent } from '../user-photo-listing/user-photo-listing.component';
+import { UserLevelListingComponent } from '../user-level-listing/user-level-listing.component';
 
 interface FilterFormInput {
   levelCategory: LevelCategoryRoute,
@@ -56,19 +49,9 @@ interface FilterFormInput {
     FancyHeaderUserButtonsComponent,
     TwoPaneLayoutComponent,
     ContainerComponent,
-    PaneTitleComponent,
-    RouterLink,
-    DropdownMenuComponent,
-    ButtonComponent,
-    DividerComponent,
-    LevelPreviewComponent,
-    PhotoComponent,
-    DarkContainerComponent,
     UserRoleComponent,
-    RadioButtonGroupComponent,
-    FormField,
-    LevelCategoryPipe,
-    PhotoCategoryPipe,
+    UserPhotoListingComponent,
+    UserLevelListingComponent,
 ],
     providers: [
       LevelCategoryPipe,
@@ -246,8 +229,6 @@ export class UserComponent {
     });
   }
 
-  protected readonly faChevronDown = faChevronDown;
-  protected readonly faChevronUp = faChevronUp;
   protected readonly levelCategoryRoutes = LevelCategoryRoute;
   protected readonly photoCategoryRoutes = PhotoCategoryRoute;
 }

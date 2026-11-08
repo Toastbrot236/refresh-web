@@ -28,18 +28,13 @@ import { LevelRelations } from '../../api/types/levels/level-relations';
 import { OriginalPublisherRouterLink } from "../../components/ui/text/links/original-publisher-router-link.component";
 import { LargerLabelComponent } from "../../components/ui/info/larger-label.component";
 import { TooltipComponent } from "../../components/ui/text/tooltip.component";
-import { ButtonComponent } from '../../components/ui/form/button.component';
-import { RadioButtonComponent } from '../../components/ui/form/radio-button.component';
 import { ScoreTypePipe } from '../../pipes/score-type.pipe';
 import { LevelType } from '../../api/types/levels/level-type';
-import { DropdownMenuComponent } from "../../components/ui/form/dropdown-menu.component";
-import { faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
-import { ScorePreviewComponent } from "../../components/items/score-preview.component";
 import { Score } from '../../api/types/levels/score';
 import { BannerService } from '../../banners/banner.service';
 import { RefreshApiError } from '../../api/refresh-api-error';
-import { RadioButtonGroupComponent } from '../../components/ui/form/radio-button-group.component';
 import { FieldTree, form, FormField } from '@angular/forms/signals';
+import { LevelLeaderboardComponent } from '../level-leaderboard/level-leaderboard.component';
 
 interface ScoreFilterFormInput {
   scoreType: number,
@@ -67,12 +62,7 @@ interface ScoreFilterFormInput {
     OriginalPublisherRouterLink,
     LargerLabelComponent,
     TooltipComponent,
-    ButtonComponent,
-    DropdownMenuComponent,
-    ScoreTypePipe,
-    ScorePreviewComponent,
-    RadioButtonGroupComponent,
-    FormField
+    LevelLeaderboardComponent
 ],
     providers: [
         SlugPipe,
@@ -206,7 +196,4 @@ export class LevelComponent {
 
     this.currentScores = newCurrentList;
   }
-
-  protected readonly faChevronDown = faChevronDown;
-  protected readonly faChevronUp = faChevronUp;
 }

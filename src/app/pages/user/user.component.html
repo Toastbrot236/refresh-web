@@ -24,82 +24,11 @@
 
     <app-two-pane-layout>
         <app-container class="w-full">
-            <div class="flex flex-row flex-grow flex-wrap justify-between gap-x-2 gap-y-1">
-                <app-pane-title>
-                    <a [routerLink]="'/levels/' + filterForm.levelCategory().value() + '/user/' + user.username">
-                        Levels
-                    </a>
-                    <span class="text-sm italic text-gentle text-base">({{this.currentLevels.listInfo.totalItems}} in total)</span>
-                </app-pane-title>
-                <app-dropdown-menu [showMenu]="showLevelDropdown" offsets="top-9 -left-7" [width]="60">
-                    <app-button trigger
-                        width="flex flex-shrink justify-evenly flex-grow w-48 text-nowrap"
-                        [text]="filterForm.levelCategory().value() | levelCategory"
-                        [icon]="showLevelDropdown ? faChevronUp : faChevronDown"
-                        color="bg-secondary"
-                        (click)="levelSelectionButtonClick()">
-                    </app-button>
-                    <app-radio-button-group groupName="levelCategory" [buttonValues]="[
-                            levelCategoryRoutes.ByUser,
-                            levelCategoryRoutes.HeartedByUser,
-                        ]" [textPipe]="levelCategoryPipe" [formField]="filterForm.levelCategory">
-                    </app-radio-button-group>
-                </app-dropdown-menu>
-            </div>
-            <app-divider></app-divider>
-            @if (currentLevels.data.length > 0) {
-                @for (level of currentLevels.data; track level.levelId; let i = $index) {
-                    <div class="py-1.5">
-                        <app-dark-container>
-                            <app-level-preview [level]="level"></app-level-preview>
-                        </app-dark-container>
-                    </div>
-                }
-            }
-            @else if (currentLevels.listInfo.totalItems < 0) {
-                <p>Loading levels...</p>
-            }
-            @else {
-                <p>No levels yet...</p>
-            }
+            <app-user-level-listing [isPreview]="true" />
         </app-container>
+        
         <app-container class="w-full">
-            <div class="flex flex-row flex-grow flex-wrap justify-between gap-x-2 gap-y-1">
-                <app-pane-title>
-                    <a [routerLink]="'/photos/' + filterForm.photoCategory().value() + '/user/' + user.username">
-                        Photos
-                    </a>
-                    <span class="text-sm italic text-gentle text-base">({{this.currentPhotos.listInfo.totalItems}} in total)</span>
-                </app-pane-title>
-                <app-dropdown-menu [showMenu]="showPhotoDropdown" offsets="top-9 -left-2" [width]="56">
-                    <app-button trigger
-                        width="flex flex-shrink justify-evenly flex-grow w-48 text-nowrap"
-                        [text]="filterForm.photoCategory().value() | photoCategory"
-                        [icon]="showPhotoDropdown ? faChevronUp : faChevronDown"
-                        color="bg-secondary"
-                        (click)="photoSelectionButtonClick()">
-                    </app-button>
-                    <app-radio-button-group groupName="photoCategory" [buttonValues]="[
-                            photoCategoryRoutes.ByUser,
-                            photoCategoryRoutes.WithUser,
-                        ]" [textPipe]="photoCategoryPipe" [formField]="filterForm.photoCategory">
-                    </app-radio-button-group>
-                </app-dropdown-menu>
-            </div>
-            <app-divider></app-divider>
-            @if (currentPhotos.data.length > 0) {
-                @for (photo of currentPhotos.data; track photo.photoId; let i = $index) {
-                    <div class="py-1.5">
-                        <app-photo [photo]="photo" [link]="true"></app-photo>
-                    </div>
-                }
-            }
-            @else if (currentPhotos.listInfo.totalItems < 0) {
-                <p>Loading photos...</p>
-            }
-            @else {
-                <p>No photos yet...</p>
-            }
+            <app-user-photo-listing [isPreview]="true" />
         </app-container>
     </app-two-pane-layout>
 }

@@ -1,22 +1,22 @@
 import { Component, ChangeDetectionStrategy, Input, Inject, PLATFORM_ID, signal } from '@angular/core';
-import { User } from '../../../api/types/users/user';
-import { ClientService, defaultPageSize } from '../../../api/client.service';
-import { PhotoCategoryPipe } from '../../../pipes/photo-category.pipe';
-import { ActivatedRoute, RouterLink } from '@angular/router';
-import { PhotoComponent } from '../../items/photo.component';
+import { User } from '../../api/types/users/user';
+import { ClientService, defaultPageSize } from '../../api/client.service';
+import { PhotoCategoryPipe } from '../../pipes/photo-category.pipe';
+import { ActivatedRoute } from '@angular/router';
+import { PhotoComponent } from '../../components/items/photo.component';
 import { FieldTree, form } from '@angular/forms/signals';
-import { PhotoCategoryRoute } from '../../../api/types/photos/photo-category-route';
-import { ContainerComponent } from '../container.component';
-import { ResponsiveGridComponent } from '../responsive-grid.component';
-import { BannerService } from '../../../banners/banner.service';
-import { RefreshApiError } from '../../../api/refresh-api-error';
-import { EntityListComponent } from './entity-list.component';
-import { DropdownRadioButtonComponent } from '../form/dropdown-radio-button-group.component';
-import { UserLinkComponent } from '../text/links/user-link.component';
+import { PhotoCategoryRoute } from '../../api/types/photos/photo-category-route';
+import { ContainerComponent } from '../../components/ui/container.component';
+import { ResponsiveGridComponent } from '../../components/ui/responsive-grid.component';
+import { BannerService } from '../../banners/banner.service';
+import { RefreshApiError } from '../../api/refresh-api-error';
+import { EntityListComponent } from '../../components/ui/lists/entity-list.component';
+import { DropdownRadioButtonComponent } from '../../components/ui/form/dropdown-radio-button-group.component';
+import { UserLinkComponent } from '../../components/ui/text/links/user-link.component';
 import { isPlatformBrowser } from '@angular/common';
-import { ListWithData } from '../../../api/list-with-data';
-import { Photo } from '../../../api/types/photos/photo';
-import { defaultListInfo } from '../../../api/refresh-api-list-info';
+import { ListWithData } from '../../api/list-with-data';
+import { Photo } from '../../api/types/photos/photo';
+import { defaultListInfo } from '../../api/refresh-api-list-info';
 
 
 interface FilterFormInput {
@@ -24,7 +24,7 @@ interface FilterFormInput {
 }
 
 @Component({
-    selector: 'app-photos-by-user-list',
+    selector: 'app-user-photo-listing',
     imports: [
     ContainerComponent,
     ResponsiveGridComponent,
@@ -33,54 +33,7 @@ interface FilterFormInput {
     UserLinkComponent,
     PhotoComponent
 ],
-    template: `
-        <app-entity-list title="Photos" [fullPageRouterLink]="'/photos/' + filterForm.photoCategory().value() + '/user/' + user.username"
-            [isPreview]="isPreview" [entityList]="currentList">
-
-            <ng-container toTheRightOfTitle class="flex flex-row flex-grow flex-wrap justify-between gap-x-2 gap-y-1">
-                <app-dropdown-radio-button-group groupName="photoCategories" [buttonValues]="[
-                        photoCategoryRoutes.ByUser,
-                        photoCategoryRoutes.WithUser,
-                    ]" [textPipe]="categoryPipe" [radioFormField]="filterForm.photoCategory">
-                </app-dropdown-radio-button-group>
-            
-                @if (!isPreview) {
-                    <app-user-link class="content-center text-[20px]" [user]="user"></app-user-link>
-                }
-            </ng-container>
-
-            <ng-container loadingContent>
-                <p>Loading photos...</p>
-            </ng-container>
-
-            <ng-container noItemsContent>
-                <p>No photos found! Try changing your filters...</p>
-            </ng-container>
-
-            <ng-container errorContent>
-                <p>An error occurred, but we won't tell why, because it'S not implemented yet!</p>
-            </ng-container>
-
-            <ng-container listingContent>
-                @if (isPreview) {
-                    @for (photo of currentList.data; track photo.photoId) {
-                        <div class="py-1.5">
-                            <app-photo [photo]="photo" [link]="true" />
-                        </div>
-                    }
-                }
-                @else {
-                    <app-responsive-grid>
-                        @for (photo of this.currentList.data; track photo.photoId) {
-                            <app-container [tight]="true">
-                                <app-photo [photo]="photo" [link]="true" />
-                            </app-container>
-                        }
-                    </app-responsive-grid>
-                }
-            </ng-container>
-        </app-entity-list>
-    `,
+    templateUrl: './user-photo-listing.component.html',
     providers: [
         PhotoCategoryPipe
     ],
@@ -88,7 +41,9 @@ interface FilterFormInput {
     styles: ``
 })
 
-export class PhotosByUserListComponent {
+// This component has inputs because it's intended to also be usable as a component
+// on the user info page for the photos preview.
+export class UserPhotoListingComponent {
     @Input() isPreview: boolean = false;
     user: User = null!;
 

@@ -49,7 +49,7 @@ import { ListWithData } from '../../../api/list-with-data';
                 }
               </div>
 
-            <ng-content select="[belowTitle]" />
+              <ng-content select="[belowTitle]" />
             </div>
           </app-container-header>
         }
