@@ -24,6 +24,8 @@ import { ExtendedUser } from './types/users/extended-user';
 import { PunishUserRequest } from './types/moderation/punish-user-request';
 import { PlanetInfo } from './types/users/planet-info';
 import { Announcement } from './types/announcement';
+import { PhotoCategoryRoute } from './types/photos/photo-category-route';
+import { LevelCategoryRoute } from './types/levels/level-category-route';
 
 export const defaultPageSize: number = 40;
 
@@ -73,7 +75,7 @@ export class ClientService extends ApiImplementation {
     return this.http.get<ListWithData<Room>>("/rooms");
   }
 
-  getLevelsInCategory(category: string, skip: number = 0, count: number = defaultPageSize, params: Params | null = null) {
+  getLevelsInCategory(category: string | LevelCategoryRoute, skip: number = 0, count: number = defaultPageSize, params: Params | null = null) {
     return this.http.get<ListWithData<Level>>(`/levels/${category}`, {params: this.setPageQuery(params, skip, count)});
   }
 
@@ -148,7 +150,7 @@ export class ClientService extends ApiImplementation {
     return this.http.get<ListWithData<Photo>>(`/photos`, {params: this.createPageQuery(skip, count)});
   }
 
-  getPhotosRelatedToUserUuid(userId: string, category: string, skip: number = 0, count: number = defaultPageSize) {
+  getPhotosRelatedToUserUuid(userId: string, category: PhotoCategoryRoute, skip: number = 0, count: number = defaultPageSize) {
     return this.http.get<ListWithData<Photo>>(`/photos/${category}/uuid/${userId}`, {params: this.createPageQuery(skip, count)});
   }
 
