@@ -37,7 +37,7 @@ export class DropdownRadioButtonComponent {
     @Input({required: true}) buttonValues: string[] | number[] = [];
     @Input() textPipe: PipeTransform | undefined;
 
-    @Input({required: true}) radioFormField: FieldTree<string, string | number, "writable"> = null!;
+    @Input({required: true}) radioFormField: FieldTree<string | number, string, "writable"> = null!;
 
     protected readonly faChevronDown = faChevronDown;
     protected readonly faChevronUp = faChevronUp;
