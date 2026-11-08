@@ -44,8 +44,7 @@ export class InfiniteScrollerComponent implements AfterViewInit {
 
   nextPageIndex: number = this.pageSize + 1;
   total: number = 0;
-  @Input() totalLoads: number = 0;
-  @Output() incrementLoads = new EventEmitter;
+  totalLoads: number = 0;
 
   @Input({required: true}) set listInfo(listInfo: RefreshApiListInfo) {
     if(!listInfo) return;
@@ -59,7 +58,6 @@ export class InfiniteScrollerComponent implements AfterViewInit {
 
     this.loadData.emit(); // tell the parent to load more data
     this.totalLoads++;
-    this.incrementLoads.emit();
   }
 
   ngAfterViewInit(): void {
