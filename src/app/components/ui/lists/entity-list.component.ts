@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { PageTitleComponent } from '../text/page-title.component';
 import { ContainerHeaderComponent } from '../container-header.component';
 import { DividerComponent } from '../divider.component';
+import { ListWithData } from '../../../api/list-with-data';
 
 @Component({
     selector: 'app-entity-list',
@@ -23,8 +24,8 @@ import { DividerComponent } from '../divider.component';
               <a [routerLink]="fullPageRouterLink">
                   {{ title }}
               </a>
-              @if (totalItemsCount) {
-                <span class="text-sm italic text-gentle text-base">({{totalItemsCount}} in total)</span>
+              @if (entityList.listInfo.totalItems >= 0) {
+                <span class="text-sm italic text-gentle text-base">({{entityList.listInfo.totalItems}} in total)</span>
               }
             </app-pane-title>
             <ng-content select="[toTheRightOfTitle]" />
@@ -43,8 +44,8 @@ import { DividerComponent } from '../divider.component';
 
                 <ng-content select="[toTheRightOfTitle]" />
 
-                @if (totalItemsCount) {
-                  <span class="text-sm italic text-gentle text-base">({{totalItemsCount}} in total)</span>
+                @if (entityList.listInfo.totalItems >= 0) {
+                  <span class="text-sm italic text-gentle text-base">({{entityList.listInfo.totalItems}} in total)</span>
                 }
               </div>
 
@@ -54,15 +55,22 @@ import { DividerComponent } from '../divider.component';
         }
 
         <!-- Content -->
+        <!-- If there is an error, then show the element(s) that specify the error -->
         @if (errorOccurred) {
           <ng-content select="[errorContent]" />
         }
-        @else if (pageLength > 0) {
+
+        <!-- Only build the list nodes if there are actually items in the list -->
+        @else if (entityList.data.length > 0) {
           <ng-content select="[listingContent]" />
         }
-        @else if ((totalItemsCount ?? 0) < 0) {
+
+        <!-- If totalItems is still -1, it's still uninitialized, because the list hasn't been downloaded yet -->
+        @else if (entityList.listInfo.totalItems < 0) {
           <ng-content select="[loadingContent]" />
         }
+
+        <!-- If totalItems is above -1 (list is initialized), but we have 0 items in page, then we received an empty list -->
         @else {
           <ng-content select="[noItemsContent]" />
         }
@@ -71,14 +79,13 @@ import { DividerComponent } from '../divider.component';
     changeDetection: ChangeDetectionStrategy.Eager,
     styles: ``
 })
-export class EntityListComponent {
+export class EntityListComponent<TEntity> {
   @Input({required: true}) title: string = "Some kind of list";
-  @Input() preferRouterTitleIfPage: boolean = true;
+  @Input() preferRouterTitleIfPage: boolean = false;
   @Input({required: true}) fullPageRouterLink: string = "/404";
   @Input({required: true}) isPreview: boolean = false;
 
-  @Input() totalItemsCount: number | undefined;
-  @Input({required: true}) pageLength: number = -1;
+  @Input({required: true}) entityList: ListWithData<TEntity> = null!;
   @Input() errorOccurred: boolean = false;
 
   initialized: boolean = false;
