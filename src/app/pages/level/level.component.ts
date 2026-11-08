@@ -72,8 +72,6 @@ interface ScoreFilterFormInput {
 })
 export class LevelComponent {
   level: Level | undefined | null;
-  scoresPerType: Map<number, Score[]> = new Map();
-  currentScores: Score[] = []; // current view of the scores
   activityPage: ActivityPage | undefined;
   
   protected readonly isBrowser: boolean;
@@ -81,25 +79,11 @@ export class LevelComponent {
   protected ownUser: ExtendedUser | undefined;
   protected relations: LevelRelations | undefined;
 
-  scoreFilterInputs = signal<ScoreFilterFormInput>({
-    scoreType: 1,
-  });
-
-  scoreFilterForm: FieldTree<ScoreFilterFormInput, string | number, "writable"> = form(this.scoreFilterInputs);
-
-  protected showScoreFilterMenu: boolean = false;
-
   constructor(private embed: EmbedService, private client: ClientService, private slug: SlugPipe, protected scoreTypePipe: ScoreTypePipe,
               route: ActivatedRoute, protected layout: LayoutService, private auth: AuthenticationService,
               @Inject(PLATFORM_ID) platformId: Object, protected banner: BannerService)
   {
     this.isBrowser = isPlatformBrowser(platformId);
-    
-    // listen for radio button changes
-    effect(() => {
-      console.log("lvl filter form effect callback executed: score tpe " + this.scoreFilterInputs().scoreType);
-      this.getScores();
-    });
 
     route.params.subscribe(params => {
       const id: number = +params['id'];
@@ -141,59 +125,5 @@ export class LevelComponent {
         this.activityPage = page;
       }
     });
-
-    // Type doesn't matter for cutscenes
-    // listener above will take care of calling getScores() when we set the signal value
-    this.scoreFilterForm.scoreType().value.set(data.levelType === LevelType.Cutscene ? 0 : 1);
-  }
-
-  scoreTypeButtonClick() {
-    this.showScoreFilterMenu = !this.showScoreFilterMenu;
-  }
-
-  // TODO would be good to somehow deduplicate all of this stuff into a component which we can just reuse for both
-  // preview and paginated
-  private getScores() {
-    if (!this.level) return;
-
-    const type: number = this.scoreFilterInputs().scoreType;
-
-    let cachedList: Score[] | undefined = this.scoresPerType.get(type);
-    if (cachedList != null) {
-      this.currentScores = cachedList!;
-      return;
-    }
-
-    this.client.getScoresForLevel(this.level.levelId, type, 0, 10).subscribe({
-      error: error => {
-        const apiError: RefreshApiError | undefined = error.error?.error;
-        this.banner.warn("Failed to get scores for level", apiError == null ? error.message : apiError.message);
-      },
-      next: scorePage => {
-        this.scoresPerType.set(type, scorePage.data);
-        this.currentScores = scorePage.data;
-      }
-    });
-  }
-
-  removeScore(uuid: string) {
-    // Remove from cache
-    for (let [scoreType, oldList] of this.scoresPerType) {
-
-      let newList: Score[] = [];
-      for (let score of oldList) {
-        if (score.scoreId !== uuid) newList.push(score);
-      }
-
-      this.scoresPerType.set(scoreType, newList);
-    }
-
-    // Remove from current list
-    let newCurrentList: Score[] = [];
-    for (let score of this.currentScores) {
-      if (score.scoreId !== uuid) newCurrentList.push(score);
-    }
-
-    this.currentScores = newCurrentList;
   }
 }

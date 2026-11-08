@@ -1,46 +1,55 @@
-<app-entity-list [title]="'Leaderboard for ' + level.isAdventure ? 'adventure' : 'level'"
-    [fullPageRouterLink]="'/level/' + level.levelId + '/' + (level.title | slug) + '/leaderboard'"
-    [isPreview]="isPreview" [entityList]="currentList">
+@if (level) {
+    <app-entity-list [title]="isPreview ? 'Leaderboard' : 'Leaderboard for ' + (level.isAdventure ? 'adventure' : 'level')"
+        [fullPageRouterLink]="'/level/' + level.levelId + '/' + (level.title | slug) + '/leaderboard'"
+        [isPreview]="isPreview" [entityList]="currentList">
 
-    <ng-container toTheRightOfTitle class="flex flex-row flex-grow flex-wrap justify-between gap-x-2 gap-y-1">
-        <app-dropdown-radio-button-group groupName="scoreTypes" [buttonValues]="[
-                0, 1, 2, 3, 4
-            ]" [textPipe]="scoreTypePipe" [radioFormField]="filterForm.scoreType">
-        </app-dropdown-radio-button-group>
-    
-        @if (!isPreview) {
+        <ng-container toTheRightOfTitlePreview class="flex flex-row flex-grow flex-wrap justify-between gap-x-2 gap-y-1">
+            <app-dropdown-radio-button-group groupName="scoreTypes" [buttonValues]="[
+                    0, 1, 2, 3, 4
+                ]" [textPipe]="scoreTypePipe" [radioFormField]="filterForm.scoreType">
+            </app-dropdown-radio-button-group>
+        </ng-container>
+
+        <ng-container toTheRightOfTitleFull class="flex flex-row flex-grow flex-wrap justify-between gap-x-2 gap-y-1">
+            <app-dropdown-radio-button-group groupName="scoreTypes" [buttonValues]="[
+                    0, 1, 2, 3, 4
+                ]" [textPipe]="scoreTypePipe" [radioFormField]="filterForm.scoreType">
+            </app-dropdown-radio-button-group>
+        
             <app-level-link class="content-center" [level]="level" />
-        }
-    </ng-container>
+        </ng-container>
 
-    <ng-container loadingContent>
-        <p>Loading scores...</p>
-    </ng-container>
+        <ng-container loadingContent>
+            <p>Loading scores...</p>
+        </ng-container>
 
-    <ng-container noItemsContent>
-        <p>No scores found! Try changing your filters...</p>
-    </ng-container>
+        <ng-container noItemsContent>
+            <p>No scores found! Try changing your filters...</p>
+        </ng-container>
 
-    <ng-container errorContent>
-        <p>An error occurred, but we won't tell why, because it'S not implemented yet!</p>
-    </ng-container>
+        <ng-container errorContent>
+            <p>An error occurred, but we won't tell why, because it'S not implemented yet!</p>
+        </ng-container>
 
-    <ng-container listingContent>
-        @if (isPreview) {
-            @for (score of currentList.data; track score.scoreId) {
-                <div class="py-1.5">
-                    <app-score-preview [score]="score" (deleted)="removeScore(score.scoreId)" />
-                </div>
-            }
-        }
-        @else {
-            <app-responsive-grid>
-                @for (score of this.currentList.data; track score.scoreId) {
-                    <app-container [tight]="true">
+        <ng-container listingContent>
+            @if (isPreview) {
+                @for (score of currentList.data; track score.scoreId) {
+                    <div class="py-1.5">
                         <app-score-preview [score]="score" (deleted)="removeScore(score.scoreId)" />
-                    </app-container>
+                    </div>
                 }
-            </app-responsive-grid>
-        }
-    </ng-container>
-</app-entity-list>
+            }
+            @else {
+                <app-responsive-grid>
+                    @for (score of this.currentList.data; track score.scoreId) {
+                        <app-container [tight]="true">
+                            <app-score-preview [score]="score" (deleted)="removeScore(score.scoreId)" />
+                        </app-container>
+                    }
+                </app-responsive-grid>
+
+                <app-infinite-scroller [isLoading]="this.isLoading" [listInfo]="this.currentList.listInfo" (loadData)="loadNextPage()" />
+            }
+        </ng-container>
+    </app-entity-list>
+}

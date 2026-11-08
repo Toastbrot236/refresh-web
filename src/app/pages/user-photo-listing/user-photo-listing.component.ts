@@ -17,6 +17,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { ListWithData } from '../../api/list-with-data';
 import { Photo } from '../../api/types/photos/photo';
 import { defaultListInfo } from '../../api/refresh-api-list-info';
+import { InfiniteScrollerComponent } from '../../components/ui/infinite-scroller.component';
 
 
 interface FilterFormInput {
@@ -31,7 +32,8 @@ interface FilterFormInput {
     EntityListComponent,
     DropdownRadioButtonComponent,
     UserLinkComponent,
-    PhotoComponent
+    PhotoComponent,
+    InfiniteScrollerComponent
 ],
     templateUrl: './user-photo-listing.component.html',
     providers: [
@@ -57,6 +59,8 @@ export class UserPhotoListingComponent {
         data: [],
         listInfo: defaultListInfo,
     };
+
+    isLoading: boolean = false;
     protected readonly isBrowser: boolean;
 
     constructor(protected client: ClientService, protected categoryPipe: PhotoCategoryPipe,
@@ -98,7 +102,11 @@ export class UserPhotoListingComponent {
         this.isBrowser = isPlatformBrowser(platformId);
     }
 
-    getPhotos() {
+    ngOnInit() {
+        this.loadNextPage();
+    }
+
+    loadNextPage() {
         if (!this.user) return;
 
         const category: PhotoCategoryRoute = this.filterInputs().photoCategory;
@@ -108,6 +116,7 @@ export class UserPhotoListingComponent {
         // in a way where 2 photos will cause the photo panel to be either longer or shorter than the level panel.
         let count: number = this.isPreview ? 2 : defaultPageSize;
         let skip: number = this.isPreview ? 0 : this.currentList.listInfo.nextPageIndex;
+        this.isLoading = true;
         
         // TODO re-implement caching, but in ClientService instead to make it easier to manage + more effective
         this.client.getPhotosRelatedToUserUuid(this.user.userId, category, skip, count).subscribe({
@@ -115,10 +124,12 @@ export class UserPhotoListingComponent {
                 // TODO show on component instead of in a banner
                 const apiError: RefreshApiError | undefined = error.error?.error;
                 this.banner.warn("Failed to get photos with user", apiError == null ? error.message : apiError.message);
+                this.isLoading = false;
             },
             next: photoPage => {
                 this.currentList.data = this.currentList.data.concat(photoPage.data);
                 this.currentList.listInfo = photoPage.listInfo;
+                this.isLoading = false;
             }
         });
     }

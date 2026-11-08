@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, Input, Inject, PLATFORM_ID, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, Input, Inject, PLATFORM_ID, signal, ChangeDetectorRef } from '@angular/core';
 import { User } from '../../api/types/users/user';
 import { ClientService, defaultPageSize } from '../../api/client.service';
 import { PhotoCategoryPipe } from '../../pipes/photo-category.pipe';
@@ -61,11 +61,12 @@ export class UserLevelListingComponent {
         listInfo: defaultListInfo,
     };
 
-    isLoading: boolean = false;
+    isLoading: boolean = true;
     protected readonly isBrowser: boolean;
 
     constructor(protected client: ClientService, protected categoryPipe: LevelCategoryPipe,
-        protected banner: BannerService, private route: ActivatedRoute, @Inject(PLATFORM_ID) platformId: Object
+        protected banner: BannerService, private route: ActivatedRoute, @Inject(PLATFORM_ID) platformId: Object,
+        protected cd: ChangeDetectorRef
     ) {
         route.params.subscribe(params => {
             const username: string | undefined = params['username'];
@@ -103,8 +104,13 @@ export class UserLevelListingComponent {
         this.isBrowser = isPlatformBrowser(platformId);
     }
 
+    ngOnInit() {
+        this.loadNextPage();
+    }
+
     loadNextPage() {
         if (!this.user) return;
+        this.isLoading = true;
 
         const category: LevelCategoryRoute = this.filterInputs().levelCategory;
 
@@ -117,10 +123,12 @@ export class UserLevelListingComponent {
                 // TODO show on component instead of in a banner
                 const apiError: RefreshApiError | undefined = error.error?.error;
                 this.banner.warn("Failed to get photos with user", apiError == null ? error.message : apiError.message);
+                this.isLoading = false;
             },
             next: nextPage => {
                 this.currentList.data = this.currentList.data.concat(nextPage.data);
                 this.currentList.listInfo = nextPage.listInfo;
+                this.isLoading = false;
             }
         });
     }

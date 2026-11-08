@@ -20,6 +20,7 @@ import { ScorePreviewComponent } from '../../components/items/score-preview.comp
 import { SlugPipe } from '../../pipes/slug.pipe';
 import { ScoreTypePipe } from '../../pipes/score-type.pipe';
 import { LevelLinkComponent } from '../../components/ui/text/links/level-link.component';
+import { InfiniteScrollerComponent } from '../../components/ui/infinite-scroller.component';
 
 interface FilterFormInput {
   scoreType: number,
@@ -34,7 +35,8 @@ interface FilterFormInput {
     DropdownRadioButtonComponent,
     ScorePreviewComponent,
     SlugPipe,
-    LevelLinkComponent
+    LevelLinkComponent,
+    InfiniteScrollerComponent
 ],
     providers: [
         SlugPipe,
@@ -61,9 +63,11 @@ export class LevelLeaderboardComponent {
         data: [],
         listInfo: defaultListInfo,
     };
+
+    isLoading: boolean = false;
     protected readonly isBrowser: boolean;
 
-    constructor(protected client: ClientService, protected categoryPipe: PhotoCategoryPipe,
+    constructor(protected client: ClientService,
         protected banner: BannerService, private route: ActivatedRoute, @Inject(PLATFORM_ID) platformId: Object,
         protected slug: SlugPipe, protected scoreTypePipe: ScoreTypePipe
     ) {
@@ -99,13 +103,20 @@ export class LevelLeaderboardComponent {
         this.isBrowser = isPlatformBrowser(platformId);
     }
 
+    ngOnInit() {
+        if (this.isPreview) {
+            this.loadNextPage();
+        } 
+    }
+
     loadNextPage() {
         if (!this.level) return;
 
         const scoreType: number = this.filterInputs().scoreType;
 
-        let count: number = this.isPreview ? 2 : defaultPageSize;
+        let count: number = this.isPreview ? 10 : defaultPageSize;
         let skip: number = this.isPreview ? 0 : this.currentList.listInfo.nextPageIndex;
+        this.isLoading = true;
         
         // TODO re-implement caching, but in ClientService instead to make it easier to manage + more effective
         this.client.getScoresForLevel(this.level.levelId, scoreType, skip, count).subscribe({
@@ -113,10 +124,12 @@ export class LevelLeaderboardComponent {
                 // TODO show on component instead of in a banner
                 const apiError: RefreshApiError | undefined = error.error?.error;
                 this.banner.warn("Failed to get scores for level", apiError == null ? error.message : apiError.message);
+                this.isLoading = false;
             },
             next: photoPage => {
                 this.currentList.data = this.currentList.data.concat(photoPage.data);
                 this.currentList.listInfo = photoPage.listInfo;
+                this.isLoading = false;
             }
         });
     }
