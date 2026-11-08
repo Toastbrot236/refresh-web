@@ -18,6 +18,7 @@ import { LevelCategoryRoute } from '../../api/types/levels/level-category-route'
 import { LevelPreviewComponent } from '../../components/items/level-preview.component';
 import { Level } from '../../api/types/levels/level';
 import { InfiniteScrollerComponent } from '../../components/ui/infinite-scroller.component';
+import { LevelCategoryPipe } from '../../pipes/level-category.pipe';
 
 
 interface FilterFormInput {
@@ -37,7 +38,7 @@ interface FilterFormInput {
 ],
     templateUrl: './user-level-listing.component.html',
     providers: [
-        PhotoCategoryPipe
+        LevelCategoryPipe
     ],
     changeDetection: ChangeDetectionStrategy.Eager,
     styles: ``
@@ -63,7 +64,7 @@ export class UserLevelListingComponent {
     isLoading: boolean = false;
     protected readonly isBrowser: boolean;
 
-    constructor(protected client: ClientService, protected categoryPipe: PhotoCategoryPipe,
+    constructor(protected client: ClientService, protected categoryPipe: LevelCategoryPipe,
         protected banner: BannerService, private route: ActivatedRoute, @Inject(PLATFORM_ID) platformId: Object
     ) {
         route.params.subscribe(params => {
