@@ -13,10 +13,10 @@ import { FieldTree, FormField } from '@angular/forms/signals';
     ],
     changeDetection: ChangeDetectionStrategy.Eager,
     template: `
-        <div [formField]="formField" class="min-w-full flex flex-row content-center justify-start rounded-md px-2 py-1
+        <div class="min-w-full flex flex-row content-center justify-start rounded-md px-2 py-1
             hover-within:outline-2 hover-within:outline hover-within:outline-secondary-bright max-w-fit transition-[outline]">
 
-            <input type="checkbox" [id]="formField.name" class="outline-hidden bg-teritary placeholder:text-gentle
+            <input type="checkbox" [formField]="formField" [id]="formField.name" class="outline-hidden bg-teritary placeholder:text-gentle
                 placeholder:italic">
 
             @if (label.length > 0) {

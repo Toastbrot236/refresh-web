@@ -18,7 +18,7 @@ import { FieldTree, FormField } from '@angular/forms/signals';
       <label [for]="formField.name" class="text-sm">{{label}}</label>
     }
 
-    <div [formField]="formField" class="min-w-full flex group rounded-full px-4 py-1.5 bg-teritary focus-within:outline-2 
+    <div class="min-w-full flex group rounded-full px-4 py-1.5 bg-teritary focus-within:outline-2 
       focus-within:outline focus-within:outline-secondary-bright max-w-fit text-nowrap transition-[outline]">
 
       <fa-icon [icon]="icon" class="text-gentle mr-2 group-focus-within:text-secondary-bright transition-colors"/>
