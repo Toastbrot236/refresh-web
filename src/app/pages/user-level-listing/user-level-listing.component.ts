@@ -79,40 +79,44 @@ export class UserLevelListingComponent {
     initData() {
         this.route.params.subscribe(params => {
             const username: string | undefined = params['username'];
-            const category: string | undefined = params['levelCategory'];
+            const uuid: string | undefined = params['uuid'];
 
-            if (username != null) {
-                this.client.getUserByUsername(username).subscribe({
-                    error: error => {
-                        // TODO show on component instead of in a banner
-                        const apiError: RefreshApiError | undefined = error.error?.error;
-                        this.banner.warn("Failed to get user", apiError == null ? error.message : apiError.message);
-                    },
-                    next: user => {
-                        this.user = user;
+            this.client.getUserByEitherLookup(username, uuid).subscribe({
+                error: error => {
+                    // TODO show on component instead of in a banner
+                    const apiError: RefreshApiError | undefined = error.error?.error;
+                    this.banner.warn("Failed to get user", apiError == null ? error.message : apiError.message);
+                },
+                next: user => {
+                    this.user = user;
 
-                        if (category != null) {
-                            switch (category) {
-                                case LevelCategoryRoute.ByUser:
-                                    this.filterForm.levelCategory().value.set(LevelCategoryRoute.ByUser);
-                                    break;
-                                case LevelCategoryRoute.HeartedByUser:
-                                    this.filterForm.levelCategory().value.set(LevelCategoryRoute.HeartedByUser);
-                                    break;
-                                default:
-                                    // default to byUser
-                                    this.filterForm.levelCategory().value.set(LevelCategoryRoute.ByUser);
-                                    break;
+                    this.route.queryParams.subscribe({
+                        next: query => {
+                            const category: string | undefined = query['levelCategory'];
+
+                            if (category != null) {
+                                switch (category) {
+                                    case LevelCategoryRoute.ByUser:
+                                        this.filterForm.levelCategory().value.set(LevelCategoryRoute.ByUser);
+                                        break;
+                                    case LevelCategoryRoute.HeartedByUser:
+                                        this.filterForm.levelCategory().value.set(LevelCategoryRoute.HeartedByUser);
+                                        break;
+                                    default:
+                                        // default to byUser
+                                        this.filterForm.levelCategory().value.set(LevelCategoryRoute.ByUser);
+                                        break;
+                                }
                             }
-                        }
 
-                        // Manually load the first page (not only needed for preview for some reason).
-                        // Have to manually increment total loads for this though, so the infinite scroller doesn't download the same page again.
-                        this.loadNextPage();
-                        this.totalLoads++;
-                    }
-                });
-            }
+                            // Manually load the first page (not only needed for preview for some reason).
+                            // Have to manually increment total loads for this though, so the infinite scroller doesn't download the same page again.
+                            this.loadNextPage();
+                            this.totalLoads++;
+                        }
+                    });
+                }
+            });
         });
     }
 

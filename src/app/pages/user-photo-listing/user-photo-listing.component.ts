@@ -78,48 +78,47 @@ export class UserPhotoListingComponent {
     initData() {
         this.route.params.subscribe(params => {
             const username: string | undefined = params['username'];
+            const uuid: string | undefined = params['uuid'];
 
-            if (username != null) {
-                this.client.getUserByUsername(username).subscribe({
-                    error: error => {
-                        // TODO show on component instead of in a banner
-                        const apiError: RefreshApiError | undefined = error.error?.error;
-                        this.banner.warn("Failed to get user", apiError == null ? error.message : apiError.message);
-                    },
-                    next: user => {
-                        this.user = user;
+            this.client.getUserByEitherLookup(username, uuid).subscribe({
+                error: error => {
+                    // TODO show on component instead of in a banner
+                    const apiError: RefreshApiError | undefined = error.error?.error;
+                    this.banner.warn("Failed to get user", apiError == null ? error.message : apiError.message);
+                },
+                next: user => {
+                    this.user = user;
 
-                        this.route.queryParams.subscribe({
-                            next: query => {
-                                const category: string | undefined = query['photoCategory'];
-    
-                                if (category) {
-                                    switch (category) {
-                                        case PhotoCategoryRoute.ByUser:
-                                            this.filterForm.photoCategory().value.set(PhotoCategoryRoute.ByUser);
-                                            break;
-                                        case PhotoCategoryRoute.WithUser:
-                                            this.filterForm.photoCategory().value.set(PhotoCategoryRoute.WithUser);
-                                            break;
-                                        default:
-                                            // default to byUser
-                                            this.filterForm.photoCategory().value.set(PhotoCategoryRoute.ByUser);
-                                            break;
-                                    }
+                    this.route.queryParams.subscribe({
+                        next: query => {
+                            const category: string | undefined = query['photoCategory'];
+
+                            if (category) {
+                                switch (category) {
+                                    case PhotoCategoryRoute.ByUser:
+                                        this.filterForm.photoCategory().value.set(PhotoCategoryRoute.ByUser);
+                                        break;
+                                    case PhotoCategoryRoute.WithUser:
+                                        this.filterForm.photoCategory().value.set(PhotoCategoryRoute.WithUser);
+                                        break;
+                                    default:
+                                        // default to byUser
+                                        this.filterForm.photoCategory().value.set(PhotoCategoryRoute.ByUser);
+                                        break;
                                 }
-                                else {
-                                    this.filterForm.photoCategory().value.set(PhotoCategoryRoute.ByUser);
-                                }
-
-                                // Manually load the first page (not only needed for preview for some reason).
-                                // Have to manually increment total loads for this though, so the infinite scroller doesn't download the same page again.
-                                this.loadNextPage();
-                                this.totalLoads++;
                             }
-                        });
-                    }
-                });
-            }
+                            else {
+                                this.filterForm.photoCategory().value.set(PhotoCategoryRoute.ByUser);
+                            }
+
+                            // Manually load the first page (not only needed for preview for some reason).
+                            // Have to manually increment total loads for this though, so the infinite scroller doesn't download the same page again.
+                            this.loadNextPage();
+                            this.totalLoads++;
+                        }
+                    });
+                }
+            });
         });
     }
 

@@ -18,11 +18,6 @@ export const routes: Routes = [
         data: {title: "Level Listing"}
     },
     {
-        path: 'levels/:category/user/:username',
-        loadComponent: () => import('./pages/user-level-listing/user-level-listing.component').then(x => x.UserLevelListingComponent),
-        data: {title: "Levels Related To User"}
-    },
-    {
         path: 'level/:id/:slug',
         loadComponent: () => import('./pages/level/level.component').then(x => x.LevelComponent),
         data: {title: "Unnamed Level"},
@@ -43,17 +38,12 @@ export const routes: Routes = [
     {
         path: 'level/:id/:slug/leaderboard',
         loadComponent: () => import('./pages/level-leaderboard/level-leaderboard.component').then(x => x.LevelLeaderboardComponent),
-        data: {title: "Unnamed Level"},
+        data: {title: "Leaderboard"},
     },
     {
         path: 'photos',
         loadComponent: () => import('./pages/photo-listing/photo-listing.component').then(x => x.PhotoListingComponent),
         data: {title: "Photos"},
-    },
-    {
-        path: 'photos/:category/user/:username',
-        loadComponent: () => import('./pages/user-photo-listing/user-photo-listing.component').then(x => x.UserPhotoListingComponent),
-        data: {title: "Photos Related To User"},
     },
     {
         path: 'photo/:id',
@@ -76,6 +66,31 @@ export const routes: Routes = [
         data: {title: "User Page"},
     },
     {
+        path: 'u/:uuid',
+        loadComponent: () => import('./pages/user/user.component').then(x => x.UserComponent),
+        data: {title: "User Page"},
+    },
+    {
+        path: 'user/:username/levels',
+        loadComponent: () => import('./pages/user-level-listing/user-level-listing.component').then(x => x.UserLevelListingComponent),
+        data: {title: "User's Levels"}
+    },
+    {
+        path: 'u/:uuid/levels',
+        loadComponent: () => import('./pages/user-level-listing/user-level-listing.component').then(x => x.UserLevelListingComponent),
+        data: {title: "User's Levels"}
+    },
+    {
+        path: 'user/:username/photos',
+        loadComponent: () => import('./pages/user-photo-listing/user-photo-listing.component').then(x => x.UserPhotoListingComponent),
+        data: {title: "User's Photos"},
+    },
+    {
+        path: 'u/:uuid/photos',
+        loadComponent: () => import('./pages/user-photo-listing/user-photo-listing.component').then(x => x.UserPhotoListingComponent),
+        data: {title: "User's Photos"},
+    },
+    {
         path: 'users',
         loadComponent: () => import('./pages/categories/user-categories-component').then(x => x.UserCategoriesComponent),
         data: {title: "User Categories"},
@@ -84,11 +99,6 @@ export const routes: Routes = [
         path: 'users/:category',
         loadComponent: () => import('./pages/user-listing/user-listing.component').then(x => x.UserListingComponent),
         data: {title: "User Listing"},
-    },
-    {
-        path: 'u/:uuid',
-        loadComponent: () => import('./pages/user/user.component').then(x => x.UserComponent),
-        data: {title: "User Page"},
     },
     {
         path: 'settings/profile',
