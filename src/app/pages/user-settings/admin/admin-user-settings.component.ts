@@ -1,5 +1,5 @@
-import { Component, ChangeDetectionStrategy } from "@angular/core";
-import { FormControl, FormGroup, ReactiveFormsModule } from "@angular/forms";
+import { Component, signal } from "@angular/core";
+import { ReactiveFormsModule } from "@angular/forms";
 import { faBan, faCamera, faCancel, faCheckCircle, faChevronDown, faChevronUp, faComment, faEarthAmerica, faFlag, 
     faFloppyDisk, faGavel, faListOl, faPencil, faSignOutAlt, faStar, faTrash, faUser } from "@fortawesome/free-solid-svg-icons";
 import { AsyncPipe } from "@angular/common";
@@ -20,7 +20,6 @@ import { TwoPaneLayoutComponent } from "../../../components/ui/layouts/two-pane-
 import { ContainerComponent } from "../../../components/ui/container.component";
 import { PaneTitleComponent } from "../../../components/ui/text/pane-title.component";
 import { DropdownMenuComponent } from "../../../components/ui/form/dropdown-menu.component";
-import { RadioButtonComponent } from "../../../components/ui/form/radio-button.component";
 import { RolePipe } from "../../../pipes/role.pipe";
 import { DividerComponent } from "../../../components/ui/divider.component";
 import { TextboxComponent } from "../../../components/ui/form/textbox.component";
@@ -30,6 +29,23 @@ import { PunishUserRequest } from "../../../api/types/moderation/punish-user-req
 import { ConfirmationDialogComponent } from "../../../components/ui/confirmation-dialog.component";
 import { DarkContainerComponent } from "../../../components/ui/dark-container.component";
 import { UserAvatarComponent } from "../../../components/ui/photos/user-avatar.component";
+import { FieldTree, form, maxLength, minLength, FormField, required } from "@angular/forms/signals";
+import { RadioButtonGroupComponent } from "../../../components/ui/form/radio-button-group.component";
+import { Observable } from "rxjs";
+
+interface MetadataFormInput {
+    username: string,
+    description: string,
+    role: UserRoles,
+    resetIcon: boolean,
+    resetVitaIcon: boolean,
+    resetBetaIcon: boolean,
+};
+
+interface PunishmentFormInput {
+    reason: string,
+    expiryDate: string,
+};
 
 @Component({
     selector: 'app-admin-user-settings',
@@ -44,52 +60,56 @@ import { UserAvatarComponent } from "../../../components/ui/photos/user-avatar.c
     ContainerComponent,
     PaneTitleComponent,
     DropdownMenuComponent,
-    RadioButtonComponent,
     DividerComponent,
     TextboxComponent,
     LabelComponent,
     ConfirmationDialogComponent,
     DarkContainerComponent,
     ReactiveFormsModule,
-    UserAvatarComponent
+    UserAvatarComponent,
+    RadioButtonGroupComponent,
+    FormField
 ],
     providers: [
         RolePipe
     ],
     templateUrl: './admin-user-settings.component.html',
-    changeDetection: ChangeDetectionStrategy.Eager,
     styles: ``
 })
 
 export class AdminUserSettingsComponent {
     protected ownUser: ExtendedUser | undefined | null;
     protected targetUser: ExtendedUser | undefined | null;
-    
-    protected metadataForm = new FormGroup({
-        username: new FormControl(),
-        description: new FormControl(),
-        role: new FormControl(UserRoles.User),
-        resetIcon: new FormControl(),
-        resetVitaIcon: new FormControl(),
-        resetBetaIcon: new FormControl(),
+
+    metadataInputs = signal<MetadataFormInput>({
+        username: '',
+        description: '',
+        role: UserRoles.User,
+        resetIcon: false,
+        resetVitaIcon: false,
+        resetBetaIcon: false,
     });
 
-    protected hasUsernameChanged: boolean = false;
-    protected hasDescriptionChanged: boolean = false;
-    protected hasRoleChanged: boolean = false;
-    protected shouldResetIcon: boolean = false;
-    protected shouldResetVitaIcon: boolean = false;
-    protected shouldResetBetaIcon: boolean = false;
+    // allow 17 chars for username incase it's a fake user which has a 16 character name after prefix
+    metadataForm: FieldTree<MetadataFormInput, string | number, "writable"> = form(this.metadataInputs, (f) => {
+        minLength(f.username, 3, { message: 'Username seems to be too short (must be at least 3 characters)' });
+        maxLength(f.username, 17, { message: 'Username seems to be too long (max is 16 characters if real user, 17 if fake user)' });
+        maxLength(f.description, 512, { message: 'Description seems to be too long (max is 512 characters)' });
+    });
+
+    punishmentInputs = signal<PunishmentFormInput>({
+        reason: '',
+        expiryDate: '',
+    });
+
+    // TODO enforce reason length on backend aswell, but for compatibility reasons we will only be able to do so
+    // from APIv4 onward.
+    punishmentForm: FieldTree<PunishmentFormInput, string | number, "writable"> = form(this.punishmentInputs, (f) => {
+        required(f.reason, { message: 'You must enter a punishment reason! Atleast 3 characters required' })
+        minLength(f.reason, 3, { message: 'Punishment reason is too short! Atleast 3 characters required' });
+    });
 
     protected showRoleMenu: boolean = false;
-    protected hasPendingMetadataChanges: boolean = false;
-
-    protected adminValue: UserRoles = UserRoles.Admin;
-    protected moderatorValue: UserRoles = UserRoles.Moderator;
-    protected curatorValue: UserRoles = UserRoles.Curator;
-    protected trustedValue: UserRoles = UserRoles.Trusted;
-    protected userValue: UserRoles = UserRoles.User;
-    protected restrictedValue: UserRoles = UserRoles.Restricted;
 
     protected planets: PlanetInfo | undefined;
     protected isMobile: boolean = false;
@@ -130,6 +150,7 @@ export class AdminUserSettingsComponent {
                     });
                 }
                 else {
+                    // TODO show this on the empty page, not as a banner
                     this.banner.error("You are not a moderator", "Get out!");
                 }
             }
@@ -138,77 +159,20 @@ export class AdminUserSettingsComponent {
         this.layout.isMobile.subscribe(v => this.isMobile = v);
     }
 
-    protected checkResetIcon() {
-        this.shouldResetIcon = this.metadataForm.controls.resetIcon.getRawValue();
-        this.doesMetadataHavePendingChanges();
-    }
-
-    protected checkResetVitaIcon() {
-        this.shouldResetVitaIcon = this.metadataForm.controls.resetVitaIcon.getRawValue();
-        this.doesMetadataHavePendingChanges();
-    }
-
-    protected checkResetBetaIcon() {
-        this.shouldResetBetaIcon = this.metadataForm.controls.resetBetaIcon.getRawValue();
-        this.doesMetadataHavePendingChanges();
-    }
-
-    protected checkUsernameChanges() {
-        this.hasUsernameChanged = this.metadataForm.controls.username.getRawValue() !== this.targetUser?.username;
-        this.doesMetadataHavePendingChanges();
-    }
-
-    protected checkDescriptionChanges() {
-        this.hasDescriptionChanged = this.metadataForm.controls.description.getRawValue() !== this.targetUser?.description;
-        this.doesMetadataHavePendingChanges();
-    }
-
-    protected setRole(input: UserRoles) {
-        this.metadataForm.controls.role.setValue(input);
-        this.hasRoleChanged = input !== this.targetUser!.role;
-        this.doesMetadataHavePendingChanges();
-    }
-
-    private overrideRole(input: UserRoles) {
-        if (!this.targetUser) return;
-        this.targetUser.role = input;
-        this.metadataForm.controls.role.setValue(input);
-        this.hasRoleChanged = false;
-    }
-
     protected roleDropdownButtonClick() {
         this.showRoleMenu = !this.showRoleMenu;
     }
 
-    private doesMetadataHavePendingChanges() {
-        this.hasPendingMetadataChanges =
-            this.hasDescriptionChanged
-            || this.hasUsernameChanged
-            || this.hasRoleChanged
-            || this.shouldResetIcon
-            || this.shouldResetVitaIcon
-            || this.shouldResetBetaIcon;
-    }
-
     private updateInputs(user: ExtendedUser) {
         this.targetUser = user;
-        this.hasPendingMetadataChanges = false;
 
-        this.shouldResetIcon = false;
-        this.shouldResetVitaIcon = false;
-        this.shouldResetBetaIcon = false;
+        this.metadataForm.description().value.set(user.description);
+        this.metadataForm.username().value.set(user.username);
+        this.metadataForm.role().value.set(user.role);
 
-        this.hasDescriptionChanged = false;
-        this.hasUsernameChanged = false;
-        this.hasRoleChanged = false;
-
-        this.metadataForm.controls.resetIcon.setValue(false);
-        this.metadataForm.controls.resetVitaIcon.setValue(false);
-        this.metadataForm.controls.resetBetaIcon.setValue(false);
-        
-        this.metadataForm.controls.description.setValue(user.description);
-        this.metadataForm.controls.username.setValue(user.username);
-        this.metadataForm.controls.role.setValue(user.role);
+        this.metadataForm.resetIcon().value.set(false);
+        this.metadataForm.resetVitaIcon().value.set(false);
+        this.metadataForm.resetBetaIcon().value.set(false);
     }
 
     protected discardChanges() {
@@ -222,19 +186,40 @@ export class AdminUserSettingsComponent {
         this.showUpdateDialog = visibility;
     }
 
-    protected uploadChanges() {
-        if (!this.hasPendingMetadataChanges) return;
+    protected getUsernameIfChanged(): string | null {
+        if (!this.targetUser) return null;
+        let newUsername: string = this.metadataForm.username().value();
+        return newUsername !== this.targetUser.username ? newUsername : null;
+    }
+
+    protected getDescriptionIfChanged(): string | null {
+        if (!this.targetUser) return null;
+        let newDescription: string = this.metadataForm.description().value();
+        return newDescription !== this.targetUser.description ? newDescription : null;
+    }
+
+    protected getRoleIfChanged(): UserRoles | null {
+        if (!this.targetUser) return null;
+        let newRole: UserRoles = this.metadataForm.role().value();
+        return newRole !== this.targetUser.role ? newRole : null;
+    }
+
+    protected uploadMetadataChanges() {
+        if (this.metadataForm().invalid()) return;
         if (!this.targetUser) return;
         this.toggleUpdateDialog(false);
 
         let request: AdminUserUpdateRequest = {
-            role: this.hasRoleChanged ? this.metadataForm.controls.role.getRawValue() : null,
-            username: this.hasUsernameChanged ? this.metadataForm.controls.username.getRawValue() : null,
-            description: this.hasDescriptionChanged ? this.metadataForm.controls.description.getRawValue() : null,
+            role: this.getRoleIfChanged(),
+            username: this.getUsernameIfChanged(),
+            description: this.getDescriptionIfChanged(),
 
-            iconHash: this.shouldResetIcon ? "0" : null,
-            vitaIconHash: this.shouldResetVitaIcon ? "0" : null,
-            betaIconHash: this.shouldResetBetaIcon ? "0" : null,
+            // TODO allow setting icons to anything, besides just resetting.
+            // don't know when that would be useful, but i made APIv3 allow it for some reason,
+            // so might want to implement on the website too.
+            iconHash: this.metadataForm.resetIcon().value() ? "0" : null,
+            vitaIconHash: this.metadataForm.resetVitaIcon().value() ? "0" : null,
+            betaIconHash: this.metadataForm.resetBetaIcon().value() ? "0" : null,
         };
 
         this.client.updateUserByUuid(this.targetUser.userId, request).subscribe({
@@ -296,10 +281,8 @@ export class AdminUserSettingsComponent {
     protected showRestrictionDialog: boolean = false;
 
     private resetPunishmentForm() {
-        // No need to reset date, but do reset reason to make it more obvious that the punishment request was successful.
-        this.punishmentForm.controls.reason.setValue("");
-        this.hasEnteredReason = false;
-        this.isPunishmentReady = false;
+        this.punishmentForm.reason().value.set("");
+        this.punishmentForm.expiryDate().value.set("");
     }
 
     protected toggleRestrictionDialog(visibility: boolean) {
@@ -308,32 +291,16 @@ export class AdminUserSettingsComponent {
 
     protected restrictUser() {
         if (!this.targetUser) return;
-        this.waitingForPunishmentResponse = true;
-        this.toggleRestrictionDialog(false);
-
-        let punishmentData: PunishUserRequest = {
-            reason: this.punishmentForm.controls.reason.getRawValue(),
-            // Must wrap this in a new Date, else the timestamp wont include Z, making Bunkum's serializer add its local timezone offset
-            // instead of treating the timestamp as UTC. Not only would this modify the actual timestamp, but EF also doesn't
-            // support saving timestamps with offsets, so Refresh would throw if it receives a timestamp with either
-            // a non-0 offset or one with no offset and no Z.
-            expiryDate: new Date(this.punishmentForm.controls.expiryDate.getRawValue()),
-        };
-        this.client.restrictUserByUuid(this.targetUser.userId, punishmentData).subscribe({
-            error: error => {
-                this.waitingForPunishmentResponse = false;
-                const apiError: RefreshApiError | undefined = error.error?.error;
-                this.banner.warn("Failed to restrict this user", apiError == null ? error.message : apiError.message);
-            },
-            next: _ => {
-                this.waitingForPunishmentResponse = false;
-                this.overrideRole(UserRoles.Restricted);
-                this.resetPunishmentForm();
-                this.banner.success("Successfully restricted " + this.targetUser?.username, "");
-            }
-        });
+        this.uploadPunishment(this.client.restrictUserByUuid, UserRoles.Restricted, "Failed to restrict " + this.targetUser.username + "!", "Successfully restricted " + this.targetUser.username + "!");
+    }
+    
+    private overrideRole(input: UserRoles) {
+        if (!this.targetUser) return;
+        this.targetUser.role = input;
+        this.metadataForm.role().value.set(input);
     }
 
+    // TODO all this dialog boilerplate stuff should be deduplicated and moved to a component already
     protected showBanDialog: boolean = false;
 
     protected toggleBanDialog(visibility: boolean) {
@@ -342,24 +309,40 @@ export class AdminUserSettingsComponent {
 
     protected banUser() {
         if (!this.targetUser) return;
+        this.uploadPunishment(this.client.banUserByUuid, UserRoles.Banned, "Failed to ban " + this.targetUser.username + "!", "Successfully banned " + this.targetUser.username + "!");
+    }
+
+    protected uploadPunishment(apiCallback: (userId: string, punishmentData: PunishUserRequest) => Observable<Response>, resultingRole: UserRoles, failMessageHead: string, successMessageHead: string) {
+        if (this.punishmentForm().invalid()) {
+            return;
+        }
+        if (!this.targetUser) return;
+
         this.waitingForPunishmentResponse = true;
+        this.toggleRestrictionDialog(false);
         this.toggleBanDialog(false);
 
         let punishmentData: PunishUserRequest = {
-            reason: this.punishmentForm.controls.reason.getRawValue(),
-            expiryDate: new Date(this.punishmentForm.controls.expiryDate.getRawValue()),
+            reason: this.punishmentForm.reason().value(),
+            // Must wrap this in a new Date, else the timestamp wont include Z, making Bunkum's serializer add its local timezone offset
+            // instead of treating the timestamp as UTC. Not only would this modify the actual timestamp, but EF also doesn't
+            // support saving timestamps with offsets, so Refresh would throw if it receives a timestamp with either
+            // a non-0 offset or one with no offset and no Z.
+            expiryDate: new Date(this.punishmentForm.expiryDate().value()),
         };
-        this.client.banUserByUuid(this.targetUser.userId, punishmentData).subscribe({
+        apiCallback(this.targetUser.userId, punishmentData).subscribe({
             error: error => {
                 this.waitingForPunishmentResponse = false;
+
                 const apiError: RefreshApiError | undefined = error.error?.error;
-                this.banner.warn("Failed to ban this user", apiError == null ? error.message : apiError.message);
+                this.banner.warn(failMessageHead, apiError == null ? error.message : apiError.message);
             },
             next: _ => {
                 this.waitingForPunishmentResponse = false;
-                this.overrideRole(UserRoles.Banned);
+
+                this.overrideRole(resultingRole);
                 this.resetPunishmentForm();
-                this.banner.success("Successfully banned " + this.targetUser?.username, "");
+                this.banner.success(successMessageHead, "");
             }
         });
     }
@@ -389,29 +372,7 @@ export class AdminUserSettingsComponent {
         });
     }
 
-    protected punishmentForm = new FormGroup({
-        reason: new FormControl(),
-        expiryDate: new FormControl()
-    });
-
-    protected hasEnteredReason: boolean = false;
-    protected hasEnteredExpiryDate: boolean = false;
-    protected isPunishmentReady: boolean = false;
     protected waitingForPunishmentResponse = false;
-
-    protected checkExpiryDateChanges() {
-        this.hasEnteredExpiryDate = true;
-        this.checkPunishmentReadiness();
-    }
-
-    protected checkReasonChanges() {
-        this.hasEnteredReason = this.punishmentForm.controls.reason.getRawValue().length > 0;
-        this.checkPunishmentReadiness();
-    }
-
-    private checkPunishmentReadiness() {
-        this.isPunishmentReady = this.hasEnteredReason && this.hasEnteredExpiryDate;
-    }
 
     protected showScoreDeleteDialog: boolean = false;
 
@@ -521,8 +482,6 @@ export class AdminUserSettingsComponent {
     protected readonly faPencil = faPencil;
     protected readonly faFloppyDisk = faFloppyDisk;
     protected readonly faTrash = faTrash;
-    protected readonly faChevronDown = faChevronDown;
-    protected readonly faChevronUp = faChevronUp;
     protected readonly faUser = faUser;
     protected readonly faCancel = faCancel;
     protected readonly faSignOutAlt = faSignOutAlt;
@@ -535,4 +494,5 @@ export class AdminUserSettingsComponent {
     protected readonly faListOl = faListOl;
     protected readonly faComment = faComment;
     protected readonly faStar = faStar;
+    protected readonly userRoles = UserRoles;
 }
