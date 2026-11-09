@@ -10,13 +10,13 @@ import { DividerComponent } from './divider.component';
     imports: [ContainerComponent, PaneTitleComponent, FaIconComponent, DividerComponent],
     template: `
         <app-container class="w-full">
-            <div class="flex flex-row flex-grow flex-wrap justify-between gap-x-2 gap-y-1">
+            <div class="flex flex-row flex-grow flex-wrap justify-start gap-x-2 gap-y-1">
                 <app-pane-title>
                     @if (icon) {
                         <p>{{description}}</p>
                     }
                     @if (titleRouterLink) {
-                        <p><a class="text-link hover:text-link-hover hover:underline" routerLink="/users">
+                        <p><a class="text-link hover:text-link-hover hover:underline cursor-pointer" routerLink="/users">
                             @if (icon) {
                                 <fa-icon [icon]="icon" class="mr-2" />
                             }
@@ -29,13 +29,15 @@ import { DividerComponent } from './divider.component';
                         }
                         <p>{{title}}</p>
                     }
-
-                    @if (subText) {
-                        <span class="content-center text-sm italic text-gentle text-base">{{subText}}</span>
-                    }
-                    
-                    <ng-content select="[toTheRightOfTitle]" />
                 </app-pane-title>
+
+                @if (subText) {
+                    <span class="content-center text-sm italic text-gentle text-base">{{subText}}</span>
+                }
+                
+                <div class="flex flex-row flex-grow justify-end">
+                    <ng-content select="[toTheRightOfTitle]"/>
+                </div>
             </div>
 
             @if (description) {

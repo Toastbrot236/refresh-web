@@ -43,13 +43,16 @@ import { faCertificate, faImages } from '@fortawesome/free-solid-svg-icons';
     UserStatisticsComponent,
     FancyHeaderUserButtonsComponent,
     TwoPaneLayoutComponent,
-    ContainerComponent,
     UserRoleComponent,
     UserPhotoListComponent,
     UserLevelListComponent,
     DropdownRadioButtonComponent,
     PreviewPanelComponent
 ],
+    providers: [
+      LevelCategoryPipe,
+      PhotoCategoryPipe,
+    ],
     templateUrl: './user.component.html',
     styles: ``
 })
@@ -86,7 +89,6 @@ export class UserComponent {
         this.auth.user.subscribe(user => {
           if(user) {
             this.ownUser = user;
-            this.cd.detectChanges();
           }
         });
       });

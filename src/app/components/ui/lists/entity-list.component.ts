@@ -18,14 +18,11 @@ import { ListWithData } from '../../../api/list-with-data';
         <h2>Download failed!</h2>
         <p>{{errorMessage}}</p>
       }
-      @else if (list.listInfo.totalItems === 0) {
+      @else if (list.listInfo.totalItems <= 0) {
         <p>Downloading stuff...</p>
       }
       @else {
           <p>Nothing found!</p>
-      }
-      @if (list.data.length >= list.listInfo.totalItems) {
-          <p>This is the end of the list...</p>
       }
     `,
     changeDetection: ChangeDetectionStrategy.Eager,

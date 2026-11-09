@@ -13,6 +13,7 @@ import { UserPhotoFormInput } from '../../forms/user-photo-form-input';
 import { PageTitleComponent } from '../../components/ui/text/page-title.component';
 import { ContainerHeaderComponent } from '../../components/ui/container-header.component';
 import { UserPhotoListComponent } from '../../components/ui/lists/user-photo-list.component';
+import { DividerComponent } from '../../components/ui/divider.component';
 
 @Component({
     selector: 'app-user-photo-listing',
@@ -21,7 +22,8 @@ import { UserPhotoListComponent } from '../../components/ui/lists/user-photo-lis
     UserLinkComponent,
     PageTitleComponent,
     ContainerHeaderComponent,
-    UserPhotoListComponent
+    UserPhotoListComponent,
+    DividerComponent
 ],
     templateUrl: './user-photo-listing.component.html',
     providers: [

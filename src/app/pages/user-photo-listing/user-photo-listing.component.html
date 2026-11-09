@@ -9,22 +9,26 @@
     }
     @else {
         <div class="flex flex-row flex-wrap gap-x-3 align-center">
-            <app-user-link class="content-center text-[20px]" [user]="user" />
-            <app-page-title title="'s Photos" />
+            <app-user-link class="content-center text-[30px]" [user]="user" />
+            <app-page-title class="content-center" title="'s Photos" />
         </div>
+
+        <app-divider />
 
         <!-- Filters -->
         <div class="flex flex-row flex-wrap gap-x-3 align-center">
-            <p>Show photos</p>
+            <p class="content-center text-[20px]">Show photos</p>
             <app-dropdown-radio-button-group groupName="photoCategories" [buttonValues]="[
                     photoCategoryRoutes.ByUser,
                     photoCategoryRoutes.WithUser,
                 ]" [textPipe]="categoryPipe" [radioFormField]="form.photoCategory">
             </app-dropdown-radio-button-group>
-            <p>this user</p>
+            <p class="content-center text-[20px]">this user</p>
         </div>
-
-        <!-- List -->
-        <app-user-photo-list [form]="form" [user]="user" [isPreview]="false" />
     }
 </app-container-header>
+
+@if (user) {
+    <!-- List -->
+    <app-user-photo-list [form]="form" [user]="user" [isPreview]="false" />
+}

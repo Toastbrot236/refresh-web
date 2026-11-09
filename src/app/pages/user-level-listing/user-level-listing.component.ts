@@ -13,6 +13,7 @@ import { ContainerHeaderComponent } from '../../components/ui/container-header.c
 import { PageTitleComponent } from '../../components/ui/text/page-title.component';
 import { UserLevelListComponent } from '../../components/ui/lists/user-level-list.component';
 import { UserLevelFormInput } from '../../forms/user-level-form-input';
+import { DividerComponent } from '../../components/ui/divider.component';
 
 @Component({
     selector: 'app-user-level-listing',
@@ -21,7 +22,8 @@ import { UserLevelFormInput } from '../../forms/user-level-form-input';
     UserLinkComponent,
     ContainerHeaderComponent,
     PageTitleComponent,
-    UserLevelListComponent
+    UserLevelListComponent,
+    DividerComponent
 ],
     templateUrl: './user-level-listing.component.html',
     providers: [
