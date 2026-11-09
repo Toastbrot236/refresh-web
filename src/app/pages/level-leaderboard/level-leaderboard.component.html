@@ -9,20 +9,22 @@
   }
   @else {
     <div class="flex flex-row flex-wrap gap-x-3 align-center">
-      <app-page-title [title]="'Leaderboard for ' + (level.isAdventure ? 'adventure' : 'level')" />
-      <app-level-link class="content-center" [level]="level"></app-level-link>
+      <app-page-title class="content-center" [title]="'Leaderboard for ' + (level.isAdventure ? 'adventure' : 'level')" />
+      <app-level-link class="content-center text-[30px]" [level]="level"></app-level-link>
     </div>
 
     <!-- Filters -->
     <div class="flex flex-row flex-wrap gap-x-3 align-center">
-      <p>Player mode: </p>
+      <p class="content-center text-[20px]">Player mode: </p>
       <app-dropdown-radio-button-group groupName="scoreTypes" [buttonValues]="[
           0, 1, 2, 3, 4
         ]" [textPipe]="scoreTypePipe" [radioFormField]="form.scoreType">
       </app-dropdown-radio-button-group>
     </div>
-
-    <!-- List -->
-    <app-level-leaderboard-list [form]="form" [level]="level" [isPreview]="false" />
   }
 </app-container-header>
+
+@if (level) {
+  <!-- List -->
+  <app-level-leaderboard-list [form]="form" [level]="level" [isPreview]="false" />
+}
