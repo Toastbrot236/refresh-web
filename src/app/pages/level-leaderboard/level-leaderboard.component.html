@@ -1,41 +1,55 @@
 @if (level) {
-  <app-container-header>
-    <div class="flex flex-col gap-y-2 pb-4">
-      <div class="flex flex-row flex-wrap gap-x-3 align-center">
-        <app-page-title [title]="level.isAdventure? 'Total Leaderboard for adventure' : 'Leaderboard for level'"></app-page-title>
-        <app-level-link class="content-center" [level]="level"></app-level-link>
-      </div>
+    <app-entity-list [title]="isPreview ? 'Leaderboard' : 'Leaderboard for ' + (level.isAdventure ? 'adventure' : 'level')"
+        [fullPageRouterLink]="'/level/' + level.levelId + '/' + (level.title | slug) + '/leaderboard'"
+        [isPreview]="isPreview" [entityList]="currentList">
 
-      <div class="flex flex-row flex-wrap gap-x-3">
-        <p class="text-2xl">Player mode:</p>
-        <app-dropdown-menu [showMenu]="showFilterMenu" offsets="top-9 -left-5" [width]="64">
-          <app-button trigger
-            width="flex flex-shrink justify-evenly flex-grow w-48 text-nowrap"
-            [text]="filterForm.controls.scoreType.getRawValue()! | scoreType"
-            [icon]="showFilterMenu ? faChevronUp : faChevronDown"
-            color="bg-secondary"
-            (click)="scoreTypeButtonClick()">
-          </app-button>
-          <div content>
-            <app-radio-button [label]="0 | scoreType" [form]="filterForm" ctrlName="scoreType" id="t0" [value]='0' (click)="setScoreType(0)"></app-radio-button>
-            <app-radio-button [label]="1 | scoreType" [form]="filterForm" ctrlName="scoreType" id="t1" [value]='1' (click)="setScoreType(1)"></app-radio-button>
-            <app-radio-button [label]="2 | scoreType" [form]="filterForm" ctrlName="scoreType" id="t2" [value]='2' (click)="setScoreType(2)"></app-radio-button>
-            <app-radio-button [label]="3 | scoreType" [form]="filterForm" ctrlName="scoreType" id="t3" [value]='3' (click)="setScoreType(3)"></app-radio-button>
-            <app-radio-button [label]="4 | scoreType" [form]="filterForm" ctrlName="scoreType" id="t4" [value]='4' (click)="setScoreType(4)"></app-radio-button>
-          </div>
-        </app-dropdown-menu>
-      </div>
-    </div>
-  </app-container-header>
+        <ng-container toTheRightOfTitlePreview class="flex flex-row flex-grow flex-wrap justify-between gap-x-2 gap-y-1">
+            <app-dropdown-radio-button-group groupName="scoreTypes" [buttonValues]="[
+                    0, 1, 2, 3, 4
+                ]" [textPipe]="scoreTypePipe" [radioFormField]="filterForm.scoreType">
+            </app-dropdown-radio-button-group>
+        </ng-container>
 
-  @if (!isLoading && currentScores.length === 0) {
-    <p>No scores in this player mode yet... Go for it!</p>
-  }
-  @for (score of currentScores; track score.scoreId; let i = $index) {
-    <app-score-preview [score]="score" (deleted)="removeScore(score.scoreId)"></app-score-preview>
-  }
-  @if (isLoading) {
-    <p>Loading scores...</p>
-  }
-  <app-infinite-scroller [isLoading]="this.isLoading" [listInfo]="this.listInfo" (loadData)="getNextPage()"></app-infinite-scroller>
+        <ng-container toTheRightOfTitleFull class="flex flex-row flex-grow flex-wrap justify-between gap-x-2 gap-y-1">
+            <app-level-link class="content-center" [level]="level" />
+
+            <app-dropdown-radio-button-group groupName="scoreTypes" [buttonValues]="[
+                    0, 1, 2, 3, 4
+                ]" [textPipe]="scoreTypePipe" [radioFormField]="filterForm.scoreType">
+            </app-dropdown-radio-button-group>
+        </ng-container>
+
+        <ng-container loadingContent>
+            <p>Loading scores...</p>
+        </ng-container>
+
+        <ng-container noItemsContent>
+            <p>No scores found! Try changing your filters...</p>
+        </ng-container>
+
+        <ng-container errorContent>
+            <p>An error occurred, but we won't tell why, because it'S not implemented yet!</p>
+        </ng-container>
+
+        <ng-container listingContent>
+            @if (isPreview) {
+                @for (score of currentList.data; track score.scoreId) {
+                    <div class="py-1.5">
+                        <app-score-preview [score]="score" (deleted)="removeScore(score.scoreId)" />
+                    </div>
+                }
+            }
+            @else {
+                <app-responsive-grid>
+                    @for (score of this.currentList.data; track score.scoreId) {
+                        <app-container [tight]="true">
+                            <app-score-preview [score]="score" (deleted)="removeScore(score.scoreId)" />
+                        </app-container>
+                    }
+                </app-responsive-grid>
+
+                <app-infinite-scroller [isLoading]="this.isLoading" [listInfo]="this.currentList.listInfo" (loadData)="loadNextPage()" />
+            }
+        </ng-container>
+    </app-entity-list>
 }

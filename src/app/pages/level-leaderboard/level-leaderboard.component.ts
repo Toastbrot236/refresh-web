@@ -1,197 +1,156 @@
-import {Component, Inject, PLATFORM_ID, ChangeDetectionStrategy} from '@angular/core';
-import {Level} from "../../api/types/levels/level";
-import {ClientService, defaultPageSize} from "../../api/client.service";
-import {ActivatedRoute, Params, Router} from "@angular/router";
-import { AsyncPipe, isPlatformBrowser, NgClass } from "@angular/common";
-import {LayoutService} from "../../services/layout.service";
-import {AuthenticationService} from "../../api/authentication.service";
-import { ExtendedUser } from '../../api/types/users/extended-user';
-import { UserRoles } from '../../api/types/users/user-roles';
-import { PageTitleComponent } from "../../components/ui/text/page-title.component";
-import { ButtonComponent } from "../../components/ui/form/button.component";
-import { faChevronDown, faChevronUp, faTrash, faUser, faUsers } from '@fortawesome/free-solid-svg-icons';
-import { FormControl, FormGroup } from '@angular/forms';
+import { Component, ChangeDetectionStrategy, Input, Inject, PLATFORM_ID, signal, ChangeDetectorRef } from '@angular/core';
+import { ClientService, defaultPageSize } from '../../api/client.service';
+import { PhotoCategoryPipe } from '../../pipes/photo-category.pipe';
+import { ActivatedRoute } from '@angular/router';
+import { FieldTree, form } from '@angular/forms/signals';
+import { PhotoCategoryRoute } from '../../api/types/photos/photo-category-route';
+import { ContainerComponent } from '../../components/ui/container.component';
+import { ResponsiveGridComponent } from '../../components/ui/responsive-grid.component';
 import { BannerService } from '../../banners/banner.service';
 import { RefreshApiError } from '../../api/refresh-api-error';
-import { RadioButtonComponent } from "../../components/ui/form/radio-button.component";
-import { DropdownMenuComponent } from "../../components/ui/form/dropdown-menu.component";
-import { SlugPipe } from '../../pipes/slug.pipe';
-import { Score } from '../../api/types/levels/score';
-import { ScoreTypePipe } from '../../pipes/score-type.pipe';
-import { defaultListInfo, RefreshApiListInfo } from '../../api/refresh-api-list-info';
-import { InfiniteScrollerComponent } from "../../components/ui/infinite-scroller.component";
-import { ScorePreviewComponent } from "../../components/items/score-preview.component";
-import { LevelLinkComponent } from "../../components/ui/text/links/level-link.component";
-import { ContainerHeaderComponent } from "../../components/ui/container-header.component";
-import { LevelType } from '../../api/types/levels/level-type';
+import { EntityListComponent } from '../../components/ui/lists/entity-list.component';
+import { DropdownRadioButtonComponent } from '../../components/ui/form/dropdown-radio-button-group.component';
+import { isPlatformBrowser } from '@angular/common';
 import { ListWithData } from '../../api/list-with-data';
+import { defaultListInfo } from '../../api/refresh-api-list-info';
+import { Level } from '../../api/types/levels/level';
+import { Score } from '../../api/types/levels/score';
+import { LevelType } from '../../api/types/levels/level-type';
+import { ScorePreviewComponent } from '../../components/items/score-preview.component';
+import { SlugPipe } from '../../pipes/slug.pipe';
+import { ScoreTypePipe } from '../../pipes/score-type.pipe';
+import { LevelLinkComponent } from '../../components/ui/text/links/level-link.component';
+import { InfiniteScrollerComponent } from '../../components/ui/infinite-scroller.component';
+
+interface FilterFormInput {
+  scoreType: number,
+}
 
 @Component({
-    selector: 'app-level-leaderboard',
+    selector: 'app-level-leaderboard-list',
     imports: [
-    PageTitleComponent,
-    ButtonComponent,
-    RadioButtonComponent,
-    DropdownMenuComponent,
-    InfiniteScrollerComponent,
+    ContainerComponent,
+    ResponsiveGridComponent,
+    EntityListComponent,
+    DropdownRadioButtonComponent,
     ScorePreviewComponent,
-    ScoreTypePipe,
+    SlugPipe,
     LevelLinkComponent,
-    ContainerHeaderComponent
+    InfiniteScrollerComponent
 ],
     providers: [
         SlugPipe,
         ScoreTypePipe
     ],
+    templateUrl: './level-leaderboard.component.html',
     changeDetection: ChangeDetectionStrategy.Eager,
-    templateUrl: './level-leaderboard.component.html'
+    styles: ``
 })
+
+// This component has inputs because it's intended to also be usable as a component
+// on the level info page for the leaderboard preview.
 export class LevelLeaderboardComponent {
-  level: Level | undefined | null;
-  // TODO: probably rethink this way of caching once we start using more filters (showAll etc)
-  scoresPerType: Map<number, ListWithData<Score>> = new Map();
-  currentScores: Score[] = []; // current view of the scores
-  listInfo: RefreshApiListInfo = defaultListInfo;
-  isLoading: boolean = false;
-  
-  //private queryParams: Params = {};
-  protected mayDeleteScores: boolean = false;
-  
-  protected readonly isBrowser: boolean;
-  protected ownUser: ExtendedUser | undefined;
+    @Input() isPreview: boolean = false;
+    level: Level = null!;
 
-  filterForm = new FormGroup({
-    // TODO: showAll parameter
-    scoreType: new FormControl(0)
-  });
-  showFilterMenu: boolean = false;
+    filterInputs = signal<FilterFormInput>({
+        scoreType: 1,
+    });
 
-  constructor(private client: ClientService, protected banner: BannerService, route: ActivatedRoute, 
-              protected layout: LayoutService, private auth: AuthenticationService,
-              @Inject(PLATFORM_ID) platformId: Object, private router: Router, private slug: SlugPipe)
-  {
-    this.isBrowser = isPlatformBrowser(platformId);
+    filterForm: FieldTree<FilterFormInput, string | number, "writable"> = form(this.filterInputs);
 
-    route.params.subscribe(params => {
-      const id: number = +params['id'];
-      this.client.getLevelById(id).subscribe({
-        error: error => {
-          const apiError: RefreshApiError | undefined = error.error?.error;
-          this.banner.warn("Failed to get level", apiError == null ? error.message : apiError.message);
-        },
+    currentList: ListWithData<Score> = {
+        data: [],
+        listInfo: defaultListInfo,
+    };
 
-        next: response => {
-          if (response) {
-            this.level = response;
-            // Type doesn't matter for cutscenes
-            this.filterForm.controls.scoreType.setValue(response.levelType === LevelType.Cutscene ? 0 : 1);
+    isLoading: boolean = false;
+    protected readonly isBrowser: boolean;
 
-            this.auth.user.subscribe(user => {
-              if (user) {
-                this.ownUser = user;
-                this.mayDeleteScores = user.role >= UserRoles.Moderator;
-              }
-            })
+    constructor(protected client: ClientService,
+        protected banner: BannerService, private route: ActivatedRoute, @Inject(PLATFORM_ID) platformId: Object,
+        protected slug: SlugPipe, protected scoreTypePipe: ScoreTypePipe, protected cd: ChangeDetectorRef
+    ) {
+        route.params.subscribe(params => {
+            const levelId: number = +params['id'];
+            let scoreType: number | undefined = params['scoreType'];
 
-            if(this.isBrowser) {
-              window.history.replaceState({}, '', `/level/${response.levelId}/${this.slug.transform(response.title)}/leaderboard`);
-            }
+            // TODO levels aren't cached yet, so this will lead to double reqests on previews. Cache levels in ClientService to avoid that.
+            this.client.getLevelById(levelId).subscribe({
+                error: error => {
+                    // TODO show on component instead of in a banner
+                    const apiError: RefreshApiError | undefined = error.error?.error;
+                    this.banner.warn("Failed to get user", apiError == null ? error.message : apiError.message);
+                },
+                next: level => {
+                    this.level = level;
 
-            /*
-            route.queryParams.subscribe((params: Params) => {
-              this.queryParams = params;
+                    // set to 1 if invalid
+                    if (scoreType && (scoreType < 0 || scoreType > 4)) {
+                        scoreType = 1;
+                    }
+                    // not specified in query params? set to default (usually 1 for 1-player-mode, but default to 0
+                    // for cutscene levels, since player-mode doesn't matter there).
+                    else if (!scoreType) {
+                        scoreType = level.levelType == LevelType.Cutscene ? 0 : 1;
+                    }
+
+                    this.filterForm.scoreType().value.set(scoreType);
+                }
             });
-            */
-          }
-        }
-      });
-    });
-  }
+        });
 
-  getNextPage(): void {
-    if(!this.level) return;
+        this.isBrowser = isPlatformBrowser(platformId);
+    }
 
-    let scoreType: number = this.filterForm.controls.scoreType.getRawValue() ?? 0;
-    this.isLoading = true;
+    ngOnInit() {
+        if (this.isPreview) {
+            this.loadNextPage();
+        } 
+    }
 
-    this.client.getScoresForLevel(this.level.levelId, scoreType, this.listInfo.nextPageIndex, defaultPageSize).subscribe({
-      error: error => {
-        this.isLoading = false;
-        const apiError: RefreshApiError | undefined = error.error?.error;
-        this.banner.warn("Failed to get scores", apiError == null ? error.message : apiError.message);
-      },
-      next: list => {
-        this.isLoading = false;
+    loadNextPage() {
+        if (!this.level) return;
 
-        this.currentScores = this.currentScores.concat(list.data);
-        this.listInfo = list.listInfo;
-      }
-    });
-  }
+        const scoreType: number = this.filterInputs().scoreType;
 
-  setScoreType(type: number) {
-    let previousType: number = this.filterForm.controls.scoreType.getRawValue()!;
-    this.scoresPerType.set(previousType, {
-      listInfo: this.listInfo,
-      data: this.currentScores,
-    });
-
-    this.filterForm.controls.scoreType.setValue(type);
+        let count: number = this.isPreview ? 10 : defaultPageSize;
+        let skip: number = this.isPreview ? 0 : this.currentList.listInfo.nextPageIndex;
+        this.isLoading = true;
+        
+        // TODO re-implement caching, but in ClientService instead to make it easier to manage + more effective
+        this.client.getScoresForLevel(this.level.levelId, scoreType, skip, count).subscribe({
+            error: error => {
+                // TODO show on component instead of in a banner
+                const apiError: RefreshApiError | undefined = error.error?.error;
+                this.banner.warn("Failed to get scores for level", apiError == null ? error.message : apiError.message);
+                
+                this.isLoading = false;
+                this.cd.detectChanges();
+            },
+            next: photoPage => {
+                this.currentList.data = this.currentList.data.concat(photoPage.data);
+                this.currentList.listInfo = photoPage.listInfo;
+                
+                this.isLoading = false;
+                this.cd.detectChanges();
+            }
+        });
+    }
     
-    let cachedList: ListWithData<Score> | undefined = this.scoresPerType.get(type);
-    if (cachedList != null) {
-      this.currentScores = cachedList.data;
-      this.listInfo = cachedList.listInfo;
-      return;
+    removeScore(uuid: string) {
+        // Remove from current list by creating a new list, and then only copying the items
+        // whose ID doesn't match the deleted one.
+        let newCurrentList: Score[] = [];
+        for (let score of this.currentList.data) {
+            if (score.scoreId !== uuid) newCurrentList.push(score);
+        }
+
+        this.currentList.data = newCurrentList;
+        this.currentList.listInfo.totalItems--;
+        this.currentList.listInfo.nextPageIndex--;
+        this.cd.detectChanges();
     }
 
-    this.currentScores = [];
-    this.listInfo = defaultListInfo;
-    this.getNextPage();
-  }
-
-  reset(): void {
-    this.currentScores = [];
-    this.isLoading = false;
-    this.listInfo = defaultListInfo;
-  }
-
-  scoreTypeButtonClick() {
-    this.showFilterMenu = !this.showFilterMenu;
-  }
-
-  removeScore(uuid: string) {
-    // Remove from cache
-    for (let [scoreType, oldList] of this.scoresPerType) {
-
-      let newList: Score[] = [];
-      for (let score of oldList.data) {
-        if (score.scoreId !== uuid) newList.push(score);
-      }
-
-      oldList.listInfo.totalItems--;
-      oldList.listInfo.nextPageIndex--;
-
-      this.scoresPerType.set(scoreType, {
-        listInfo: oldList.listInfo,
-        data: newList,
-      });
-    }
-
-    // Remove from current list
-    let newCurrentList: Score[] = [];
-    for (let score of this.currentScores) {
-      if (score.scoreId !== uuid) newCurrentList.push(score);
-    }
-
-    this.currentScores = newCurrentList;
-    this.listInfo.totalItems--;
-    this.listInfo.nextPageIndex--;
-  }
-
-  protected readonly faTrash = faTrash;
-  protected readonly faUser = faUser;
-  protected readonly faChevronDown = faChevronDown;
-  protected readonly faChevronUp = faChevronUp;
-  protected readonly faUsers = faUsers;
+    protected readonly photoCategoryRoutes = PhotoCategoryRoute;
 }

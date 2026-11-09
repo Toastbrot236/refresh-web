@@ -1,4 +1,4 @@
-import {Component, Inject, PLATFORM_ID, ChangeDetectionStrategy} from '@angular/core';
+import {Component, effect, Inject, PLATFORM_ID, signal} from '@angular/core';
 import {Level} from "../../api/types/levels/level";
 import {ClientService} from "../../api/client.service";
 import {ActivatedRoute, RouterLink} from "@angular/router";
@@ -28,18 +28,17 @@ import { LevelRelations } from '../../api/types/levels/level-relations';
 import { OriginalPublisherRouterLink } from "../../components/ui/text/links/original-publisher-router-link.component";
 import { LargerLabelComponent } from "../../components/ui/info/larger-label.component";
 import { TooltipComponent } from "../../components/ui/text/tooltip.component";
-import { FormControl, FormGroup } from '@angular/forms';
-import { ButtonComponent } from '../../components/ui/form/button.component';
-import { RadioButtonComponent } from '../../components/ui/form/radio-button.component';
 import { ScoreTypePipe } from '../../pipes/score-type.pipe';
 import { LevelType } from '../../api/types/levels/level-type';
-import { DropdownMenuComponent } from "../../components/ui/form/dropdown-menu.component";
-import { faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
-import { ScorePreviewComponent } from "../../components/items/score-preview.component";
 import { Score } from '../../api/types/levels/score';
 import { BannerService } from '../../banners/banner.service';
 import { RefreshApiError } from '../../api/refresh-api-error';
+import { FieldTree, form, FormField } from '@angular/forms/signals';
+import { LevelLeaderboardComponent } from '../level-leaderboard/level-leaderboard.component';
 
+interface ScoreFilterFormInput {
+  scoreType: number,
+}
 
 @Component({
     selector: 'app-level',
@@ -63,23 +62,16 @@ import { RefreshApiError } from '../../api/refresh-api-error';
     OriginalPublisherRouterLink,
     LargerLabelComponent,
     TooltipComponent,
-    ButtonComponent,
-    RadioButtonComponent,
-    DropdownMenuComponent,
-    ScoreTypePipe,
-    ScorePreviewComponent
+    LevelLeaderboardComponent
 ],
     providers: [
         SlugPipe,
         ScoreTypePipe
     ],
-    changeDetection: ChangeDetectionStrategy.Eager,
     templateUrl: './level.component.html'
 })
 export class LevelComponent {
   level: Level | undefined | null;
-  scoresPerType: Map<number, Score[]> = new Map();
-  currentScores: Score[] = []; // current view of the scores
   activityPage: ActivityPage | undefined;
   
   protected readonly isBrowser: boolean;
@@ -87,16 +79,12 @@ export class LevelComponent {
   protected ownUser: ExtendedUser | undefined;
   protected relations: LevelRelations | undefined;
 
-  scoreFilterForm = new FormGroup({
-    scoreType: new FormControl(0)
-  });
-  protected showScoreFilterMenu: boolean = false;
-
-  constructor(private embed: EmbedService, private client: ClientService, private slug: SlugPipe,
+  constructor(private embed: EmbedService, private client: ClientService, private slug: SlugPipe, protected scoreTypePipe: ScoreTypePipe,
               route: ActivatedRoute, protected layout: LayoutService, private auth: AuthenticationService,
               @Inject(PLATFORM_ID) platformId: Object, protected banner: BannerService)
   {
     this.isBrowser = isPlatformBrowser(platformId);
+
     route.params.subscribe(params => {
       const id: number = +params['id'];
       this.client.getLevelById(id).subscribe({
@@ -137,62 +125,5 @@ export class LevelComponent {
         this.activityPage = page;
       }
     });
-
-    // Type doesn't matter for cutscenes
-    this.setScoreType(data.levelType === LevelType.Cutscene ? 0 : 1);
   }
-
-  scoreTypeButtonClick() {
-    this.showScoreFilterMenu = !this.showScoreFilterMenu;
-  }
-
-  setScoreType(type: number) {
-    this.scoreFilterForm.controls.scoreType.setValue(type);
-    this.getScores(type);
-  }
-
-  private getScores(type: number) {
-    if (!this.level) return;
-
-    let cachedList: Score[] | undefined = this.scoresPerType.get(type);
-    if (cachedList != null) {
-      this.currentScores = cachedList!;
-      return;
-    }
-
-    this.client.getScoresForLevel(this.level.levelId, type, 0, 10).subscribe({
-      error: error => {
-        const apiError: RefreshApiError | undefined = error.error?.error;
-        this.banner.warn("Failed to get scores for level", apiError == null ? error.message : apiError.message);
-      },
-      next: scorePage => {
-        this.scoresPerType.set(type, scorePage.data);
-        this.currentScores = scorePage.data;
-      }
-    });
-  }
-
-  removeScore(uuid: string) {
-    // Remove from cache
-    for (let [scoreType, oldList] of this.scoresPerType) {
-
-      let newList: Score[] = [];
-      for (let score of oldList) {
-        if (score.scoreId !== uuid) newList.push(score);
-      }
-
-      this.scoresPerType.set(scoreType, newList);
-    }
-
-    // Remove from current list
-    let newCurrentList: Score[] = [];
-    for (let score of this.currentScores) {
-      if (score.scoreId !== uuid) newCurrentList.push(score);
-    }
-
-    this.currentScores = newCurrentList;
-  }
-
-  protected readonly faChevronDown = faChevronDown;
-  protected readonly faChevronUp = faChevronUp;
 }
