@@ -76,24 +76,14 @@
             @else {
                 <div class="flex flex-row flex-wrap gap-x-4">
                     <p class="text-2xl content-center">Role:</p>
-                    <app-dropdown-menu [showMenu]="showRoleMenu" offsets="top-9 " [width]="32">
-                        <app-button trigger
-                            width="flex flex-shrink justify-evenly flex-grow text-nowrap"
-                            [text]="metadataForm.role().value() | role"
-                            [icon]="showRoleMenu ? faChevronUp : faChevronDown"
-                            color="bg-primary"
-                            (click)="roleDropdownButtonClick()">
-                        </app-button>
-                        <app-radio-button-group groupName="userRole" [buttonValues]="[
-                                userRoles.Admin,
-                                userRoles.Moderator,
-                                userRoles.Curator,
-                                userRoles.Trusted,
-                                userRoles.User,
-                            ]" [textPipe]="role" [formField]="metadataForm.role">
-                        </app-radio-button-group>
-                        <!-- all roles below cannot be set this way -->
-                    </app-dropdown-menu>
+                    <app-dropdown-radio-button-group buttonColor="bg-primary" groupName="userRoles" [buttonValues]="[
+                            userRoles.Admin,
+                            userRoles.Moderator,
+                            userRoles.Curator,
+                            userRoles.Trusted,
+                            userRoles.User,
+                        ]" [textPipe]="rolePipe" [radioFormField]="metadataForm.role">
+                    </app-dropdown-radio-button-group>
                 </div>
             }
         </div>

@@ -32,6 +32,7 @@ import { UserAvatarComponent } from "../../../components/ui/photos/user-avatar.c
 import { FieldTree, form, maxLength, minLength, FormField, required } from "@angular/forms/signals";
 import { RadioButtonGroupComponent } from "../../../components/ui/form/radio-button-group.component";
 import { Observable } from "rxjs";
+import { DropdownRadioButtonComponent } from "../../../components/ui/form/dropdown-radio-button-group.component";
 
 interface MetadataFormInput {
     username: string,
@@ -68,7 +69,8 @@ interface PunishmentFormInput {
     ReactiveFormsModule,
     UserAvatarComponent,
     RadioButtonGroupComponent,
-    FormField
+    FormField,
+    DropdownRadioButtonComponent
 ],
     providers: [
         RolePipe
@@ -115,7 +117,7 @@ export class AdminUserSettingsComponent {
     protected isMobile: boolean = false;
 
     constructor(private client: ClientService, private auth: AuthenticationService, 
-        private banner: BannerService, route: ActivatedRoute, protected layout: LayoutService, private role: RolePipe) 
+        private banner: BannerService, route: ActivatedRoute, protected layout: LayoutService, private rolePipe: RolePipe) 
     {
         this.auth.user.subscribe(ownUser => {
             if (ownUser && this.ownUser == null) {
@@ -137,7 +139,7 @@ export class AdminUserSettingsComponent {
                                     if (user) {
                                         if (ownUser.role < UserRoles.Admin && user.role >= UserRoles.Moderator) {
                                             this.banner.error("You may not update or punish " + user.username, 
-                                                "Their role (" + this.role.transform(user.role) + ") is above your own role (" + this.role.transform(ownUser.role) + ")");
+                                                "Their role (" + this.rolePipe.transform(user.role) + ") is above your own role (" + this.rolePipe.transform(ownUser.role) + ")");
                                         }
                                         else {
                                             this.updateInputs(user);
