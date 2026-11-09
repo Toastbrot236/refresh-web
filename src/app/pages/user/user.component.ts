@@ -1,7 +1,7 @@
-import { ChangeDetectorRef, Component, effect, signal } from '@angular/core';
+import { ChangeDetectorRef, Component } from '@angular/core';
 import {User} from "../../api/types/users/user";
 import {ClientService} from "../../api/client.service";
-import { ActivatedRoute, RouterLink } from "@angular/router";
+import { ActivatedRoute } from "@angular/router";
 import {DefaultPipe} from "../../pipes/default.pipe";
 import { AsyncPipe } from "@angular/common";
 import {UserAvatarComponent} from "../../components/ui/photos/user-avatar.component";
@@ -18,8 +18,6 @@ import { TwoPaneLayoutComponent } from "../../components/ui/layouts/two-pane-lay
 import { ContainerComponent } from "../../components/ui/container.component";
 import { BannerService } from '../../banners/banner.service';
 import { UserRoleComponent } from "../../components/ui/info/user-role.component";
-import { LevelCategoryRoute } from '../../api/types/levels/level-category-route';
-import { PhotoCategoryRoute } from '../../api/types/photos/photo-category-route';
 import { UserPhotoListingComponent } from '../user-photo-listing/user-photo-listing.component';
 import { UserLevelListingComponent } from '../user-level-listing/user-level-listing.component';
 
@@ -60,6 +58,7 @@ export class UserComponent {
       this.client.getUserByEitherLookup(username, uuid).subscribe(user => {
         this.user = user;
         this.relations = user.ownRelations;
+        this.cd.detectChanges();
 
         this.auth.user.subscribe(user => {
           if(user) {
