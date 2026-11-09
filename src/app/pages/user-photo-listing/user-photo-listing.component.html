@@ -1,61 +1,30 @@
-@if (user) {
-    <!-- TODO ability to pass query params between the page the preview is on and the full page -->
-    <app-entity-list title="Photos" [fullPageRouterLink]="'/user/' + user.username + '/photos'" 
-        [isPreview]="isPreview" [entityList]="currentList">
+<app-container-header>
+    @if (errorMessage) {
+        <app-page-title />
+        <p>Failed to load user: {{errorMessage}}</p>
+    }
+    @else if (!user) {
+        <app-page-title />
+        <p>Loading user data...</p>
+    }
+    @else {
+        <div class="flex flex-row flex-wrap gap-x-3 align-center">
+            <app-user-link class="content-center text-[20px]" [user]="user" />
+            <app-page-title title="'s Photos" />
+        </div>
 
-        <!-- For some reason angular doesn't like more than 1 container IDs so we need to duplicate this smh -->
-        <ng-container toTheRightOfTitlePreview
-            class="flex flex-row flex-grow flex-wrap justify-between gap-x-2 gap-y-1">
+        <!-- Filters -->
+        <div class="flex flex-row flex-wrap gap-x-3 align-center">
+            <p>Show photos</p>
             <app-dropdown-radio-button-group groupName="photoCategories" [buttonValues]="[
                     photoCategoryRoutes.ByUser,
                     photoCategoryRoutes.WithUser,
-                ]" [textPipe]="categoryPipe" [radioFormField]="filterForm.photoCategory">
+                ]" [textPipe]="categoryPipe" [radioFormField]="form.photoCategory">
             </app-dropdown-radio-button-group>
-        </ng-container>
+            <p>this user</p>
+        </div>
 
-        <ng-container toTheRightOfTitleFull
-            class="flex flex-row flex-grow flex-wrap justify-between gap-x-2 gap-y-1">
-            <app-dropdown-radio-button-group groupName="photoCategories" [buttonValues]="[
-                    photoCategoryRoutes.ByUser,
-                    photoCategoryRoutes.WithUser,
-                ]" [textPipe]="categoryPipe" [radioFormField]="filterForm.photoCategory">
-            </app-dropdown-radio-button-group>
-        
-            <app-user-link class="content-center text-[20px]" [user]="user"></app-user-link>
-        </ng-container>
-
-        <ng-container loadingContent>
-            <p>Loading photos...</p>
-        </ng-container>
-
-        <ng-container noItemsContent>
-            <p>No photos found! Try changing your filters...</p>
-        </ng-container>
-
-        <ng-container errorContent>
-            <p>An error occurred, but we won't tell why, because it'S not implemented yet!</p>
-        </ng-container>
-
-        <ng-container listingContent>
-            @if (isPreview) {
-                @for (photo of currentList.data; track photo.photoId) {
-                    <div class="py-1.5">
-                        <app-photo [photo]="photo" [link]="true" />
-                    </div>
-                }
-            }
-            @else {
-                <app-responsive-grid>
-                    @for (photo of this.currentList.data; track photo.photoId) {
-                        <app-container [tight]="true">
-                            <app-photo [photo]="photo" [link]="true" />
-                        </app-container>
-                    }
-                </app-responsive-grid>
-
-                <app-infinite-scroller [totalLoads]="totalLoads" [isLoading]="this.isLoading" [listInfo]="this.currentList.listInfo" (loadData)="loadNextPage()" />
-            }
-        </ng-container>
-    </app-entity-list>
-}
-
+        <!-- List -->
+        <app-user-photo-list [form]="form" [user]="user" [isPreview]="false" />
+    }
+</app-container-header>

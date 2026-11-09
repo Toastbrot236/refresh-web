@@ -1,52 +1,28 @@
 @if (level) {
-    <app-entity-list [title]="isPreview ? 'Leaderboard' : 'Leaderboard for ' + (level.isAdventure ? 'adventure' : 'level')"
-        [fullPageRouterLink]="'/level/' + level.levelId + '/' + (level.title | slug) + '/leaderboard'"
-        [isPreview]="isPreview" [entityList]="currentList">
+  <app-container-header>
+    <div class="flex flex-col gap-y-2 pb-4">
+      <div class="flex flex-row flex-wrap gap-x-3 align-center">
+        <app-page-title [title]="'Leaderboard for ' + (level.isAdventure ? 'adventure' : 'level')"></app-page-title>
+        <app-level-link class="content-center" [level]="level"></app-level-link>
+      </div>
 
-        <ng-container toTheRightOfTitlePreview class="flex flex-row flex-grow flex-wrap justify-between gap-x-2 gap-y-1">
-            <app-dropdown-radio-button-group groupName="scoreTypes" [buttonValues]="[
-                    0, 1, 2, 3, 4
-                ]" [textPipe]="scoreTypePipe" [radioFormField]="filterForm.scoreType">
-            </app-dropdown-radio-button-group>
-        </ng-container>
+      <div class="flex flex-row flex-wrap gap-x-3">
+        <p class="text-2xl">Player mode:</p>
+        <app-dropdown-radio-button-group groupName="scoreTypes" [buttonValues]="[
+                0, 1, 2, 3, 4
+            ]" [textPipe]="scoreTypePipe" [radioFormField]="form.scoreType">
+      </div>
+    </div>
+  </app-container-header>
 
-        <ng-container toTheRightOfTitleFull class="flex flex-row flex-grow flex-wrap justify-between gap-x-2 gap-y-1">
-            <app-level-link class="content-center" [level]="level" />
-
-            <app-dropdown-radio-button-group groupName="scoreTypes" [buttonValues]="[
-                    0, 1, 2, 3, 4
-                ]" [textPipe]="scoreTypePipe" [radioFormField]="filterForm.scoreType">
-            </app-dropdown-radio-button-group>
-        </ng-container>
-
-        <ng-container loadingContent>
-            <p>Loading scores...</p>
-        </ng-container>
-
-        <ng-container noItemsContent>
-            <p>No scores found! Try changing your filters...</p>
-        </ng-container>
-
-        <ng-container errorContent>
-            <p>An error occurred, but we won't tell why, because it'S not implemented yet!</p>
-        </ng-container>
-
-        <ng-container listingContent>
-            @if (isPreview) {
-                @for (score of currentList.data; track score.scoreId) {
-                    <div class="py-1.5">
-                        <app-score-preview [score]="score" (deleted)="removeScore(score.scoreId)" />
-                    </div>
-                }
-            }
-            @else {
-                @for (score of this.currentList.data; track score.scoreId) {
-                    <app-score-preview [score]="score" (deleted)="removeScore(score.scoreId)" />
-                    <app-divider />
-                }
-
-                <app-infinite-scroller [totalLoads]="totalLoads" [isLoading]="this.isLoading" [listInfo]="this.currentList.listInfo" (loadData)="loadNextPage()" />
-            }
-        </ng-container>
-    </app-entity-list>
+  @if (!isLoading && currentScores.length === 0) {
+    <p>No scores in this player mode yet... Go for it!</p>
+  }
+  @for (score of currentScores; track score.scoreId; let i = $index) {
+    <app-score-preview [score]="score" (deleted)="removeScore(score.scoreId)"></app-score-preview>
+  }
+  @if (isLoading) {
+    <p>Loading scores...</p>
+  }
+  <app-infinite-scroller [isLoading]="this.isLoading" [listInfo]="this.listInfo" (loadData)="getNextPage()"></app-infinite-scroller>
 }
