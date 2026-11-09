@@ -11,10 +11,12 @@
                 </div>
                 <div class="mx-4 my-4 flex flex-col gap-y-2">
                     <app-page-title class=""></app-page-title>
-                    <app-button text="Save Changes" [icon]="faFloppyDisk" [enabled]="hasPendingChanges" color="bg-primary" (click)="uploadChanges()"></app-button>
+                    <app-button text="Save Changes" [icon]="faFloppyDisk" [enabled]="profileForm().touched()" color="bg-primary" (click)="uploadChanges()"/>
                 </div>
             </div>
-            <app-textarea class="w-full" [icon]="faPencil" [form]="settingsForm" placeholder="Introduce yourself..." ctrlName="description" type="description" (change)="checkDescriptionChanges()"></app-textarea>
+            <app-textarea class="w-full" [icon]="faPencil" [formField]="profileForm.description" placeholder="Introduce yourself..." ctrlName="description"
+                type="description">
+            </app-textarea>
         </div>
         <app-two-pane-layout>
             <app-container class="w-full">
@@ -25,11 +27,11 @@
                 </app-pane-title>
                 <app-divider></app-divider>
                 <div>
-                    <app-checkbox label="Redirect Grief Report Screen&shy;shots to Public Photos" [form]="settingsForm" ctrlName="griefToPhotos" (change)="checkGriefToPhotosChanges()"></app-checkbox>
-                    <app-checkbox label="Show modded levels" [form]="settingsForm" ctrlName="showModded" (change)="checkShowModdedChanges()"></app-checkbox>
-                    <app-checkbox label="Show others' modded planets" [form]="settingsForm" ctrlName="showModdedPlanets" (change)="checkShowModdedPlanetsChanges()"></app-checkbox>
-                    <app-checkbox label="Show reuploaded levels" [form]="settingsForm" ctrlName="showReuploaded" (change)="checkShowReuploadedChanges()"></app-checkbox>
-                    <app-checkbox label="Unescape XML sequences" [form]="settingsForm" ctrlName="unescapeXml" (change)="checkUnescapeXmlChanges()"></app-checkbox>
+                    <app-checkbox [formField]="profileForm.griefToPhotos" label="Redirect Grief Report Screen&shy;shots to Public Photos" ctrlName="griefToPhotos"/>
+                    <app-checkbox [formField]="profileForm.showModdedLevels" label="Show modded levels" ctrlName="showModded"/>
+                    <app-checkbox [formField]="profileForm.showModdedPlanets" label="Show others' modded planets" ctrlName="showModdedPlanets"/>
+                    <app-checkbox [formField]="profileForm.showReuploadedLevels" label="Show reuploaded levels" ctrlName="showReuploaded"/>
+                    <app-checkbox [formField]="profileForm.unescapeXML" label="Unescape XML sequences" ctrlName="unescapeXml"/>
                 </div>
             </app-container>
             <app-container class="w-full">
@@ -48,17 +50,21 @@
                         <p>
                             Your levels are visible to...
                         </p>
-                        <app-radio-button label="Everyone" [form]="settingsForm" ctrlName="levelVisibility" id="l0" [value]='0' (click)="setLevelVisibility(0)"></app-radio-button>
-                        <app-radio-button label="Signed in users only" [form]="settingsForm" ctrlName="levelVisibility" id="l1" [value]='1' (click)="setLevelVisibility(1)"></app-radio-button>
-                        <app-radio-button label="Just you and staff" [form]="settingsForm" ctrlName="levelVisibility" id="l2" [value]='2' (click)="setLevelVisibility(2)"></app-radio-button>
+                        <app-radio-button-group groupName="levelVisibility" [buttonValues]="[
+                            contentVisibility.Everyone,
+                            contentVisibility.SignedIn,
+                            contentVisibility.Staff,
+                        ]"></app-radio-button-group>
                     </div>
                     <div class="text-nowrap">
                         <p>
                             Your profile is visible to...
                         </p>
-                        <app-radio-button label="Everyone" [form]="settingsForm" ctrlName="profileVisibility" id="p0" [value]='0' (click)="setProfileVisibility(0)"></app-radio-button>
-                        <app-radio-button label="Signed in users only" [form]="settingsForm" ctrlName="profileVisibility" id="p1" [value]='1' (click)="setProfileVisibility(1)"></app-radio-button>
-                        <app-radio-button label="Just you and staff" [form]="settingsForm" ctrlName="profileVisibility" id="p2" [value]='2' (click)="setProfileVisibility(2)"></app-radio-button>
+                        <app-radio-button-group groupName="profileVisibility" [buttonValues]="[
+                            contentVisibility.Everyone,
+                            contentVisibility.SignedIn,
+                            contentVisibility.Staff,
+                        ]"></app-radio-button-group>
                     </div>
                 </div>
             </app-container>
