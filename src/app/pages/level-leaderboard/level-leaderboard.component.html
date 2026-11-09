@@ -11,12 +11,12 @@
         </ng-container>
 
         <ng-container toTheRightOfTitleFull class="flex flex-row flex-grow flex-wrap justify-between gap-x-2 gap-y-1">
+            <app-level-link class="content-center" [level]="level" />
+
             <app-dropdown-radio-button-group groupName="scoreTypes" [buttonValues]="[
                     0, 1, 2, 3, 4
                 ]" [textPipe]="scoreTypePipe" [radioFormField]="filterForm.scoreType">
             </app-dropdown-radio-button-group>
-        
-            <app-level-link class="content-center" [level]="level" />
         </ng-container>
 
         <ng-container loadingContent>
