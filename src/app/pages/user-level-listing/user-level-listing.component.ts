@@ -123,12 +123,16 @@ export class UserLevelListingComponent {
                 // TODO show on component instead of in a banner
                 const apiError: RefreshApiError | undefined = error.error?.error;
                 this.banner.warn("Failed to get photos with user", apiError == null ? error.message : apiError.message);
+                
                 this.isLoading = false;
+                this.cd.detectChanges();
             },
             next: nextPage => {
                 this.currentList.data = this.currentList.data.concat(nextPage.data);
                 this.currentList.listInfo = nextPage.listInfo;
+                
                 this.isLoading = false;
+                this.cd.detectChanges();
             }
         });
     }

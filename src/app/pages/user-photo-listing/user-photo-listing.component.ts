@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, Input, Inject, PLATFORM_ID, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, Input, Inject, PLATFORM_ID, signal, ChangeDetectorRef } from '@angular/core';
 import { User } from '../../api/types/users/user';
 import { ClientService, defaultPageSize } from '../../api/client.service';
 import { PhotoCategoryPipe } from '../../pipes/photo-category.pipe';
@@ -64,7 +64,8 @@ export class UserPhotoListingComponent {
     protected readonly isBrowser: boolean;
 
     constructor(protected client: ClientService, protected categoryPipe: PhotoCategoryPipe,
-        protected banner: BannerService, private route: ActivatedRoute, @Inject(PLATFORM_ID) platformId: Object
+        protected banner: BannerService, private route: ActivatedRoute, @Inject(PLATFORM_ID) platformId: Object,
+        protected cd: ChangeDetectorRef
     ) {
         route.params.subscribe(params => {
             const username: string | undefined = params['username'];
@@ -124,12 +125,16 @@ export class UserPhotoListingComponent {
                 // TODO show on component instead of in a banner
                 const apiError: RefreshApiError | undefined = error.error?.error;
                 this.banner.warn("Failed to get photos with user", apiError == null ? error.message : apiError.message);
+                
                 this.isLoading = false;
+                this.cd.detectChanges();
             },
             next: photoPage => {
                 this.currentList.data = this.currentList.data.concat(photoPage.data);
                 this.currentList.listInfo = photoPage.listInfo;
+                
                 this.isLoading = false;
+                this.cd.detectChanges();
             }
         });
     }

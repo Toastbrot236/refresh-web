@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, Input, Inject, PLATFORM_ID, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, Input, Inject, PLATFORM_ID, signal, ChangeDetectorRef } from '@angular/core';
 import { ClientService, defaultPageSize } from '../../api/client.service';
 import { PhotoCategoryPipe } from '../../pipes/photo-category.pipe';
 import { ActivatedRoute } from '@angular/router';
@@ -69,7 +69,7 @@ export class LevelLeaderboardComponent {
 
     constructor(protected client: ClientService,
         protected banner: BannerService, private route: ActivatedRoute, @Inject(PLATFORM_ID) platformId: Object,
-        protected slug: SlugPipe, protected scoreTypePipe: ScoreTypePipe
+        protected slug: SlugPipe, protected scoreTypePipe: ScoreTypePipe, protected cd: ChangeDetectorRef
     ) {
         route.params.subscribe(params => {
             const levelId: number = +params['id'];
@@ -124,12 +124,16 @@ export class LevelLeaderboardComponent {
                 // TODO show on component instead of in a banner
                 const apiError: RefreshApiError | undefined = error.error?.error;
                 this.banner.warn("Failed to get scores for level", apiError == null ? error.message : apiError.message);
+                
                 this.isLoading = false;
+                this.cd.detectChanges();
             },
             next: photoPage => {
                 this.currentList.data = this.currentList.data.concat(photoPage.data);
                 this.currentList.listInfo = photoPage.listInfo;
+                
                 this.isLoading = false;
+                this.cd.detectChanges();
             }
         });
     }
@@ -145,6 +149,7 @@ export class LevelLeaderboardComponent {
         this.currentList.data = newCurrentList;
         this.currentList.listInfo.totalItems--;
         this.currentList.listInfo.nextPageIndex--;
+        this.cd.detectChanges();
     }
 
     protected readonly photoCategoryRoutes = PhotoCategoryRoute;
