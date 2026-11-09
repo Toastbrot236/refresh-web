@@ -1,4 +1,4 @@
-import {Component, ChangeDetectionStrategy} from '@angular/core';
+import {Component, ChangeDetectionStrategy, signal} from '@angular/core';
 import {faSearch} from "@fortawesome/free-solid-svg-icons";
 
 import {DialogComponent} from "../components/ui/dialog.component";
@@ -6,19 +6,20 @@ import {FaIconComponent} from "@fortawesome/angular-fontawesome";
 import { AsyncPipe } from "@angular/common";
 import {SearchBarComponent} from "../components/ui/form/search-bar.component";
 import {FormComponent} from "../components/ui/form/form.component";
-import {FormControl, FormGroup} from "@angular/forms";
 import {NavigationEnd, Router} from "@angular/router";
 import {LayoutService} from "../services/layout.service";
 import {DividerComponent} from "../components/ui/divider.component";
 import {LevelPreviewComponent} from "../components/items/level-preview.component";
-import {Scrollable} from "../helpers/scrollable";
 import {Level} from "../api/types/levels/level";
-import {defaultListInfo, RefreshApiListInfo} from "../api/refresh-api-list-info";
-import {ClientService, defaultPageSize} from "../api/client.service";
+import {ClientService} from "../api/client.service";
 import {ButtonComponent} from "../components/ui/form/button.component";
 import {ContainerComponent} from "../components/ui/container.component";
-import {HttpParams} from "@angular/common/http";
-import {debounceTime} from "rxjs";
+import { FieldTree, form, required } from '@angular/forms/signals';
+
+interface SearchFormInput {
+  query: string,
+  // TODO whether to show level or user results, other filter options (games, isModded etc)
+}
 
 @Component({
     selector: 'app-search',
@@ -31,7 +32,7 @@ import {debounceTime} from "rxjs";
     DividerComponent,
     LevelPreviewComponent,
     ButtonComponent,
-    ContainerComponent
+    ContainerComponent,
 ],
     changeDetection: ChangeDetectionStrategy.Eager,
     template: `
@@ -40,11 +41,11 @@ import {debounceTime} from "rxjs";
     </a>
     
     @defer (when show) { @if (show) {
-      <app-dialog (onDialogClose)="close()">
+      <app-dialog class="flex flex-column gap-y-2" (onDialogClose)="close()">
         <div class="w-[640px] h-full m-5 flex flex-col">
           @if (!(layout.isMobile | async)) {
-            <app-form [form]="searchForm" [compact]="true" (submit)="search()">
-              <app-search-bar [form]="searchForm" appClass="min-w-full"></app-search-bar>
+            <app-form [compact]="true" (submit)="search()">
+              <app-search-bar [queryFormField]="form.query" appClass="min-w-full"></app-search-bar>
             </app-form>
           }
         </div>
@@ -70,8 +71,12 @@ export class SearchComponent {
   protected results: Level[] = [];
   protected showMoreButton: boolean = false;
 
-  protected searchForm = new FormGroup({
-    query: new FormControl(),
+  inputs = signal<SearchFormInput>({
+    query: '',
+  });
+
+  form: FieldTree<SearchFormInput, string | number, "writable"> = form(this.inputs, (f) => {
+    required(f.query, { message: 'Enter some text to search' });
   });
 
   constructor(private client: ClientService, private router: Router, protected layout: LayoutService) {
@@ -81,13 +86,13 @@ export class SearchComponent {
       }
     });
 
-    this.searchForm.valueChanges
-        .pipe(debounceTime(500))
-        .subscribe(() => this.search())
+    //this.form.valueChanges
+    //    .pipe(debounceTime(500))
+    //    .subscribe(() => this.search())
   }
 
   get query(): string {
-    return this.searchForm.controls.query.getRawValue();
+    return this.form.query().value();
   }
 
   toggleModal(): void {
