@@ -5,7 +5,6 @@ import {DialogComponent} from "../components/ui/dialog.component";
 import {FaIconComponent} from "@fortawesome/angular-fontawesome";
 import { AsyncPipe } from "@angular/common";
 import {SearchBarComponent} from "../components/ui/form/search-bar.component";
-import {FormComponent} from "../components/ui/form/form.component";
 import {NavigationEnd, Router} from "@angular/router";
 import {LayoutService} from "../services/layout.service";
 import {DividerComponent} from "../components/ui/divider.component";
@@ -28,7 +27,6 @@ interface SearchFormInput {
     FaIconComponent,
     SearchBarComponent,
     AsyncPipe,
-    FormComponent,
     DividerComponent,
     LevelPreviewComponent,
     ButtonComponent,
@@ -44,9 +42,8 @@ interface SearchFormInput {
       <app-dialog class="flex flex-column gap-y-2" (onDialogClose)="close()">
         <div class="w-[640px] h-full m-5 flex flex-col">
           @if (!(layout.isMobile | async)) {
-            <app-form [compact]="true" (submit)="search()">
-              <app-search-bar [queryFormField]="form.query" appClass="min-w-full"></app-search-bar>
-            </app-form>
+            <app-search-bar [form]="searchForm" appClass="min-w-full" />
+            <app-button text="Search!" color="bg-primary" (click)="search()" />
           }
         </div>
         @if (results.length > 0) {
