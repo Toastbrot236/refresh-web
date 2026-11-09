@@ -1,0 +1,57 @@
+<app-entity-list title="Photos" [fullPageRouterLink]="'/photos/' + filterForm.photoCategory().value() + '/user/' + user.username"
+    [isPreview]="isPreview" [entityList]="currentList">
+
+    <!-- For some reason angular doesn't like more than 1 container IDs so we need to duplicate this smh -->
+    <ng-container toTheRightOfTitlePreview
+        class="flex flex-row flex-grow flex-wrap justify-between gap-x-2 gap-y-1">
+        <app-dropdown-radio-button-group groupName="photoCategories" [buttonValues]="[
+                photoCategoryRoutes.ByUser,
+                photoCategoryRoutes.WithUser,
+            ]" [textPipe]="categoryPipe" [radioFormField]="filterForm.photoCategory">
+        </app-dropdown-radio-button-group>
+    </ng-container>
+
+    <ng-container toTheRightOfTitleFull
+        class="flex flex-row flex-grow flex-wrap justify-between gap-x-2 gap-y-1">
+        <app-dropdown-radio-button-group groupName="photoCategories" [buttonValues]="[
+                photoCategoryRoutes.ByUser,
+                photoCategoryRoutes.WithUser,
+            ]" [textPipe]="categoryPipe" [radioFormField]="filterForm.photoCategory">
+        </app-dropdown-radio-button-group>
+    
+        <app-user-link class="content-center text-[20px]" [user]="user"></app-user-link>
+    </ng-container>
+
+    <ng-container loadingContent>
+        <p>Loading photos...</p>
+    </ng-container>
+
+    <ng-container noItemsContent>
+        <p>No photos found! Try changing your filters...</p>
+    </ng-container>
+
+    <ng-container errorContent>
+        <p>An error occurred, but we won't tell why, because it'S not implemented yet!</p>
+    </ng-container>
+
+    <ng-container listingContent>
+        @if (isPreview) {
+            @for (photo of currentList.data; track photo.photoId) {
+                <div class="py-1.5">
+                    <app-photo [photo]="photo" [link]="true" />
+                </div>
+            }
+        }
+        @else {
+            <app-responsive-grid>
+                @for (photo of this.currentList.data; track photo.photoId) {
+                    <app-container [tight]="true">
+                        <app-photo [photo]="photo" [link]="true" />
+                    </app-container>
+                }
+            </app-responsive-grid>
+
+            <app-infinite-scroller [isLoading]="this.isLoading" [listInfo]="this.currentList.listInfo" (loadData)="loadNextPage()" />
+        }
+    </ng-container>
+</app-entity-list>

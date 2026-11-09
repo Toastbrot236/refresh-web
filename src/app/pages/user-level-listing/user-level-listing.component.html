@@ -1,0 +1,59 @@
+@if (user) {
+    <app-entity-list title="Levels" [fullPageRouterLink]="'/levels/' + filterForm.levelCategory().value() + '/user/' + user.username"
+        [isPreview]="isPreview" [entityList]="currentList">
+
+        <ng-container toTheRightOfTitlePreview class="flex flex-row flex-grow flex-wrap justify-between gap-x-2 gap-y-1">
+            <app-dropdown-radio-button-group groupName="levelCategories" [buttonValues]="[
+                    levelCategoryRoutes.ByUser,
+                    levelCategoryRoutes.HeartedByUser,
+                ]" [textPipe]="categoryPipe" [radioFormField]="filterForm.levelCategory">
+            </app-dropdown-radio-button-group>
+        </ng-container>
+
+        <ng-container toTheRightOfTitleFull class="flex flex-row flex-grow flex-wrap justify-between gap-x-2 gap-y-1">
+            <app-dropdown-radio-button-group groupName="levelCategories" [buttonValues]="[
+                    levelCategoryRoutes.ByUser,
+                    levelCategoryRoutes.HeartedByUser,
+                ]" [textPipe]="categoryPipe" [radioFormField]="filterForm.levelCategory">
+            </app-dropdown-radio-button-group>
+        
+            <app-user-link class="content-center text-[20px]" [user]="user" />
+        </ng-container>
+
+        <ng-container loadingContent>
+            <p>Loading levels...</p>
+        </ng-container>
+
+        <ng-container noItemsContent>
+            <p>No levels found! Try changing your filters...</p>
+        </ng-container>
+
+        <ng-container errorContent>
+            <p>An error occurred, but we won't tell why, because it'S not implemented yet!</p>
+        </ng-container>
+
+        <ng-container listingContent>
+            @if (currentList.data.length > 0) {
+                @if (isPreview) {
+                    @for (level of currentList.data; track level.levelId) {
+                        <div class="py-1.5">
+                            <app-level-preview [level]="level" />
+                        </div>
+                    }
+                }
+                @else {
+                    <app-responsive-grid>
+                        @for (level of this.currentList.data; track level.levelId) {
+                            <app-container [tight]="true">
+                                <app-level-preview [level]="level" />
+                            </app-container>
+                        }
+                    </app-responsive-grid>
+
+                    <app-infinite-scroller [isLoading]="this.isLoading" [listInfo]="this.currentList.listInfo" (loadData)="loadNextPage()" />
+                }
+            }
+            
+        </ng-container>
+    </app-entity-list>
+}
