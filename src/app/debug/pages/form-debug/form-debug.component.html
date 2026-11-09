@@ -1,6 +1,19 @@
 <app-page-title></app-page-title>
 
 <div>
+    <p>Select something</p>
+    <app-dropdown-radio-button-group groupName="radioButtonDropdown" [buttonValues]="[
+            0, 1, 4,
+        ]" [textPipe]="scoreTypePipe" [radioFormField]="form.scoreType">
+    </app-dropdown-radio-button-group>
+    <app-radio-button-group groupName="gamerVersions" [buttonValues]="[
+            gameVersion.LBP1,
+            gameVersion.LBPPSP,
+            gameVersion.Website,
+            gameVersion.LBP2,
+        ]">
+    </app-radio-button-group>
+
     <app-textbox [icon]="faPencil" [formField]="form.textBox" placeholder="test" ctrlName="textbox" label="Textbox"></app-textbox>
     <app-divider />
     <app-button text="Submit!" color="bg-primary" (click)="submit()" />

@@ -15,7 +15,7 @@ import {ReactiveFormsModule} from "@angular/forms";
                 placeholder:text-gentle placeholder:italic">
             
             @if (label.length > 0) {
-                <label [for]="name + value" class="text-base hyphens-manual ml-3 cursor-pointer">{{label}}</label>
+                <label [for]="name + value" class="text-base hyphens-manual pl-3 cursor-pointer">{{label}}</label>
             }
         </div>
     `
