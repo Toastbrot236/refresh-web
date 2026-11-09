@@ -42,7 +42,7 @@ interface SearchFormInput {
       <app-dialog class="flex flex-column gap-y-2" (onDialogClose)="close()">
         <div class="w-[640px] h-full m-5 flex flex-col">
           @if (!(layout.isMobile | async)) {
-            <app-search-bar [form]="searchForm" appClass="min-w-full" />
+            <app-search-bar [queryFormField]="form.query" appClass="min-w-full" />
             <app-button text="Search!" color="bg-primary" (click)="search()" />
           }
         </div>
