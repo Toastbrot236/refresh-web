@@ -21,6 +21,7 @@ import { SlugPipe } from '../../pipes/slug.pipe';
 import { ScoreTypePipe } from '../../pipes/score-type.pipe';
 import { LevelLinkComponent } from '../../components/ui/text/links/level-link.component';
 import { InfiniteScrollerComponent } from '../../components/ui/infinite-scroller.component';
+import { DividerComponent } from '../../components/ui/divider.component';
 
 interface FilterFormInput {
   scoreType: number,
@@ -36,7 +37,8 @@ interface FilterFormInput {
     ScorePreviewComponent,
     SlugPipe,
     LevelLinkComponent,
-    InfiniteScrollerComponent
+    InfiniteScrollerComponent,
+    DividerComponent
 ],
     providers: [
         SlugPipe,
@@ -50,7 +52,7 @@ interface FilterFormInput {
 // This component has inputs because it's intended to also be usable as a component
 // on the level info page for the leaderboard preview.
 export class LevelLeaderboardComponent {
-    @Input() isPreview: boolean = false;
+    @Input({required: true}) isPreview: boolean = false;
     level: Level = null!;
 
     filterInputs = signal<FilterFormInput>({
@@ -64,16 +66,24 @@ export class LevelLeaderboardComponent {
         listInfo: defaultListInfo,
     };
 
-    isLoading: boolean = false;
+    isLoading: boolean = true;
+    totalLoads: number = 0;
     protected readonly isBrowser: boolean;
 
     constructor(protected client: ClientService,
         protected banner: BannerService, private route: ActivatedRoute, @Inject(PLATFORM_ID) platformId: Object,
         protected slug: SlugPipe, protected scoreTypePipe: ScoreTypePipe, protected cd: ChangeDetectorRef
     ) {
-        route.params.subscribe(params => {
+        this.isBrowser = isPlatformBrowser(platformId);
+    }
+
+    ngOnInit() {
+        this.initData();
+    }
+
+    initData() {
+        this.route.params.subscribe(params => {
             const levelId: number = +params['id'];
-            let scoreType: number | undefined = params['scoreType'];
 
             // TODO levels aren't cached yet, so this will lead to double reqests on previews. Cache levels in ClientService to avoid that.
             this.client.getLevelById(levelId).subscribe({
@@ -85,28 +95,31 @@ export class LevelLeaderboardComponent {
                 next: level => {
                     this.level = level;
 
-                    // set to 1 if invalid
-                    if (scoreType && (scoreType < 0 || scoreType > 4)) {
-                        scoreType = 1;
-                    }
-                    // not specified in query params? set to default (usually 1 for 1-player-mode, but default to 0
-                    // for cutscene levels, since player-mode doesn't matter there).
-                    else if (!scoreType) {
-                        scoreType = level.levelType == LevelType.Cutscene ? 0 : 1;
-                    }
+                    this.route.queryParams.subscribe({
+                        next: query => {
+                            let scoreType: number | undefined = query['scoreType'];
 
-                    this.filterForm.scoreType().value.set(scoreType);
+                            // set to 1 if invalid
+                            if (scoreType && (scoreType < 0 || scoreType > 4)) {
+                                scoreType = 1;
+                            }
+                            // not specified in query params? set to default (usually 1 for 1-player-mode, but default to 0
+                            // for cutscene levels, since player-mode doesn't matter there).
+                            else if (!scoreType) {
+                                scoreType = level.levelType == LevelType.Cutscene ? 0 : 1;
+                            }
+
+                            this.filterForm.scoreType().value.set(scoreType);
+
+                            // Manually load the first page (not only needed for preview for some reason).
+                            // Have to manually increment total loads for this though, so the infinite scroller doesn't download the same page again.
+                            this.loadNextPage();
+                            this.totalLoads++;
+                        }
+                    });
                 }
             });
         });
-
-        this.isBrowser = isPlatformBrowser(platformId);
-    }
-
-    ngOnInit() {
-        if (this.isPreview) {
-            this.loadNextPage();
-        } 
     }
 
     loadNextPage() {

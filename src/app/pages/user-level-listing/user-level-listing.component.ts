@@ -47,7 +47,7 @@ interface FilterFormInput {
 // This component has inputs because it's intended to also be usable as a component
 // on the user info page for the levels preview.
 export class UserLevelListingComponent {
-    @Input() isPreview: boolean = false;
+    @Input({required: true}) isPreview: boolean = false;
     user: User = null!;
 
     filterInputs = signal<FilterFormInput>({
@@ -62,13 +62,22 @@ export class UserLevelListingComponent {
     };
 
     isLoading: boolean = true;
+    totalLoads: number = 0;
     protected readonly isBrowser: boolean;
 
     constructor(protected client: ClientService, protected categoryPipe: LevelCategoryPipe,
         protected banner: BannerService, private route: ActivatedRoute, @Inject(PLATFORM_ID) platformId: Object,
         protected cd: ChangeDetectorRef
     ) {
-        route.params.subscribe(params => {
+        this.isBrowser = isPlatformBrowser(platformId);
+    }
+
+    ngOnInit() {
+        this.initData();
+    }
+
+    initData() {
+        this.route.params.subscribe(params => {
             const username: string | undefined = params['username'];
             const category: string | undefined = params['levelCategory'];
 
@@ -96,16 +105,15 @@ export class UserLevelListingComponent {
                                     break;
                             }
                         }
+
+                        // Manually load the first page (not only needed for preview for some reason).
+                        // Have to manually increment total loads for this though, so the infinite scroller doesn't download the same page again.
+                        this.loadNextPage();
+                        this.totalLoads++;
                     }
                 });
             }
         });
-
-        this.isBrowser = isPlatformBrowser(platformId);
-    }
-
-    ngOnInit() {
-        this.loadNextPage();
     }
 
     loadNextPage() {

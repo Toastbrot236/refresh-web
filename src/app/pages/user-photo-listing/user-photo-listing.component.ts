@@ -60,16 +60,24 @@ export class UserPhotoListingComponent {
         listInfo: defaultListInfo,
     };
 
-    isLoading: boolean = false;
+    isLoading: boolean = true;
+    totalLoads: number = 0;
     protected readonly isBrowser: boolean;
 
     constructor(protected client: ClientService, protected categoryPipe: PhotoCategoryPipe,
         protected banner: BannerService, private route: ActivatedRoute, @Inject(PLATFORM_ID) platformId: Object,
         protected cd: ChangeDetectorRef
     ) {
-        route.params.subscribe(params => {
+        this.isBrowser = isPlatformBrowser(platformId);
+    }
+
+    ngOnInit() {
+        this.initData();
+    }
+
+    initData() {
+        this.route.params.subscribe(params => {
             const username: string | undefined = params['username'];
-            const category: string | undefined = params['photoCategory'];
 
             if (username != null) {
                 this.client.getUserByUsername(username).subscribe({
@@ -81,30 +89,38 @@ export class UserPhotoListingComponent {
                     next: user => {
                         this.user = user;
 
-                        if (category != null) {
-                            switch (category) {
-                                case PhotoCategoryRoute.ByUser:
+                        this.route.queryParams.subscribe({
+                            next: query => {
+                                const category: string | undefined = query['photoCategory'];
+    
+                                if (category) {
+                                    switch (category) {
+                                        case PhotoCategoryRoute.ByUser:
+                                            this.filterForm.photoCategory().value.set(PhotoCategoryRoute.ByUser);
+                                            break;
+                                        case PhotoCategoryRoute.WithUser:
+                                            this.filterForm.photoCategory().value.set(PhotoCategoryRoute.WithUser);
+                                            break;
+                                        default:
+                                            // default to byUser
+                                            this.filterForm.photoCategory().value.set(PhotoCategoryRoute.ByUser);
+                                            break;
+                                    }
+                                }
+                                else {
                                     this.filterForm.photoCategory().value.set(PhotoCategoryRoute.ByUser);
-                                    break;
-                                case PhotoCategoryRoute.WithUser:
-                                    this.filterForm.photoCategory().value.set(PhotoCategoryRoute.WithUser);
-                                    break;
-                                default:
-                                    // default to byUser
-                                    this.filterForm.photoCategory().value.set(PhotoCategoryRoute.ByUser);
-                                    break;
+                                }
+
+                                // Manually load the first page (not only needed for preview for some reason).
+                                // Have to manually increment total loads for this though, so the infinite scroller doesn't download the same page again.
+                                this.loadNextPage();
+                                this.totalLoads++;
                             }
-                        }
+                        });
                     }
                 });
             }
         });
-
-        this.isBrowser = isPlatformBrowser(platformId);
-    }
-
-    ngOnInit() {
-        this.loadNextPage();
     }
 
     loadNextPage() {

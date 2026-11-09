@@ -45,7 +45,7 @@
                     <app-divider />
                 }
 
-                <app-infinite-scroller [isLoading]="this.isLoading" [listInfo]="this.currentList.listInfo" (loadData)="loadNextPage()" />
+                <app-infinite-scroller [totalLoads]="totalLoads" [isLoading]="this.isLoading" [listInfo]="this.currentList.listInfo" (loadData)="loadNextPage()" />
             }
         </ng-container>
     </app-entity-list>
