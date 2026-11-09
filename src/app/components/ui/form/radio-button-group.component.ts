@@ -17,7 +17,7 @@ import { RadioButtonComponent } from './radio-button.component';
             <!-- Use the given pipe to get the label to show to the user; if no pipe was passed, just fall back to the value, 
                 but prefix it with 'Option' for better formatting -->
             @for (buttonValue of buttonValues; track buttonValue) {
-                <app-radio-button [name]="groupName" [value]="buttonValue" [label]="textPipe != null 
+                <app-radio-button [name]="groupName" [value]="buttonValue" [label]="textPipe
                     ? textPipe.transform(buttonValue)
                     : ('Option ' + buttonValue)" (click)="value.set(buttonValue)">
                 </app-radio-button>

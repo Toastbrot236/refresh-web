@@ -11,7 +11,7 @@
             gameVersion.LBPPSP,
             gameVersion.Website,
             gameVersion.LBP2,
-        ]">
+        ]" [formField]="form.gameVersion" [textPipe]="gamePipe">
     </app-radio-button-group>
 
     <app-textbox [icon]="faPencil" [formField]="form.textBox" placeholder="test" ctrlName="textbox" label="Textbox"></app-textbox>

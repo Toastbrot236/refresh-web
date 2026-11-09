@@ -5,11 +5,12 @@ import {faPencil} from "@fortawesome/free-solid-svg-icons";
 import {ReactiveFormsModule} from "@angular/forms";
 import { ButtonComponent } from '../../../components/ui/form/button.component';
 import { DividerComponent } from '../../../components/ui/divider.component';
-import { FieldTree, form } from '@angular/forms/signals';
+import { FieldTree, form, FormField } from '@angular/forms/signals';
 import { DropdownRadioButtonComponent } from '../../../components/ui/form/dropdown-radio-button-group.component';
 import { ScoreTypePipe } from '../../../pipes/score-type.pipe';
 import { GameVersion } from '../../../api/types/game-version';
 import { RadioButtonGroupComponent } from '../../../components/ui/form/radio-button-group.component';
+import { GamePipe } from '../../../pipes/game.pipe';
 
 export interface DebugFormInput {
   scoreType: number,
@@ -26,10 +27,12 @@ export interface DebugFormInput {
     ButtonComponent,
     DividerComponent,
     DropdownRadioButtonComponent,
-    RadioButtonGroupComponent
+    RadioButtonGroupComponent,
+    FormField
 ],
     providers: [
-      ScoreTypePipe
+      ScoreTypePipe,
+      GamePipe,
     ],
     changeDetection: ChangeDetectionStrategy.Eager,
     templateUrl: './form-debug.component.html'
@@ -37,7 +40,7 @@ export interface DebugFormInput {
 export class FormDebugComponent {
   inputs = signal<DebugFormInput>({
     scoreType: 4,
-    gameVersion: GameVersion.Website,
+    gameVersion: GameVersion.LBP1,
     textBox: 'default value !!'
   });
 
@@ -46,7 +49,7 @@ export class FormDebugComponent {
   protected readonly faPencil = faPencil;
   protected readonly gameVersion = GameVersion;
 
-  constructor(protected scoreTypePipe: ScoreTypePipe) {}
+  constructor(protected scoreTypePipe: ScoreTypePipe, protected gamePipe: GamePipe) {}
 
   submit() {
     alert("textbox input: " + this.form.textBox().value());
