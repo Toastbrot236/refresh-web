@@ -1,4 +1,4 @@
-import { Component, effect, signal } from '@angular/core';
+import { ChangeDetectorRef, Component, effect, signal } from '@angular/core';
 import {User} from "../../api/types/users/user";
 import {ClientService} from "../../api/client.service";
 import { ActivatedRoute, RouterLink } from "@angular/router";
@@ -16,25 +16,12 @@ import { ExtendedUser } from '../../api/types/users/extended-user';
 import { AuthenticationService } from '../../api/authentication.service';
 import { TwoPaneLayoutComponent } from "../../components/ui/layouts/two-pane-layout.component";
 import { ContainerComponent } from "../../components/ui/container.component";
-import { Level } from '../../api/types/levels/level';
-import { Photo } from '../../api/types/photos/photo';
 import { BannerService } from '../../banners/banner.service';
-import { RefreshApiError } from '../../api/refresh-api-error';
-import { ListWithData } from '../../api/list-with-data';
-import { defaultListInfo } from '../../api/refresh-api-list-info';
 import { UserRoleComponent } from "../../components/ui/info/user-role.component";
-import { FieldTree, form } from '@angular/forms/signals';
-import { LevelCategoryPipe } from '../../pipes/level-category.pipe';
-import { PhotoCategoryPipe } from '../../pipes/photo-category.pipe';
 import { LevelCategoryRoute } from '../../api/types/levels/level-category-route';
 import { PhotoCategoryRoute } from '../../api/types/photos/photo-category-route';
 import { UserPhotoListingComponent } from '../user-photo-listing/user-photo-listing.component';
 import { UserLevelListingComponent } from '../user-level-listing/user-level-listing.component';
-
-interface FilterFormInput {
-  levelCategory: LevelCategoryRoute,
-  photoCategory: PhotoCategoryRoute,
-}
 
 @Component({
     selector: 'app-user',
@@ -63,7 +50,7 @@ export class UserComponent {
   protected isMobile: boolean = false;
 
   constructor(private auth: AuthenticationService, private client: ClientService, route: ActivatedRoute, protected layout: LayoutService,
-    protected banner: BannerService
+    protected banner: BannerService, protected cd: ChangeDetectorRef
   ) {
 
     route.params.subscribe(params => {
@@ -77,6 +64,7 @@ export class UserComponent {
         this.auth.user.subscribe(user => {
           if(user) {
             this.ownUser = user;
+            this.cd.detectChanges();
           }
         });
       });

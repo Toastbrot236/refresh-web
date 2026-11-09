@@ -1,4 +1,4 @@
-import {Component, effect, Inject, PLATFORM_ID, signal} from '@angular/core';
+import {ChangeDetectorRef, Component, Inject, PLATFORM_ID, signal} from '@angular/core';
 import {Level} from "../../api/types/levels/level";
 import {ClientService} from "../../api/client.service";
 import {ActivatedRoute, RouterLink} from "@angular/router";
@@ -29,16 +29,9 @@ import { OriginalPublisherRouterLink } from "../../components/ui/text/links/orig
 import { LargerLabelComponent } from "../../components/ui/info/larger-label.component";
 import { TooltipComponent } from "../../components/ui/text/tooltip.component";
 import { ScoreTypePipe } from '../../pipes/score-type.pipe';
-import { LevelType } from '../../api/types/levels/level-type';
-import { Score } from '../../api/types/levels/score';
 import { BannerService } from '../../banners/banner.service';
 import { RefreshApiError } from '../../api/refresh-api-error';
-import { FieldTree, form, FormField } from '@angular/forms/signals';
 import { LevelLeaderboardComponent } from '../level-leaderboard/level-leaderboard.component';
-
-interface ScoreFilterFormInput {
-  scoreType: number,
-}
 
 @Component({
     selector: 'app-level',
@@ -66,7 +59,6 @@ interface ScoreFilterFormInput {
 ],
     providers: [
         SlugPipe,
-        ScoreTypePipe
     ],
     templateUrl: './level.component.html'
 })
@@ -79,9 +71,9 @@ export class LevelComponent {
   protected ownUser: ExtendedUser | undefined;
   protected relations: LevelRelations | undefined;
 
-  constructor(private embed: EmbedService, private client: ClientService, private slug: SlugPipe, protected scoreTypePipe: ScoreTypePipe,
+  constructor(private embed: EmbedService, private client: ClientService, private slug: SlugPipe,
               route: ActivatedRoute, protected layout: LayoutService, private auth: AuthenticationService,
-              @Inject(PLATFORM_ID) platformId: Object, protected banner: BannerService)
+              @Inject(PLATFORM_ID) platformId: Object, protected banner: BannerService, protected cd: ChangeDetectorRef)
   {
     this.isBrowser = isPlatformBrowser(platformId);
 
@@ -89,6 +81,7 @@ export class LevelComponent {
       const id: number = +params['id'];
       this.client.getLevelById(id).subscribe({
         error: error => {
+          // TODO show on the page instead of in a banner
           const apiError: RefreshApiError | undefined = error.error?.error;
           this.banner.warn("Failed to get level", apiError == null ? error.message : apiError.message);
         },
@@ -125,5 +118,7 @@ export class LevelComponent {
         this.activityPage = page;
       }
     });
+
+    this.cd.detectChanges();
   }
 }
