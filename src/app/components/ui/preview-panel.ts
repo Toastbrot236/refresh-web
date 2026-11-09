@@ -4,10 +4,11 @@ import { ContainerComponent } from './container.component';
 import { PaneTitleComponent } from './text/pane-title.component';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { DividerComponent } from './divider.component';
+import { RouterLink } from '@angular/router';
 
 @Component({
     selector: 'app-preview-panel',
-    imports: [ContainerComponent, PaneTitleComponent, FaIconComponent, DividerComponent],
+    imports: [ContainerComponent, PaneTitleComponent, FaIconComponent, DividerComponent, RouterLink],
     template: `
         <app-container class="w-full">
             <div class="flex flex-row flex-grow flex-wrap justify-start gap-x-2 gap-y-1">
@@ -16,7 +17,7 @@ import { DividerComponent } from './divider.component';
                         <p>{{description}}</p>
                     }
                     @if (titleRouterLink) {
-                        <p><a class="text-link hover:text-link-hover hover:underline cursor-pointer" routerLink="/users">
+                        <p><a class="text-link hover:text-link-hover hover:underline cursor-pointer" [routerLink]="titleRouterLink">
                             @if (icon) {
                                 <fa-icon [icon]="icon" class="mr-2" />
                             }
