@@ -1,28 +1,28 @@
-@if (level) {
-  <app-container-header>
-    <div class="flex flex-col gap-y-2 pb-4">
-      <div class="flex flex-row flex-wrap gap-x-3 align-center">
-        <app-page-title [title]="'Leaderboard for ' + (level.isAdventure ? 'adventure' : 'level')"></app-page-title>
-        <app-level-link class="content-center" [level]="level"></app-level-link>
-      </div>
-
-      <div class="flex flex-row flex-wrap gap-x-3">
-        <p class="text-2xl">Player mode:</p>
-        <app-dropdown-radio-button-group groupName="scoreTypes" [buttonValues]="[
-                0, 1, 2, 3, 4
-            ]" [textPipe]="scoreTypePipe" [radioFormField]="form.scoreType">
-      </div>
+<app-container-header>
+  @if (errorMessage) {
+    <app-page-title />
+    <p>Failed to load level: {{errorMessage}}</p>
+  }
+  @else if (!level) {
+    <app-page-title />
+    <p>Loading level data...</p>
+  }
+  @else {
+    <div class="flex flex-row flex-wrap gap-x-3 align-center">
+      <app-page-title [title]="'Leaderboard for ' + (level.isAdventure ? 'adventure' : 'level')" />
+      <app-level-link class="content-center" [level]="level"></app-level-link>
     </div>
-  </app-container-header>
 
-  @if (!isLoading && currentScores.length === 0) {
-    <p>No scores in this player mode yet... Go for it!</p>
+    <!-- Filters -->
+    <div class="flex flex-row flex-wrap gap-x-3 align-center">
+      <p>Player mode: </p>
+      <app-dropdown-radio-button-group groupName="scoreTypes" [buttonValues]="[
+          0, 1, 2, 3, 4
+        ]" [textPipe]="scoreTypePipe" [radioFormField]="form.scoreType">
+      </app-dropdown-radio-button-group>
+    </div>
+
+    <!-- List -->
+    <app-level-leaderboard-list [form]="form" [level]="level" [isPreview]="false" />
   }
-  @for (score of currentScores; track score.scoreId; let i = $index) {
-    <app-score-preview [score]="score" (deleted)="removeScore(score.scoreId)"></app-score-preview>
-  }
-  @if (isLoading) {
-    <p>Loading scores...</p>
-  }
-  <app-infinite-scroller [isLoading]="this.isLoading" [listInfo]="this.listInfo" (loadData)="getNextPage()"></app-infinite-scroller>
-}
+</app-container-header>

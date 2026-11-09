@@ -32,6 +32,12 @@ import { ScoreTypePipe } from '../../pipes/score-type.pipe';
 import { BannerService } from '../../banners/banner.service';
 import { RefreshApiError } from '../../api/refresh-api-error';
 import { LevelLeaderboardComponent } from '../level-leaderboard/level-leaderboard.component';
+import { FieldTree, form } from '@angular/forms/signals';
+import { LevelLeaderboardFormInput } from '../../forms/level-leaderboard-form-input';
+import { LevelLeaderboardListComponent } from '../../components/ui/lists/level-leaderboard-list.component';
+import { PreviewPanelComponent } from '../../components/ui/preview-panel';
+import { faFire, faListOl } from '@fortawesome/free-solid-svg-icons';
+import { DropdownRadioButtonComponent } from '../../components/ui/form/dropdown-radio-button-group.component';
 
 @Component({
     selector: 'app-level',
@@ -55,17 +61,25 @@ import { LevelLeaderboardComponent } from '../level-leaderboard/level-leaderboar
     OriginalPublisherRouterLink,
     LargerLabelComponent,
     TooltipComponent,
-    LevelLeaderboardComponent
+    PreviewPanelComponent,
+    DropdownRadioButtonComponent,
+    LevelLeaderboardListComponent
 ],
     providers: [
         SlugPipe,
+        ScoreTypePipe
     ],
     templateUrl: './level.component.html'
 })
 export class LevelComponent {
   level: Level | undefined | null;
   activityPage: ActivityPage | undefined;
-  
+
+  leaderboardInputs = signal<LevelLeaderboardFormInput>({
+      scoreType: 1,
+  });
+  leaderboardForm: FieldTree<LevelLeaderboardFormInput, string | number, "writable"> = form(this.leaderboardInputs);
+
   protected readonly isBrowser: boolean;
   protected isMobile: boolean = false;
   protected ownUser: ExtendedUser | undefined;
@@ -73,7 +87,8 @@ export class LevelComponent {
 
   constructor(private embed: EmbedService, private client: ClientService, private slug: SlugPipe,
               route: ActivatedRoute, protected layout: LayoutService, private auth: AuthenticationService,
-              @Inject(PLATFORM_ID) platformId: Object, protected banner: BannerService, protected cd: ChangeDetectorRef)
+              @Inject(PLATFORM_ID) platformId: Object, protected banner: BannerService, protected cd: ChangeDetectorRef,
+              protected scoreTypePipe: ScoreTypePipe)
   {
     this.isBrowser = isPlatformBrowser(platformId);
 
@@ -121,4 +136,7 @@ export class LevelComponent {
 
     this.cd.detectChanges();
   }
+
+  protected readonly faListOl = faListOl;
+  protected readonly faFire = faFire;
 }

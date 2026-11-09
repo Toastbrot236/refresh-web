@@ -1,9 +1,13 @@
 import { Component, ChangeDetectionStrategy, Input } from '@angular/core';
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
+import { ContainerComponent } from './container.component';
+import { PaneTitleComponent } from './text/pane-title.component';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import { DividerComponent } from './divider.component';
 
 @Component({
     selector: 'app-preview-panel',
-    imports: [],
+    imports: [ContainerComponent, PaneTitleComponent, FaIconComponent, DividerComponent],
     template: `
         <app-container class="w-full">
             <div class="flex flex-row flex-grow flex-wrap justify-between gap-x-2 gap-y-1">
@@ -38,7 +42,7 @@ import { IconProp } from '@fortawesome/fontawesome-svg-core';
                 <p>{{description}}</p>
             }
 
-            <app-divider></app-divider>
+            <app-divider />
 
             <ng-content select="[content]" />
         </app-container>

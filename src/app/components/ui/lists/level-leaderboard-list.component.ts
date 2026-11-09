@@ -15,13 +15,12 @@ import { ListWithData } from '../../../api/list-with-data';
 import { defaultListInfo } from '../../../api/refresh-api-list-info';
 import { LevelType } from '../../../api/types/levels/level-type';
 import { RefreshApiError } from '../../../api/refresh-api-error';
-import { ScoreFormInput } from '../../../forms/score-form-input';
+import { LevelLeaderboardFormInput } from '../../../forms/level-leaderboard-form-input';
 import { EntityListComponent } from './entity-list.component';
 
 @Component({
     selector: 'app-level-leaderboard-list',
     imports: [
-    SlugPipe,
     ScorePreviewComponent,
     DividerComponent,
     EntityListComponent,
@@ -53,7 +52,7 @@ export class LevelLeaderboardListComponent {
         listInfo: defaultListInfo,
     };
 
-    @Input({required: true}) form: FieldTree<ScoreFormInput, string | number, "writable"> = null!;
+    @Input({required: true}) form: FieldTree<LevelLeaderboardFormInput, string | number, "writable"> = null!;
     @Input() currentListEmitter: Observer<ListWithData<Score>> | undefined;
     @Input({required: true}) level: Level = null!;
     @Input({required: true}) isPreview: boolean = null!;
@@ -65,7 +64,7 @@ export class LevelLeaderboardListComponent {
 
     constructor(protected client: ClientService,
         protected banner: BannerService, private route: ActivatedRoute, @Inject(PLATFORM_ID) platformId: Object,
-        protected slug: SlugPipe, protected scoreTypePipe: ScoreTypePipe, protected cd: ChangeDetectorRef
+        protected scoreTypePipe: ScoreTypePipe, protected cd: ChangeDetectorRef
     ) {
         this.isBrowser = isPlatformBrowser(platformId);
     }

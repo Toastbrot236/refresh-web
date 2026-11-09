@@ -23,12 +23,41 @@
     </app-fancy-header>
 
     <app-two-pane-layout>
-        <app-container class="w-full">
-            <app-user-level-listing [isPreview]="true" />
-        </app-container>
-        
-        <app-container class="w-full">
-            <app-user-photo-listing [isPreview]="true" />
-        </app-container>
+        <app-preview-panel [icon]="faCertificate" title="Levels" [subText]="`(` + 3 + ` in total)`"
+            [titleRouterLink]="'/user/' + user.username + '/levels'">
+
+            <!-- Filter -->
+            <ng-container toTheRightOfTitle>
+                <app-dropdown-radio-button-group groupName="levelCategories" [buttonValues]="[
+                    levelCategoryRoutes.ByUser,
+                    levelCategoryRoutes.HeartedByUser,
+                ]" [textPipe]="levelCategoryPipe" [radioFormField]="levelForm.levelCategory">
+                </app-dropdown-radio-button-group>
+            </ng-container>
+
+            <!-- Levels -->
+            <ng-container content>
+                <app-user-level-list [form]="levelForm" [user]="user" [isPreview]="true" />
+            </ng-container>
+
+        </app-preview-panel>
+        <app-preview-panel [icon]="faImages" title="Photos" [subText]="`(` + 3 + ` in total)`"
+            [titleRouterLink]="'/user/' + user.username + '/photos'">
+
+            <!-- Filter -->
+            <ng-container toTheRightOfTitle>
+                <app-dropdown-radio-button-group groupName="photoCategories" [buttonValues]="[
+                    photoCategoryRoutes.ByUser,
+                    photoCategoryRoutes.WithUser,
+                ]" [textPipe]="photoCategoryPipe" [radioFormField]="photoForm.photoCategory">
+                </app-dropdown-radio-button-group>
+            </ng-container>
+
+            <!-- Photos -->
+            <ng-container content>
+                <app-user-photo-list [form]="photoForm" [user]="user" [isPreview]="true" />
+            </ng-container>
+
+        </app-preview-panel>
     </app-two-pane-layout>
 }

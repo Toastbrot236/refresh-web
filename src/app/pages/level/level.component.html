@@ -61,21 +61,34 @@
   </app-fancy-header>
 
   <app-two-pane-layout>
-      <app-container class="w-full">
-        <app-level-leaderboard-list [isPreview]="true" />
-      </app-container>
+    <app-preview-panel [icon]="faListOl" title="Leaderboard" [subText]="`(` + 3 + ` in total)`"
+      [titleRouterLink]="'/level/' + level.levelId + '/' + (level.title | slug) + '/leaderboard'">
 
-      <!-- TODO also deduplicate level-specific recent activity? Once we implement filter options... -->
-      <app-container class="w-full">
-          <app-pane-title>
-              <a [routerLink]="'/level/' + level.levelId + '/' + (level.title | slug) + '/activity'">
-                  Recent Activity
-              </a>
-          </app-pane-title>
-          <app-divider></app-divider>
-          @if(activityPage) {
-              <app-event-page [page]="activityPage" [compact]="true"></app-event-page>
-          }
-      </app-container>
+      <!-- Filter -->
+      <ng-container toTheRightOfTitle>
+        <app-dropdown-radio-button-group groupName="scoreTypes" [buttonValues]="[
+            0, 1, 2, 3, 4
+          ]" [textPipe]="scoreTypePipe" [radioFormField]="leaderboardForm.scoreType">
+        </app-dropdown-radio-button-group>
+      </ng-container>
+
+      <!-- Scores -->
+      <ng-container content>
+        <app-level-leaderboard-list [form]="leaderboardForm" [level]="level" [isPreview]="true" />
+      </ng-container>
+
+    </app-preview-panel>
+      
+    <app-preview-panel [icon]="faFire" title="Recent Activity"
+      [titleRouterLink]="'/level/' + level.levelId + '/' + (level.title | slug) + '/activity'">
+
+      <!-- Activity -->
+      <ng-container content>
+        @if(activityPage) {
+          <app-event-page [page]="activityPage" [compact]="true"></app-event-page>
+        }
+      </ng-container>
+
+    </app-preview-panel>
   </app-two-pane-layout>
 }

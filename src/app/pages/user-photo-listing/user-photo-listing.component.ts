@@ -5,7 +5,6 @@ import { PhotoCategoryPipe } from '../../pipes/photo-category.pipe';
 import { ActivatedRoute } from '@angular/router';
 import { FieldTree, form } from '@angular/forms/signals';
 import { PhotoCategoryRoute } from '../../api/types/photos/photo-category-route';
-import { BannerService } from '../../banners/banner.service';
 import { RefreshApiError } from '../../api/refresh-api-error';
 import { DropdownRadioButtonComponent } from '../../components/ui/form/dropdown-radio-button-group.component';
 import { UserLinkComponent } from '../../components/ui/text/links/user-link.component';
@@ -46,7 +45,7 @@ export class UserPhotoListingComponent {
     protected readonly isBrowser: boolean;
 
     constructor(protected client: ClientService, protected categoryPipe: PhotoCategoryPipe,
-        protected banner: BannerService, private route: ActivatedRoute, @Inject(PLATFORM_ID) platformId: Object,
+        private route: ActivatedRoute, @Inject(PLATFORM_ID) platformId: Object,
         protected cd: ChangeDetectorRef
     ) {
         this.isBrowser = isPlatformBrowser(platformId);
@@ -57,12 +56,13 @@ export class UserPhotoListingComponent {
 
             this.client.getUserByEitherLookup(username, uuid).subscribe({
                 error: error => {
-                    // TODO show on component instead of in a banner
                     const apiError: RefreshApiError | undefined = error.error?.error;
                     this.errorMessage = apiError == null ? error.message : apiError.message;
+                    this.cd.detectChanges();
                 },
                 next: user => {
                     this.user = user;
+                    this.cd.detectChanges();
                 }
             });
         });

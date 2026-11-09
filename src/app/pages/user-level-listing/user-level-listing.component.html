@@ -1,60 +1,30 @@
-@if (user) {
-    <!-- TODO ability to pass query params between the page the preview is on and the full page -->
-    <app-entity-list title="Levels" [fullPageRouterLink]="'/user/' + user.username + '/levels'"
-        [isPreview]="isPreview" [entityList]="currentList">
-
-        <ng-container toTheRightOfTitlePreview class="flex flex-row flex-grow flex-wrap justify-between gap-x-2 gap-y-1">
-            <app-dropdown-radio-button-group groupName="levelCategories" [buttonValues]="[
-                    levelCategoryRoutes.ByUser,
-                    levelCategoryRoutes.HeartedByUser,
-                ]" [textPipe]="categoryPipe" [radioFormField]="filterForm.levelCategory">
-            </app-dropdown-radio-button-group>
-        </ng-container>
-
-        <ng-container toTheRightOfTitleFull class="flex flex-row flex-grow flex-wrap justify-between gap-x-2 gap-y-1">
-            <app-dropdown-radio-button-group groupName="levelCategories" [buttonValues]="[
-                    levelCategoryRoutes.ByUser,
-                    levelCategoryRoutes.HeartedByUser,
-                ]" [textPipe]="categoryPipe" [radioFormField]="filterForm.levelCategory">
-            </app-dropdown-radio-button-group>
-        
+<app-container-header>
+    @if (errorMessage) {
+        <app-page-title />
+        <p>Failed to load user: {{errorMessage}}</p>
+    }
+    @else if (!user) {
+        <app-page-title />
+        <p>Loading user data...</p>
+    }
+    @else {
+        <div class="flex flex-row flex-wrap gap-x-3 align-center">
             <app-user-link class="content-center text-[20px]" [user]="user" />
-        </ng-container>
+            <app-page-title title="'s Levels" />
+        </div>
 
-        <ng-container loadingContent>
-            <p>Loading levels...</p>
-        </ng-container>
+        <!-- Filters -->
+        <div class="flex flex-row flex-wrap gap-x-3 align-center">
+            <p>Show photos</p>
+            <app-dropdown-radio-button-group groupName="photoCategories" [buttonValues]="[
+                    levelCategoryRoutes.ByUser,
+                    levelCategoryRoutes.HeartedByUser,
+                ]" [textPipe]="categoryPipe" [radioFormField]="form.levelCategory">
+            </app-dropdown-radio-button-group>
+            <p>this user</p>
+        </div>
 
-        <ng-container noItemsContent>
-            <p>No levels found! Try changing your filters...</p>
-        </ng-container>
-
-        <ng-container errorContent>
-            <p>An error occurred, but we won't tell why, because it'S not implemented yet!</p>
-        </ng-container>
-
-        <ng-container listingContent>
-            @if (currentList.data.length > 0) {
-                @if (isPreview) {
-                    @for (level of currentList.data; track level.levelId) {
-                        <div class="py-1.5">
-                            <app-level-preview [level]="level" />
-                        </div>
-                    }
-                }
-                @else {
-                    <app-responsive-grid>
-                        @for (level of this.currentList.data; track level.levelId) {
-                            <app-container [tight]="true">
-                                <app-level-preview [level]="level" />
-                            </app-container>
-                        }
-                    </app-responsive-grid>
-
-                    <app-infinite-scroller [totalLoads]="totalLoads" [isLoading]="this.isLoading" [listInfo]="this.currentList.listInfo" (loadData)="loadNextPage()" />
-                }
-            }
-            
-        </ng-container>
-    </app-entity-list>
-}
+        <!-- List -->
+        <app-user-level-list [form]="form" [user]="user" [isPreview]="false" />
+    }
+</app-container-header>

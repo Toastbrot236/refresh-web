@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component } from '@angular/core';
+import { ChangeDetectorRef, Component, signal } from '@angular/core';
 import {User} from "../../api/types/users/user";
 import {ClientService} from "../../api/client.service";
 import { ActivatedRoute } from "@angular/router";
@@ -18,8 +18,18 @@ import { TwoPaneLayoutComponent } from "../../components/ui/layouts/two-pane-lay
 import { ContainerComponent } from "../../components/ui/container.component";
 import { BannerService } from '../../banners/banner.service';
 import { UserRoleComponent } from "../../components/ui/info/user-role.component";
-import { UserPhotoListingComponent } from '../user-photo-listing/user-photo-listing.component';
-import { UserLevelListingComponent } from '../user-level-listing/user-level-listing.component';
+import { FieldTree, form } from '@angular/forms/signals';
+import { UserLevelFormInput } from '../../forms/user-level-form-input';
+import { UserPhotoFormInput } from '../../forms/user-photo-form-input';
+import { PhotoCategoryRoute } from '../../api/types/photos/photo-category-route';
+import { LevelCategoryRoute } from '../../api/types/levels/level-category-route';
+import { UserLevelListComponent } from '../../components/ui/lists/user-level-list.component';
+import { UserPhotoListComponent } from '../../components/ui/lists/user-photo-list.component';
+import { LevelCategoryPipe } from '../../pipes/level-category.pipe';
+import { PhotoCategoryPipe } from '../../pipes/photo-category.pipe';
+import { DropdownRadioButtonComponent } from '../../components/ui/form/dropdown-radio-button-group.component';
+import { PreviewPanelComponent } from '../../components/ui/preview-panel';
+import { faCertificate, faImages } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
     selector: 'app-user',
@@ -35,8 +45,10 @@ import { UserLevelListingComponent } from '../user-level-listing/user-level-list
     TwoPaneLayoutComponent,
     ContainerComponent,
     UserRoleComponent,
-    UserPhotoListingComponent,
-    UserLevelListingComponent,
+    UserPhotoListComponent,
+    UserLevelListComponent,
+    DropdownRadioButtonComponent,
+    PreviewPanelComponent
 ],
     templateUrl: './user.component.html',
     styles: ``
@@ -44,11 +56,22 @@ import { UserLevelListingComponent } from '../user-level-listing/user-level-list
 export class UserComponent {
   user: User | undefined | null;
   relations: UserRelations | undefined;
+
+  levelInputs = signal<UserLevelFormInput>({
+    levelCategory: LevelCategoryRoute.ByUser
+  });
+  levelForm: FieldTree<UserLevelFormInput, string | number, "writable"> = form(this.levelInputs);
+
+  photoInputs = signal<UserPhotoFormInput>({
+    photoCategory: PhotoCategoryRoute.ByUser
+  });
+  photoForm: FieldTree<UserPhotoFormInput, string | number, "writable"> = form(this.photoInputs);
+
   protected ownUser: ExtendedUser | undefined;
   protected isMobile: boolean = false;
 
   constructor(private auth: AuthenticationService, private client: ClientService, route: ActivatedRoute, protected layout: LayoutService,
-    protected banner: BannerService, protected cd: ChangeDetectorRef
+    protected banner: BannerService, protected cd: ChangeDetectorRef, protected levelCategoryPipe: LevelCategoryPipe, protected photoCategoryPipe: PhotoCategoryPipe,
   ) {
 
     route.params.subscribe(params => {
@@ -71,4 +94,9 @@ export class UserComponent {
 
     this.layout.isMobile.subscribe(v => this.isMobile = v);
   }
+
+  protected readonly faCertificate = faCertificate;
+  protected readonly faImages = faImages;
+  protected readonly levelCategoryRoutes = LevelCategoryRoute;
+  protected readonly photoCategoryRoutes = PhotoCategoryRoute;
 }
