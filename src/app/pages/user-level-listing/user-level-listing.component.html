@@ -1,5 +1,6 @@
 @if (user) {
-    <app-entity-list title="Levels" [fullPageRouterLink]="'/levels/' + filterForm.levelCategory().value() + '/user/' + user.username"
+    <!-- TODO ability to pass query params between the page the preview is on and the full page -->
+    <app-entity-list title="Levels" [fullPageRouterLink]="'/user/' + user.username + '/levels'"
         [isPreview]="isPreview" [entityList]="currentList">
 
         <ng-container toTheRightOfTitlePreview class="flex flex-row flex-grow flex-wrap justify-between gap-x-2 gap-y-1">
