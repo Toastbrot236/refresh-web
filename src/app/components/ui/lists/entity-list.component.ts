@@ -18,7 +18,7 @@ import { ListWithData } from '../../../api/list-with-data';
         <h2>Download failed!</h2>
         <p>{{errorMessage}}</p>
       }
-      @else if (list.listInfo.totalItems <= 0) {
+      @else if (list.listInfo.totalItems < 0) {
         <p>Downloading stuff...</p>
       }
       @else {
