@@ -141,24 +141,6 @@ export class ModPanelComponent {
     });
   }
 
-  /*
-  protected checkAnnouncementTitleChanges() {
-    let currentTitle: string = this.announcementForm.controls.title.getRawValue();
-    this.previewAnnouncement.title = currentTitle;
-    this.checkAnnouncementCompleteness();
-  }
-
-  protected checkAnnouncementTextChanges() {
-    let currentText: string = this.announcementForm.controls.text.getRawValue();
-    this.previewAnnouncement.text = currentText;
-    this.checkAnnouncementCompleteness();
-  }
-
-  protected checkAnnouncementCompleteness() {
-    this.isAnnouncementComplete = this.previewAnnouncement.title.length > 0 && this.previewAnnouncement.text.length > 0;
-  }
-  */
-
   protected resetAnnouncementInputs() {
     this.announcementForm.title().value.set("");
     this.announcementForm.text().value.set("");
@@ -171,6 +153,15 @@ export class ModPanelComponent {
     };
   }
 
+  protected updateAnnouncementPreview() {
+    this.previewAnnouncement = {
+      announcementId: "",
+      title: this.announcementForm.title().value(),
+      text: this.announcementForm.text().value(),
+      createdAt: undefined,
+    };
+  }
+
   protected toggleAnnouncementPostDialog(visibility: boolean) {
     this.showAnnouncementPostDialog = visibility;
   }
@@ -178,6 +169,8 @@ export class ModPanelComponent {
   protected postAnnouncement() {
     if (this.announcementForm().invalid()) return;
     this.toggleAnnouncementPostDialog(false);
+
+    this.updateAnnouncementPreview();
 
     this.client.postAnnouncement(this.previewAnnouncement).subscribe({
       error: error => {

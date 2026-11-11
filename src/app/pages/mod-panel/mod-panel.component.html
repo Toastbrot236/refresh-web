@@ -57,6 +57,7 @@
 
   <app-divider></app-divider>
 
+  <!-- TODO mods currently may not post or delete announcements, so either hide this if moderator, or just let them post announcements -->
   <p class="text-3xl font-bold pb-2">Announcements</p>
 
   <div class="grid grid-cols-2 sm:grid-cols-1 md:grid-cols-1 gap-x-6">
@@ -68,6 +69,7 @@
 
         <div class="flex flex-row flex-wrap gap-x-2 justify-between pt-4">
           <app-button color="bg-red" [icon]="faTrash" text="Discard" (click)="resetAnnouncementInputs()"></app-button>
+          <app-button color="bg-secondary" [icon]="faTrash" text="Update Preview" (click)="updateAnnouncementPreview()"></app-button>
           <app-button color="bg-primary" [icon]="faPaperPlane" text="Publish" (click)="toggleAnnouncementPostDialog(true)"
             [enabled]="announcementForm().valid()">
           </app-button>
