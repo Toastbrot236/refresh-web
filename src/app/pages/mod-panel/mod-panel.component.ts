@@ -1,4 +1,4 @@
-import { Component, effect, signal } from '@angular/core';
+import { ChangeDetectorRef, Component, signal } from '@angular/core';
 import {ClientService} from "../../api/client.service";
 import { PageTitleComponent } from "../../components/ui/text/page-title.component";
 import { ExtendedUser } from '../../api/types/users/extended-user';
@@ -10,7 +10,6 @@ import { Statistics } from '../../api/types/statistics';
 import { RefreshApiError } from '../../api/refresh-api-error';
 import { blockedFlagsAsString } from '../../api/types/asset-config-flags';
 import { DividerComponent } from "../../components/ui/divider.component";
-import { FormControl, FormGroup } from '@angular/forms';
 import { AnnouncementComponent } from "../../components/items/announcement.component";
 import { Announcement } from '../../api/types/announcement';
 import { faBullhorn, faPaperPlane, faPencil, faSignOutAlt, faTrash } from '@fortawesome/free-solid-svg-icons';
@@ -80,14 +79,9 @@ export class ModPanelComponent {
 
   protected grafanaSafeUrl: SafeUrl | undefined;
 
-  constructor(private auth: AuthenticationService, private client: ClientService, protected banner: BannerService, private sanitizer: DomSanitizer) {
-    // Set listeners for the preview announcement object
-    effect(() => {
-      console.log("annunvemnetn form effect callbaclk executed: title " + this.announcementInputs().title + ", text: " + this.announcementInputs().text);
-      this.previewAnnouncement.title = this.announcementInputs().title;
-      this.previewAnnouncement.text = this.announcementInputs().text;
-    });
-
+  constructor(private auth: AuthenticationService, private client: ClientService, protected banner: BannerService, private sanitizer: DomSanitizer,
+    protected cd: ChangeDetectorRef
+  ) {
     this.auth.user.subscribe(user => {
       if (user) {
         if (user.role < UserRoles.Moderator) {
@@ -100,6 +94,7 @@ export class ModPanelComponent {
             error: error => {
               this.instanceDownloadFailed = true;
               const apiError: RefreshApiError | undefined = error.error?.error;
+              // TODO show on panel
               this.banner.error("Failed to retrieve instance data", apiError == null ? error.message : apiError.message);
             },
             next: response => {
@@ -112,6 +107,8 @@ export class ModPanelComponent {
               if (originalUrl != null && originalUrl.length > 0) {
                 this.grafanaSafeUrl = this.sanitizer.bypassSecurityTrustResourceUrl(originalUrl);
               }
+
+              this.cd.detectChanges();
             }
           });
       
@@ -119,10 +116,12 @@ export class ModPanelComponent {
             error: error => {
               this.statisticsDownloadFailed = true;
               const apiError: RefreshApiError | undefined = error.error?.error;
+              // TODO show on panel
               this.banner.error("Failed to retrieve instance statistics", apiError == null ? error.message : apiError.message);
             },
             next: response => {
               this.statistics = response;
+              this.cd.detectChanges();
             }
           });
 
@@ -134,6 +133,7 @@ export class ModPanelComponent {
             },
             next: response => {
               this.announcements = response;
+              this.cd.detectChanges();
             }
           });
         }
