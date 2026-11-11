@@ -11,8 +11,8 @@ import { RadioButtonComponent } from './radio-button.component';
 ],
     changeDetection: ChangeDetectionStrategy.Eager,
     template: `
-        <div class="cursor-pointer min-w-full flex flex-col content-center justify-start rounded-md px-2 py-1 hover-within:outline-2
-            hover-within:outline hover-within:outline-secondary-bright max-w-fit transition-[outline]">
+        <div class="cursor-pointer flex flex-col content-center justify-start rounded-md py-1 hover-within:outline-2
+            hover-within:outline hover-within:outline-secondary-bright transition-[outline]">
 
             <!-- Use the given pipe to get the label to show to the user; if no pipe was passed, just fall back to the value, 
                 but prefix it with 'Option' for better formatting -->
