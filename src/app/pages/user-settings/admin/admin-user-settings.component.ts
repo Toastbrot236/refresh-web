@@ -1,6 +1,6 @@
 import { Component, signal } from "@angular/core";
 import { ReactiveFormsModule } from "@angular/forms";
-import { faBan, faCamera, faCancel, faCheckCircle, faChevronDown, faChevronUp, faComment, faEarthAmerica, faFlag, 
+import { faBan, faCamera, faCancel, faCheckCircle, faComment, faEarthAmerica, faFlag, 
     faFloppyDisk, faGavel, faListOl, faPencil, faSignOutAlt, faStar, faTrash, faUser } from "@fortawesome/free-solid-svg-icons";
 import { AsyncPipe } from "@angular/common";
 import { UserRoles } from "../../../api/types/users/user-roles";
@@ -19,7 +19,6 @@ import { TextAreaComponent } from "../../../components/ui/form/textarea.componen
 import { TwoPaneLayoutComponent } from "../../../components/ui/layouts/two-pane-layout.component";
 import { ContainerComponent } from "../../../components/ui/container.component";
 import { PaneTitleComponent } from "../../../components/ui/text/pane-title.component";
-import { DropdownMenuComponent } from "../../../components/ui/form/dropdown-menu.component";
 import { RolePipe } from "../../../pipes/role.pipe";
 import { DividerComponent } from "../../../components/ui/divider.component";
 import { TextboxComponent } from "../../../components/ui/form/textbox.component";
@@ -30,7 +29,6 @@ import { ConfirmationDialogComponent } from "../../../components/ui/confirmation
 import { DarkContainerComponent } from "../../../components/ui/dark-container.component";
 import { UserAvatarComponent } from "../../../components/ui/photos/user-avatar.component";
 import { FieldTree, form, maxLength, minLength, FormField, required } from "@angular/forms/signals";
-import { RadioButtonGroupComponent } from "../../../components/ui/form/radio-button-group.component";
 import { Observable } from "rxjs";
 import { DropdownRadioButtonComponent } from "../../../components/ui/form/dropdown-radio-button-group.component";
 
@@ -60,7 +58,6 @@ interface PunishmentFormInput {
     TwoPaneLayoutComponent,
     ContainerComponent,
     PaneTitleComponent,
-    DropdownMenuComponent,
     DividerComponent,
     TextboxComponent,
     LabelComponent,
@@ -68,7 +65,6 @@ interface PunishmentFormInput {
     DarkContainerComponent,
     ReactiveFormsModule,
     UserAvatarComponent,
-    RadioButtonGroupComponent,
     FormField,
     DropdownRadioButtonComponent
 ],

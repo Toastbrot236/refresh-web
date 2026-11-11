@@ -1,7 +1,7 @@
 import {ChangeDetectorRef, Component, Inject, PLATFORM_ID, signal} from '@angular/core';
 import {Level} from "../../api/types/levels/level";
 import {ClientService} from "../../api/client.service";
-import {ActivatedRoute, RouterLink} from "@angular/router";
+import {ActivatedRoute} from "@angular/router";
 import {SlugPipe} from "../../pipes/slug.pipe";
 import { AsyncPipe, isPlatformBrowser } from "@angular/common";
 import {LevelStatisticsComponent} from "../../components/items/level-statistics.component";
@@ -14,10 +14,6 @@ import {GamePipe} from "../../pipes/game.pipe";
 import {LayoutService} from "../../services/layout.service";
 import {DateComponent} from "../../components/ui/info/date.component";
 import {TwoPaneLayoutComponent} from "../../components/ui/layouts/two-pane-layout.component";
-import {ContainerComponent} from "../../components/ui/container.component";
-
-import {DividerComponent} from "../../components/ui/divider.component";
-import {PaneTitleComponent} from "../../components/ui/text/pane-title.component";
 import {EventPageComponent} from "../../components/items/event-page.component";
 import {ActivityPage} from "../../api/types/activity/activity-page";
 
@@ -31,7 +27,6 @@ import { TooltipComponent } from "../../components/ui/text/tooltip.component";
 import { ScoreTypePipe } from '../../pipes/score-type.pipe';
 import { BannerService } from '../../banners/banner.service';
 import { RefreshApiError } from '../../api/refresh-api-error';
-import { LevelLeaderboardComponent } from '../level-leaderboard/level-leaderboard.component';
 import { FieldTree, form } from '@angular/forms/signals';
 import { LevelLeaderboardFormInput } from '../../forms/level-leaderboard-form-input';
 import { LevelLeaderboardListComponent } from '../../components/ui/lists/level-leaderboard-list.component';
@@ -52,11 +47,7 @@ import { DropdownRadioButtonComponent } from '../../components/ui/form/dropdown-
     AsyncPipe,
     DateComponent,
     TwoPaneLayoutComponent,
-    ContainerComponent,
-    DividerComponent,
-    PaneTitleComponent,
     EventPageComponent,
-    RouterLink,
     SlugPipe,
     OriginalPublisherRouterLink,
     LargerLabelComponent,
