@@ -1,4 +1,4 @@
-import { Component, signal } from "@angular/core";
+import { ChangeDetectorRef, Component, signal } from "@angular/core";
 import { ReactiveFormsModule } from "@angular/forms";
 import { faBan, faCamera, faCancel, faCheckCircle, faComment, faEarthAmerica, faFlag, 
     faFloppyDisk, faGavel, faListOl, faPencil, faSignOutAlt, faStar, faTrash, faUser } from "@fortawesome/free-solid-svg-icons";
@@ -113,7 +113,8 @@ export class AdminUserSettingsComponent {
     protected isMobile: boolean = false;
 
     constructor(private client: ClientService, private auth: AuthenticationService, 
-        private banner: BannerService, route: ActivatedRoute, protected layout: LayoutService, private rolePipe: RolePipe) 
+        private banner: BannerService, route: ActivatedRoute, protected layout: LayoutService, private rolePipe: RolePipe,
+        protected cd: ChangeDetectorRef) 
     {
         this.auth.user.subscribe(ownUser => {
             if (ownUser && this.ownUser == null) {
@@ -141,6 +142,8 @@ export class AdminUserSettingsComponent {
                                             this.updateInputs(user);
                                             this.getPlanets(user.userId);
                                         }
+
+                                        this.cd.detectChanges();
                                     }
                                 }
                             });
@@ -241,6 +244,7 @@ export class AdminUserSettingsComponent {
             },
             next: planets => {
                 this.planets = planets;
+                this.cd.detectChanges();
             }
         });
     }
@@ -258,9 +262,11 @@ export class AdminUserSettingsComponent {
         this.client.resetUserPlanetDataByUuid(this.targetUser.userId).subscribe({
             error: error => {
                 const apiError: RefreshApiError | undefined = error.error?.error;
+                // TODO show on page instead of as a banner
                 this.banner.warn("Failed to reset this user's planet data", apiError == null ? error.message : apiError.message);
             },
             next: _ => {
+                // TODO show on page instead of as a banner
                 this.banner.success("Successfully reset " + this.targetUser?.username + "'s planets!", "");
                 this.planets = {
                     lbp2PlanetsHash: "0",
@@ -272,6 +278,8 @@ export class AdminUserSettingsComponent {
                     areVitaPlanetsModded: false,
                     areBetaPlanetsModded: false,
                 };
+
+                this.cd.detectChanges();
             }
         });
     }
@@ -333,6 +341,7 @@ export class AdminUserSettingsComponent {
                 this.waitingForPunishmentResponse = false;
 
                 const apiError: RefreshApiError | undefined = error.error?.error;
+                // TODO show on page instead of as a banner
                 this.banner.warn(failMessageHead, apiError == null ? error.message : apiError.message);
             },
             next: _ => {
@@ -340,7 +349,10 @@ export class AdminUserSettingsComponent {
 
                 this.overrideRole(resultingRole);
                 this.resetPunishmentForm();
+                // TODO show on page instead of as a banner
                 this.banner.success(successMessageHead, "");
+
+                this.cd.detectChanges();
             }
         });
     }
@@ -365,12 +377,15 @@ export class AdminUserSettingsComponent {
             next: _ => {
                 this.waitingForPunishmentResponse = false;
                 this.overrideRole(UserRoles.User);
+                this.cd.detectChanges();
                 this.banner.success("Successfully pardoned " + this.targetUser?.username, "");
             }
         });
     }
 
     protected waitingForPunishmentResponse = false;
+
+    // TODO entity deletion buttons actually need loading indicators, especially considering some of them can be slow requests
 
     protected showScoreDeleteDialog: boolean = false;
 
