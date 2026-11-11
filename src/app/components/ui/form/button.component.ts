@@ -31,7 +31,7 @@ export class ButtonComponent {
   @Input() type: "submit" | "reset" | "button" = "button";
 
   @Input() enabled: boolean = true;
-  @Input() width: string = "";
+  @Input() width: string = ""; // TODO this is bad, split into extraClasses: string and width: number
 
   @Input() xPadding: string = "4";
   @Input() yPadding: string = "1.5";
