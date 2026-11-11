@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input} from '@angular/core';
 import {ReactiveFormsModule} from "@angular/forms";
 import { DropdownMenuComponent } from './dropdown-menu.component';
 import { ButtonComponent } from './button.component';
@@ -22,9 +22,10 @@ import { faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
                 [enabled]="enabled"
                 (click)="onButtonClick()">
             </app-button>
-            @if (enabled) {
+            <ng-container content>
                 <ng-content select="[content]"></ng-content>
-            }
+            </ng-container>
+            
         </app-dropdown-menu>
     `
 })
